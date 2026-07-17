@@ -36,7 +36,7 @@ Explorar vilarejos e rotas → encontrar feras selvagens na grama alta → trans
 
 ## 6. Exploração e estrutura de mundo
 
-A estrutura dos mapas iniciais segue o modelo consagrado de **Pokémon Red/Blue**: um vilarejo inicial pequeno, rotas conectando assentamentos, grama alta como zona de encontro, obstáculos naturais controlando o ritmo de progressão — tudo reinterpretado com a estilização HD-2D moderna (vegetação 3D, iluminação de fim de tarde, água animada). **As feras selvagens são invisíveis durante a exploração**: o jogador só descobre qual fera encontrou quando a batalha começa — decisão tomada para criar suspense no encontro. Feras muito raras não aparecem em grama comum: habitam locais especiais e escondidos do mapa **(proposta)**.
+A estrutura dos mapas iniciais segue o modelo consagrado de **Pokémon Red/Blue**: um vilarejo inicial pequeno, rotas conectando assentamentos, grama alta como zona de encontro, obstáculos naturais controlando o ritmo de progressão. **O mundo é uma malha de mapas conectados por passagens nas bordas** (estilo clássico de telas ligadas): cada mapa é definido por dados (`mapas.json` — limites, árvores, grama, água, espécies selvagens e saídas), então criar áreas novas é criar conteúdo, não código. Movimento: andar; **corrida a 1,5x** com toque duplo na direção, segurando o segundo toque (decidido) — tudo reinterpretado com a estilização HD-2D moderna (vegetação 3D, iluminação de fim de tarde, água animada). **As feras selvagens são invisíveis durante a exploração**: o jogador só descobre qual fera encontrou quando a batalha começa — decisão tomada para criar suspense no encontro. Feras muito raras não aparecem em grama comum: habitam locais especiais e escondidos do mapa **(proposta)**.
 
 ## 7. Sistema de Feras
 
