@@ -11,7 +11,7 @@ export function criarCena(canvas) {
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x9fd0ff);
-  scene.fog = new THREE.Fog(0xf0dcc0, 24, 58);
+  scene.fog = new THREE.Fog(0xf0dcc0, 30, 70);
   const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.1, 200);
 
   const sol = new THREE.DirectionalLight(0xffd9a0, 1.25);
@@ -130,7 +130,7 @@ export function passoCamera(cena, modo, mundo, batalha, dt) {
     olhar = new THREE.Vector3(pp.x + (ee.x - pp.x) * .42, 1.1, pp.z + (ee.z - pp.z) * .42);
   } else {
     const pp = mundo.domador.pos;
-    desejo = new THREE.Vector3(pp.x, pp.y + 12, pp.z + 8.6);
+    desejo = new THREE.Vector3(pp.x, pp.y + 17, pp.z + 12);
     olhar = new THREE.Vector3(pp.x, 0.8, pp.z);
   }
   cena.camPos.lerp(desejo, Math.min(1, 8 * dt));
