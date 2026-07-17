@@ -18,11 +18,11 @@ O jogo se passa nas **Ilhas de Vento Verde**, um arquipélago onde humanos e fer
 
 ## 3. Direção de arte
 
-O estilo visual é **HD-2D**: personagens e feras em pixel art vivendo dentro de cenários 3D com iluminação moderna, sombras longas, profundidade de campo (efeito diorama) e luz quente. Referências principais: Octopath Traveler II (mundo e clima), Star Ocean: The Second Story R (ação em tempo real com sprites 2D em arena 3D) e Eastward (teto de qualidade de pixel art de personagens).
+O estilo visual é **3D estilizado em diorama** (decidido, substituindo o pixel art da versão anterior deste documento): personagens e feras em **low-poly chibi** — formas arredondadas, cores chapadas, cabeças grandes — vivendo em cenários 3D com iluminação moderna, sombras longas e luz quente de fim de tarde. Referências principais: **World of ClaudeCraft** (personagens e proporção), Octopath Traveler II (clima e paleta do mundo), Pokkén Tournament (leitura de batalha).
 
-**Treinadores** (protagonista e NPCs): proporção **chibi** — cabeça grande, corpo pequeno, carismático e legível de longe (referência: personagens de World of ClaudeCraft) — com figurinos inspirados nos aventureiros estilizados de **Farever** (Shiro Games) — fantasia colorida, trajes de aventureiro com personalidade — traduzidos para pixel art e **sempre desarmados**, reforçando visualmente que quem luta são as feras.
+**Treinadores** (protagonista e NPCs): modelos 3D chibi — cabeça ~metade da altura, carismáticos e legíveis de longe — com figurinos inspirados nos aventureiros estilizados de **Farever** (Shiro Games), e **sempre desarmados**, reforçando visualmente que quem luta são as feras. Animações de caminhada por direção (de costas ao subir, perfil aos lados).
 
-**Feras**: pixel art original, 100% autoral (exigência legal e de identidade). Cada espécie precisa de silhueta reconhecível a distância e paleta que comunique seu tipo.
+**Feras**: modelos 3D low-poly originais, 100% autorais (exigência legal e de identidade). Cada espécie precisa de silhueta reconhecível a distância e paleta que comunique seu tipo.
 
 ## 4. Câmeras
 
@@ -74,7 +74,7 @@ Modelo Pokémon: feras ganham **XP por batalha** (vencida ou capturada), sobem d
 
 ### 9.1 Estrutura
 
-Duelo **1v1 em tempo real** numa arena plana, câmera lock-on orbital. O jogador controla a fera ativa da equipe; a adversária é uma fera selvagem (IA) ou a fera de um Domador NPC (IA, futuramente outro jogador).
+Duelo **1v1 em tempo real** numa **arena dedicada** — um ringue cercado, separado do mapa de exploração e **estilizado pelo bioma** onde o encontro aconteceu (floresta, praia, caverna...). Câmera lock-on orbital, alta e afastada para leitura da arena inteira. O Domador não aparece no ringue: ele comanda de fora. Ao encontrar uma fera selvagem, o jogo corta para a arena e apresenta a fera com um menu **Lutar/Fugir** — a luta só começa se o jogador escolher lutar (fugir sempre funciona contra selvagens, por enquanto). O jogador controla a fera ativa da equipe; a adversária é uma fera selvagem (IA) ou a fera de um Domador NPC (IA, futuramente outro jogador).
 
 ### 9.2 Controles e golpes
 
@@ -90,6 +90,8 @@ Toda fera tem exatamente **4 golpes**, em 4 slots de função fixa:
 **A regra de ouro da raridade**: quanto mais rara a fera, mais fortes os golpes de comando — e mais difícil a execução **(proposta de escala)**: comuns usam direção + botão; raras usam quarto de círculo (↓↘→ + botão); muito raras exigem sequências longas ou timing apertado. Poder exige maestria: uma fera muito rara nas mãos de um iniciante rende menos que uma comum bem pilotada — essa troca é intencional e central ao design.
 
 Movimentação: aproximar/afastar/orbitar (relativa ao adversário) + **pulo**. Versões aéreas de golpes: a definir.
+
+**Controles padrão (teclado, decidido)**: setas movem; **Z** = golpe normal, **X** = especial de tipo, **C** = contextual (capturar/confirmar). Sequências de comando em notação de luta: ↓ = seta baixo, → = seta cima (avançar no oponente). Tela de remapeamento de botões: no backlog.
 
 ### 9.3 Propriedades dos golpes (a dupla identidade)
 
