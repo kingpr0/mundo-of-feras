@@ -2,15 +2,16 @@
 // (render/) e roda o loop. A simulação decide; o main traduz eventos em
 // som, partículas e HUD. Nenhuma regra de jogo vive aqui.
 import * as THREE from 'three';
-import { criarMundo, passoMundo, daImunidade, MUNDO_LAYOUT } from './sim/mundo.js';
+import { criarMundo, passoMundo, daImunidade, entradaDoMapa } from './sim/mundo.js';
 import { criarBatalha, passoBatalha, podeCapturar } from './sim/batalha.js';
 import { guardaDirecao, sequenciaCompleta } from './sim/comandos.js';
-import { criarCena, poof, passoParticulas, passoCamera, mostraArena } from './render/cena.js';
+import { criarCena, poof, passoParticulas, passoCamera, mostraArena, montaMapa } from './render/cena.js';
 import * as MD from './render/modelos.js';
 import { criarHUD } from './render/hud.js';
 import { audioInit, sfx } from './render/audio.js';
 
 const especies = await (await fetch('./src/dados/especies.json')).json();
+const dadosMapas = await (await fetch('./src/dados/mapas.json')).json();
 
 const cv = document.getElementById('cv');
 const cena = criarCena(cv);
@@ -26,12 +27,21 @@ const cristal = MD.criarCristal(cena.scene); MD.mostra(cristal, false);
 
 // posições de largada no ringue (a arena visual é centrada na origem)
 const RINGUE = { dom: { x: -5, y: 0, z: 0 }, fera: { x: 3.5, y: 0, z: 0 } };
-const DICA_EXPLORAR = 'Setas: andar · explore a grama alta';
+const DICA_EXPLORAR = 'Setas: andar (2 toques = correr) · explore a grama alta';
+// cor dos efeitos elementais por tipo de fera
+const CORES_TIPO = { fogo: 0xff8a3d, eletrico: 0xffe94d, agua: 0x4da3ff, planta: 0x5fd35a, comum: 0xcbd0d8 };
+const projMeshes = new Map(); // id do projétil (sim) -> modelo 3D
 
 /* ---------- estado ---------- */
 let modo = 'titulo'; // titulo | explorar | encontro | batalha
 const chavesSelvagens = Object.keys(especies).filter((k) => especies[k].selvagem);
-let mundo = criarMundo(chavesSelvagens);
+let chaveMapa = dadosMapas.inicial;
+function novoMundo(chave) {
+  const mapa = dadosMapas.mapas[chave];
+  return criarMundo(mapa, mapa.selvagens || chavesSelvagens);
+}
+let mundo = novoMundo(chaveMapa);
+montaMapa(cena, mundo.mapa);
 let batalha = null;
 let feraAtual = null; // modelo da fera selvagem em cena (encontro/batalha)
 let escolha = 0;      // menu do encontro: 0 = lutar, 1 = fugir
@@ -63,6 +73,22 @@ function edges() {
 }
 const eixo = (neg, pos) => (keys[pos[0]] || keys[pos[1]] ? 1 : 0) - (keys[neg[0]] || keys[neg[1]] ? 1 : 0);
 
+/* corrida: dois toques rápidos na mesma direção e segurar o segundo */
+const TECLAS_DIR = ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD'];
+const ultToque = {}, prevDir = {};
+let correndo = false;
+function detectaCorrida() {
+  for (const k of TECLAS_DIR) {
+    const seg = !!keys[k];
+    if (seg && !prevDir[k]) {
+      if (tempo - (ultToque[k] || -9) < 0.3) correndo = true;
+      ultToque[k] = tempo;
+    }
+    prevDir[k] = seg;
+  }
+  if (!TECLAS_DIR.some((k) => keys[k])) correndo = false;
+}
+
 /* ---------- golpes de comando: buffer de sequências direcionais ----------
    O main só CAPTURA as teclas e envia o input abstrato c1; o matching é da
    lógica pura em sim/comandos.js e a execução é da batalha. Direções
@@ -92,6 +118,8 @@ function aoEvento(evt) {
     case 'comando': sfx.especial(); cena.shake = 0.22;
       poof(cena, { ...evt.pos, y: 1 }, 0xffffff, 8, 3.5);
       hud.toast(`${evt.nome}!`, 900); break;
+    case 'projetil': sfx.swing();
+      poof(cena, evt.pos, CORES_TIPO[evt.elemento] || 0xffffff, 8, 3); break;
     case 'cristalVoa': sfx.cristalVoa(); MD.mostra(cristal, true); break;
     case 'cristalSuga': poof(cena, evt.pos, 0x59e0d0, 14, 4); break;
     case 'cristalTreme': sfx.cristalTreme(); break;
@@ -144,6 +172,21 @@ function iniciaBatalha() {
   hud.dica(`↑/↓ aproxima-afasta · ←/→ orbita · ESPAÇO pula · Z golpe · X especial${seqTxt} · C captura`);
   hud.toast('Brasinha, eu escolho você!');
 }
+// passagem entre mapas: recria a sim no destino e remonta o cenário
+function trocaMapa(destino) {
+  hud.flash();
+  const origem = chaveMapa;
+  chaveMapa = destino;
+  mundo = novoMundo(destino);
+  mundo.domador.pos = entradaDoMapa(mundo.mapa, origem);
+  daImunidade(mundo, 1.2);
+  montaMapa(cena, mundo.mapa);
+  // câmera corta seco para o novo mapa (sem voar pelo cenário antigo)
+  const pp = mundo.domador.pos;
+  cena.camPos.set(pp.x, pp.y + 17, pp.z + 12);
+  cena.camAlvo.set(pp.x, 0.8, pp.z);
+  hud.toast(`— ${mundo.mapa.nome} —`, 1800);
+}
 function fugir() {
   hud.flash();
   mostraArena(cena, false);
@@ -157,6 +200,7 @@ function fugir() {
 function encerraBatalha() {
   hud.flash();
   mostraArena(cena, false);
+  limpaProjeteis();
   MD.mostra(brasinha, false); MD.mostra(cristal, false);
   if (feraAtual) { MD.mostra(feraAtual, false); feraAtual = null; }
   MD.mostra(domador, true);
@@ -165,7 +209,7 @@ function encerraBatalha() {
     mundo.selvagem.vivo = false; mundo.respawnT = 10;
     if (batalha.resultado === 'captura') { capturadas++; hud.equipe(capturadas); }
   } else {
-    mundo.domador.pos = { ...MUNDO_LAYOUT.spawnDomador };
+    mundo.domador.pos = { x: mundo.mapa.spawn.x, y: 0, z: mundo.mapa.spawn.z };
   }
   daImunidade(mundo);
   hud.dica(DICA_EXPLORAR);
@@ -178,7 +222,7 @@ function sincronizaVisual(dt) {
   if (modo === 'explorar' || modo === 'titulo') {
     MD.setPos(domador, d.pos);
     MD.passoGiro(domador, dt);
-    MD.animaAndar(domador, d.animT, d.andando);
+    MD.animaAndar(domador, d.animT * (d.correndo ? 1.45 : 1), d.andando);
   }
   if (modo === 'encontro' && feraAtual) {
     // respiração da fera enquanto o jogador decide
@@ -201,7 +245,24 @@ function sincronizaVisual(dt) {
     aplicaFlash(feraAtual, batalha.e);
 
     if (batalha.captura) { MD.setPos(cristal, batalha.captura.pos); cristal.g.rotation.y += dt * 5; }
+
+    // projéteis: cria/move/remove os modelos conforme a sim
+    const vivos = new Set();
+    for (const pr of batalha.projeteis) {
+      vivos.add(pr.id);
+      let M = projMeshes.get(pr.id);
+      if (!M) { M = MD.criarProjetil(cena.scene, CORES_TIPO[pr.tipo] || 0xffffff); projMeshes.set(pr.id, M); }
+      MD.setPos(M, pr.pos);
+      M.g.rotation.y += dt * 9;
+      if (Math.random() < 0.45) poof(cena, pr.pos, CORES_TIPO[pr.tipo] || 0xffffff, 1, 1.4);
+    }
+    for (const [id, M] of projMeshes)
+      if (!vivos.has(id)) { cena.scene.remove(M.g); projMeshes.delete(id); }
   }
+}
+function limpaProjeteis() {
+  for (const [, M] of projMeshes) cena.scene.remove(M.g);
+  projMeshes.clear();
 }
 function aplicaFlash(M, f) {
   if (f.flash > 0) MD.flashCor(M, f.flash > 0.5 ? 0xffffff : 0xff5533);
@@ -226,12 +287,17 @@ function loop(agora) {
   hud.passoDanos(cena.camera, dt, THREE);
 
   if (modo === 'explorar') {
+    detectaCorrida();
     const inp = { mov: { x: eixo(['ArrowLeft','KeyA'], ['ArrowRight','KeyD']),
-                         z: eixo(['ArrowUp','KeyW'], ['ArrowDown','KeyS']) } };
+                         z: eixo(['ArrowUp','KeyW'], ['ArrowDown','KeyS']) },
+                  correr: correndo };
     MD.giraDirecao(domador, inp.mov.x, inp.mov.z);
     const evt = passoMundo(mundo, inp, dt);
+    if (mundo.domador.correndo && Math.random() < 0.25)
+      poof(cena, { ...mundo.domador.pos, y: 0.15 }, 0xcbb28a, 1, 1.2);
     if (evt === 'encontro') iniciaEncontro();
-    if (evt === 'respawn') hud.toast('Algo farfalha na grama alta...');
+    else if (evt === 'respawn') hud.toast('Algo farfalha na grama alta...');
+    else if (evt && evt.tipo === 'saida') trocaMapa(evt.saida.destino);
   } else if (modo === 'encontro') {
     if (cimaE || baixoE) { escolha = 1 - escolha; hud.escolha(true, escolha); sfx.swing(); }
     if (jE) confirmaEscolha();

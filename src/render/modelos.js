@@ -142,6 +142,19 @@ export function criarFera(scene, chave) {
   return fabrica ? fabrica(scene) : criarCascorro(scene);
 }
 
+// projétil elemental (bola de fogo, esfera voltaica...) — cor vem do tipo
+export function criarProjetil(scene, corHex) {
+  const M = novoModelo(scene, 0.5);
+  const mat = new THREE.MeshLambertMaterial({
+    color: corHex, emissive: corHex, emissiveIntensity: 0.65 });
+  const m = new THREE.Mesh(new THREE.SphereGeometry(0.3, 12, 10), mat);
+  m.castShadow = true; M.materiais.push(mat); M.g.add(m);
+  const halo = new THREE.Mesh(new THREE.OctahedronGeometry(0.42),
+    new THREE.MeshBasicMaterial({ color: corHex, transparent: true, opacity: 0.35 }));
+  M.g.add(halo);
+  return M;
+}
+
 export function criarCristal(scene) {
   const M = novoModelo(scene, 0.55);
   const mat = new THREE.MeshLambertMaterial({

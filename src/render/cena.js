@@ -1,7 +1,6 @@
-// CENA — Three.js: luz HD-2D, chão, árvores (lidas do layout da simulação),
-// partículas e as duas câmeras (exploração estilo LoL e batalha lock-on).
+// CENA — Three.js: luz, cenário dos mapas (montados a partir de mapas.json),
+// arena de batalha, partículas e as duas câmeras (exploração e lock-on).
 import * as THREE from 'three';
-import { MUNDO_LAYOUT } from '../sim/mundo.js';
 
 export function criarCena(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -23,11 +22,9 @@ export function criarCena(canvas) {
   scene.add(new THREE.HemisphereLight(0xbcd9ff, 0x3a5a34, 0.55));
 
   // mundo e arena são grupos alternáveis: a batalha acontece num ringue
-  // separado, estilizado pelo bioma (floresta, por enquanto)
+  // separado, estilizado pelo bioma (floresta, por enquanto). O cenário do
+  // mapa é montado depois, via montaMapa (dados de mapas.json).
   const mundoG = new THREE.Group(); scene.add(mundoG);
-  montaChao(mundoG);
-  MUNDO_LAYOUT.arvores.forEach(([x, z, p]) => arvore(mundoG, x, z, p));
-  montaGrama(mundoG);
   const arenaG = montaArena(scene);
 
   const estado = {
@@ -85,20 +82,78 @@ function arvore(scene, x, z, pinheiro) {
   g.position.set(x, 0, z); scene.add(g);
 }
 
-function montaGrama(scene) {
+function montaGrama(scene, G) {
   const c = document.createElement('canvas'); c.width = c.height = 16;
   const x = c.getContext('2d');
   x.fillStyle = '#3f8f38'; for (let i = 0; i < 5; i++) x.fillRect(1 + i * 3, 6, 2, 10);
   x.fillStyle = '#4da043'; for (let i = 0; i < 4; i++) x.fillRect(3 + i * 3, 3, 2, 7);
   const t = new THREE.CanvasTexture(c); t.magFilter = THREE.NearestFilter;
   const mat = new THREE.MeshLambertMaterial({ map: t, transparent: true, alphaTest: 0.4, side: THREE.DoubleSide });
-  const G = MUNDO_LAYOUT.grama;
-  for (let i = 0; i < 70; i++) {
+  const n = Math.round((G.x1 - G.x0) * (G.z1 - G.z0) * 0.8);
+  for (let i = 0; i < n; i++) {
     const m = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.9), mat);
     m.position.set(G.x0 + Math.random() * (G.x1 - G.x0), 0.45,
                    G.z0 + Math.random() * (G.z1 - G.z0));
     m.rotation.y = Math.random() * Math.PI; scene.add(m);
   }
+}
+
+function montaAgua(g, ag) {
+  const areia = new THREE.Mesh(
+    new THREE.PlaneGeometry(ag.x1 - ag.x0 + 1.6, ag.z1 - ag.z0 + 1.6),
+    new THREE.MeshLambertMaterial({ color: 0xe8d9a8 }));
+  areia.rotation.x = -Math.PI / 2;
+  areia.position.set((ag.x0 + ag.x1) / 2, 0.02, (ag.z0 + ag.z1) / 2);
+  areia.receiveShadow = true; g.add(areia);
+  const agua = new THREE.Mesh(
+    new THREE.PlaneGeometry(ag.x1 - ag.x0, ag.z1 - ag.z0),
+    new THREE.MeshLambertMaterial({ color: 0x3f8fd4, transparent: true, opacity: 0.9 }));
+  agua.rotation.x = -Math.PI / 2;
+  agua.position.set((ag.x0 + ag.x1) / 2, 0.04, (ag.z0 + ag.z1) / 2);
+  g.add(agua);
+}
+
+// faixa de terra marcando a passagem para outro mapa
+function trilhaSaida(g, mapa, s) {
+  const L = mapa.limite;
+  const larg = (s.ate - s.de) + 1.6, comp = 5;
+  const horizontal = s.borda === 'leste' || s.borda === 'oeste';
+  const m = new THREE.Mesh(
+    new THREE.PlaneGeometry(horizontal ? comp : larg, horizontal ? larg : comp),
+    new THREE.MeshLambertMaterial({ color: 0xc9a56b }));
+  m.rotation.x = -Math.PI / 2; m.receiveShadow = true;
+  const meio = (s.de + s.ate) / 2;
+  if (s.borda === 'leste') m.position.set(L.x - comp / 2, 0.015, meio);
+  if (s.borda === 'oeste') m.position.set(-L.x + comp / 2, 0.015, meio);
+  if (s.borda === 'sul') m.position.set(meio, 0.015, L.z - comp / 2);
+  if (s.borda === 'norte') m.position.set(meio, 0.015, -L.z + comp / 2);
+  g.add(m);
+}
+
+function descarta(obj) {
+  obj.traverse((o) => {
+    if (o.geometry) o.geometry.dispose();
+    if (o.material)
+      (Array.isArray(o.material) ? o.material : [o.material]).forEach((mt) => {
+        if (mt.map) mt.map.dispose();
+        mt.dispose();
+      });
+  });
+}
+
+// (re)monta o cenário de um mapa de mapas.json
+export function montaMapa(cena, mapa) {
+  descarta(cena.mundoG);
+  cena.scene.remove(cena.mundoG);
+  const g = new THREE.Group();
+  g.visible = !cena.arenaG.visible;
+  cena.scene.add(g);
+  cena.mundoG = g;
+  montaChao(g);
+  (mapa.arvores || []).forEach(([x, z, p]) => arvore(g, x, z, p));
+  if (mapa.grama) montaGrama(g, mapa.grama);
+  if (mapa.agua) montaAgua(g, mapa.agua);
+  (mapa.saidas || []).forEach((s) => trilhaSaida(g, mapa, s));
 }
 
 /* arena de batalha — ringue de floresta centrado na origem (a sim luta em
