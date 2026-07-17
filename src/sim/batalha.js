@@ -24,6 +24,7 @@ export function criarBatalha(especies, chaveSelvagem, posDomador, posSelvagem) {
     aiT: 0.7, iaMov: null,
     fim: false, resultado: null,
     captura: null,
+    projeteis: [], projId: 0,
     domadorAlvo: soma(posDomador, escala(perpXZ(dirE), 3.5)),
     fimT: 0,
   };
@@ -33,18 +34,53 @@ export function podeCapturar(b) {
   return !b.fim && !b.captura && b.e.estado !== 'ko' && b.e.hp / b.e.max <= 0.35;
 }
 
-function acerta(b, vitima, atacante, g, emitir) {
-  const dano = Math.round(g.dano * atacante.esp.ataque);
+function aplicaDano(b, vitima, dano, dirKb, empurrao, forte, emitir) {
   vitima.hp = Math.max(0, vitima.hp - dano);
   vitima.estado = 'hurt'; vitima.t = 0;
   vitima.invuln = 0.5; vitima.flash = 1;
-  vitima.kb = escala(normXZ(sub(vitima.pos, atacante.pos)), g.empurrao);
-  emitir({ tipo: g.forte ? 'hitForte' : 'hit', pos: copia(vitima.pos), dano, forte: g.forte });
+  vitima.kb = escala(dirKb, empurrao);
+  emitir({ tipo: forte ? 'hitForte' : 'hit', pos: copia(vitima.pos), dano, forte });
   if (vitima.hp <= 0) {
     vitima.estado = 'ko'; vitima.t = 0;
     b.fim = true; b.fimT = 1.4;
     b.resultado = (vitima === b.e) ? 'vitoria' : 'derrota';
     emitir({ tipo: b.resultado });
+  }
+}
+function acerta(b, vitima, atacante, g, emitir) {
+  aplicaDano(b, vitima, Math.round(g.dano * atacante.esp.ataque),
+    normXZ(sub(vitima.pos, atacante.pos)), g.empurrao, g.forte, emitir);
+}
+
+/* projéteis: o especial de tipo (bola de fogo, esfera voltaica...) voa até
+   o alvo; pular na hora certa esquiva (a altura do apex passa por cima) */
+function disparaProjetil(b, f, outro, g, emitir) {
+  const dir = normXZ(sub(outro.pos, f.pos));
+  const pos = soma(copia(f.pos), vec(dir.x * 0.7, 0.9, dir.z * 0.7));
+  b.projeteis.push({
+    id: b.projId++, dono: f, alvo: outro,
+    pos, vel: escala(dir, g.projetil.vel),
+    dano: g.dano, empurrao: g.empurrao, raio: g.projetil.raio,
+    vida: 1.8, tipo: f.esp.tipo,
+  });
+  emitir({ tipo: 'projetil', pos: copia(pos), elemento: f.esp.tipo });
+}
+function passoProjeteis(b, dt, emitir) {
+  for (let i = b.projeteis.length - 1; i >= 0; i--) {
+    const pr = b.projeteis[i];
+    pr.pos = soma(pr.pos, escala(pr.vel, dt));
+    pr.vida -= dt;
+    const alvo = pr.alvo;
+    const centroY = alvo.pos.y + 0.6;
+    if (alvo.estado !== 'ko' && alvo.invuln <= 0 &&
+        distXZ(pr.pos, alvo.pos) < pr.raio && Math.abs(pr.pos.y - centroY) < 0.8) {
+      aplicaDano(b, alvo, Math.round(pr.dano * pr.dono.esp.ataque),
+        normXZ(pr.vel), pr.empurrao, true, emitir);
+      b.projeteis.splice(i, 1);
+    } else if (pr.vida <= 0 ||
+        Math.abs(pr.pos.x) > ARENA.x || Math.abs(pr.pos.z) > ARENA.z) {
+      b.projeteis.splice(i, 1);
+    }
   }
 }
 
@@ -59,7 +95,13 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
   } else if (f.estado === 'atk') {
     f.t += dt;
     const g = f.golpe;
-    if (f.t >= g.prep && f.t <= g.prep + g.ativo) {
+    if (g.projetil) {
+      // golpe de projétil: carrega parado e dispara ao fim da preparação
+      if (!f.acertou && f.t >= g.prep) {
+        f.acertou = true;
+        disparaProjetil(b, f, outro, g, emitir);
+      }
+    } else if (f.t >= g.prep && f.t <= g.prep + g.ativo) {
       const frente = normXZ(sub(outro.pos, p));
       f.pos = soma(p, escala(frente, (g.forte ? 3 : 4.5) * dt));
       if (g.forte) emitir({ tipo: 'rastroFogo', pos: soma(copia(f.pos), escala(frente, 1.1)) });
@@ -71,8 +113,11 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
     }
     if (f.t >= g.prep + g.ativo + g.recup) { f.estado = 'idle'; f.golpe = null; }
   } else {
-    if (inp.mov.x !== 0 || inp.mov.z !== 0)
-      f.pos = soma(p, escala(normXZ(vec(inp.mov.x, 0, inp.mov.z)), f.esp.velocidade * dt));
+    if (inp.mov.x !== 0 || inp.mov.z !== 0) {
+      // magnitude < 1 permite à IA andar mais devagar que o jogador
+      const mag = Math.min(1, Math.hypot(inp.mov.x, inp.mov.z));
+      f.pos = soma(p, escala(normXZ(vec(inp.mov.x, 0, inp.mov.z)), f.esp.velocidade * mag * dt));
+    }
     if (inp.pulo && f.pos.y <= 0.01) { f.vy = f.esp.impulso; emitir({ tipo: 'pulo' }); }
     if (inp.c1 && f.esp.golpes.comando1 && f.pos.y <= 0.01) {
       f.estado = 'atk'; f.golpe = f.esp.golpes.comando1; f.t = 0; f.acertou = false;
@@ -98,17 +143,19 @@ function iaSelvagem(b, dt, rnd) {
   const dist = distXZ(e.pos, p.pos);
   const dir = normXZ(sub(p.pos, e.pos));
   if (b.aiT <= 0) {
-    b.aiT = 0.3 + rnd() * 0.35;
-    if (dist > 4.5) b.iaMov = rnd() < 0.85 ? dir : null;
-    else if (dist > 2.2) b.iaMov = dir;
+    // ritmo calmo: decide com menos frequência, avança devagar e às vezes
+    // só observa (magnitude < 1 reduz a velocidade de aproximação)
+    b.aiT = 0.55 + rnd() * 0.5;
+    if (dist > 4.5) b.iaMov = rnd() < 0.55 ? escala(dir, 0.65) : null;
+    else if (dist > 2.2) b.iaMov = rnd() < 0.75 ? escala(dir, 0.8) : null;
     else {
       // a IA gera os mesmos inputs abstratos que um jogador (GDD §9.6/§12),
       // inclusive o golpe de comando da espécie
       const r = rnd();
-      if (r < 0.45) { inp.a = true; b.iaMov = null; }
-      else if (r < 0.62) { inp.f = true; b.iaMov = null; }
-      else if (r < 0.72) { inp.c1 = true; b.iaMov = null; }
-      else if (r < 0.88) b.iaMov = escala(dir, -1);
+      if (r < 0.4) { inp.a = true; b.iaMov = null; }
+      else if (r < 0.55) { inp.f = true; b.iaMov = null; }
+      else if (r < 0.65) { inp.c1 = true; b.iaMov = null; }
+      else if (r < 0.85) b.iaMov = escala(dir, -0.8);
       else { inp.pulo = true; b.iaMov = dir; }
     }
     if (p.estado === 'atk' && p.golpe && p.golpe.forte && dist < 4 && rnd() < 0.35) inp.pulo = true;
@@ -160,10 +207,12 @@ export function passoBatalha(b, inpP, dt, emitir, rnd = Math.random) {
   if (b.fim) {
     passoLutador(b, b.p, { mov: vec(), pulo: false, a: false, f: false, c1: false }, b.e, dt, emitir);
     passoLutador(b, b.e, { mov: vec(), pulo: false, a: false, f: false, c1: false }, b.p, dt, emitir);
+    passoProjeteis(b, dt, emitir);
     b.fimT -= dt;
     return b.fimT <= 0 ? 'encerrar' : null;
   }
   if (b.captura) { passoCaptura(b, dt, emitir, rnd); return null; }
+  passoProjeteis(b, dt, emitir);
 
   // converte o input relativo (frente/trás/lados) em direção no mundo
   const fw = normXZ(sub(b.e.pos, b.p.pos));

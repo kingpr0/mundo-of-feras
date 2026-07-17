@@ -9,7 +9,8 @@
     "impulso": 7.5,
     "golpes": {
       "normal":   { "dano": 7,  "alcance": 1.7, "empurrao": 3.2, "prep": 0.08, "ativo": 0.12, "recup": 0.18, "forte": false },
-      "especial": { "dano": 14, "alcance": 2.7, "empurrao": 6.0, "prep": 0.28, "ativo": 0.20, "recup": 0.40, "forte": true },
+      "especial": { "nome": "Bola de Fogo", "dano": 14, "alcance": 2.7, "empurrao": 6.0, "prep": 0.28, "ativo": 0.20, "recup": 0.40, "forte": true,
+                    "projetil": { "vel": 11, "raio": 0.85 } },
       "comando1": { "nome": "Cometa Ígneo", "sequencia": ["baixo", "frente"],
                     "dano": 20, "alcance": 2.9, "empurrao": 8.0, "prep": 0.34, "ativo": 0.22, "recup": 0.50, "forte": true }
     }
@@ -25,7 +26,7 @@
     "impulso": 6.2,
     "golpes": {
       "normal":   { "dano": 8,  "alcance": 1.7, "empurrao": 3.4, "prep": 0.10, "ativo": 0.12, "recup": 0.22, "forte": false },
-      "especial": { "dano": 15, "alcance": 2.2, "empurrao": 6.5, "prep": 0.32, "ativo": 0.18, "recup": 0.45, "forte": true },
+      "especial": { "nome": "Investida Rochosa", "dano": 15, "alcance": 2.2, "empurrao": 6.5, "prep": 0.32, "ativo": 0.18, "recup": 0.45, "forte": true },
       "comando1": { "nome": "Rolamento Demolidor", "sequencia": ["baixo"],
                     "dano": 18, "alcance": 2.0, "empurrao": 7.5, "prep": 0.40, "ativo": 0.20, "recup": 0.55, "forte": true }
     }
@@ -41,7 +42,8 @@
     "impulso": 8.5,
     "golpes": {
       "normal":   { "dano": 6,  "alcance": 1.5, "empurrao": 2.6, "prep": 0.06, "ativo": 0.10, "recup": 0.14, "forte": false },
-      "especial": { "dano": 13, "alcance": 2.6, "empurrao": 5.0, "prep": 0.24, "ativo": 0.16, "recup": 0.38, "forte": true },
+      "especial": { "nome": "Esfera Voltaica", "dano": 13, "alcance": 2.6, "empurrao": 5.0, "prep": 0.24, "ativo": 0.16, "recup": 0.38, "forte": true,
+                    "projetil": { "vel": 13, "raio": 0.8 } },
       "comando1": { "nome": "Carga Relâmpago", "sequencia": ["frente"],
                     "dano": 16, "alcance": 3.0, "empurrao": 6.5, "prep": 0.28, "ativo": 0.20, "recup": 0.45, "forte": true }
     }
