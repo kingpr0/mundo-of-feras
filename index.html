@@ -40,8 +40,16 @@
   .opt { color:#8f89a6; font-size:18px; font-weight:bold; letter-spacing:2px; }
   .opt.sel { color:#ffd23f; }
   .opt.sel::before { content:'▶ '; }
-  #equipe { position:fixed; top:12px; left:12px; color:#ffe9b0; font-size:12px;
-    text-shadow:2px 2px 0 #26202e; }
+  #painel { position:fixed; top:12px; left:12px; background:rgba(13,11,20,.88);
+    border:2px solid #ffd23f; padding:10px 14px; min-width:150px; }
+  #painel .ptit { color:#ffd23f; font-size:13px; font-weight:bold; letter-spacing:2px;
+    margin-bottom:6px; }
+  #painel .plin { color:#fff6df; font-size:12px; margin:3px 0; }
+  #painel .plin span { color:#ffe9b0; }
+  #miniWrap { position:fixed; top:12px; right:12px; text-align:center; }
+  #miniNome { color:#ffd23f; font-size:12px; font-weight:bold; letter-spacing:1px;
+    text-shadow:2px 2px 0 #26202e; margin-bottom:4px; }
+  #mini { display:block; background:rgba(13,11,20,.75); border:2px solid #ffd23f; }
   .dmg { position:fixed; color:#ffd23f; font-weight:bold; font-size:16px;
     text-shadow:2px 2px 0 #26202e; }
   .dmg.forte { color:#ff6b4a; font-size:20px; }
@@ -51,7 +59,16 @@
 <canvas id="cv" tabindex="0"></canvas>
 <div id="hud">
   <div class="vinheta"></div>
-  <div id="equipe">♦ Brasinha &nbsp;|&nbsp; feras: <span id="nCap">1</span></div>
+  <div id="painel">
+    <div class="ptit">DOMADOR</div>
+    <div class="plin">♦ Brasinha</div>
+    <div class="plin">Feras: <span id="nCap">1</span></div>
+    <div class="plin">Local: <span id="pMapa">—</span></div>
+  </div>
+  <div id="miniWrap">
+    <div id="miniNome">—</div>
+    <canvas id="mini" width="170" height="170"></canvas>
+  </div>
   <div class="hpwrap" id="hpP"><div class="hpname">♦ BRASINHA</div>
     <div class="hpbar"><div class="hpfill" id="fillP"></div></div></div>
   <div class="hpwrap" id="hpE"><div class="hpname" id="nomeE">CASCORRO</div>

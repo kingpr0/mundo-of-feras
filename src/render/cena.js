@@ -43,7 +43,7 @@ export function criarCena(canvas) {
   return estado;
 }
 
-function montaChao(scene) {
+function montaChao(scene, tam = 70) {
   const c = document.createElement('canvas'); c.width = c.height = 512;
   const x = c.getContext('2d');
   for (let ty = 0; ty < 16; ty++) for (let tx = 0; tx < 16; tx++) {
@@ -54,10 +54,64 @@ function montaChao(scene) {
       x.fillStyle = '#ffe9b0'; x.fillRect(tx*32+21, ty*32+6, 3, 3); }
   }
   const t = new THREE.CanvasTexture(c);
-  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(5, 5);
-  const ch = new THREE.Mesh(new THREE.PlaneGeometry(70, 70),
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(tam / 14, tam / 14);
+  const ch = new THREE.Mesh(new THREE.PlaneGeometry(tam, tam),
     new THREE.MeshLambertMaterial({ map: t }));
   ch.rotation.x = -Math.PI / 2; ch.receiveShadow = true; scene.add(ch);
+}
+
+/* casinha estilo Pokémon: corpo claro, telhado piramidal colorido, porta e janelas */
+const COR_TELHADO = { vermelho: 0xd1462f, azul: 0x3a6bc9, verde: 0x2f8a4a };
+function casa(g, x, z, corNome) {
+  const grupo = new THREE.Group();
+  const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
+  const corpo = new THREE.Mesh(new THREE.BoxGeometry(3.6, 2.2, 3.2), lamb(0xf2e2c4));
+  corpo.position.y = 1.1; corpo.castShadow = true; grupo.add(corpo);
+  const telhado = new THREE.Mesh(new THREE.ConeGeometry(2.9, 1.6, 4),
+    lamb(COR_TELHADO[corNome] || COR_TELHADO.vermelho));
+  telhado.position.y = 3.0; telhado.rotation.y = Math.PI / 4; telhado.castShadow = true;
+  grupo.add(telhado);
+  const porta = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.2, 0.1), lamb(0x6b4a2f));
+  porta.position.set(0, 0.6, 1.62); grupo.add(porta);
+  for (const lado of [-1, 1]) {
+    const jan = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.6, 0.1), lamb(0xbfe3ff));
+    jan.position.set(lado * 1.1, 1.4, 1.62); grupo.add(jan);
+  }
+  grupo.position.set(x, 0, z);
+  g.add(grupo);
+}
+
+/* muralha natural: floresta densa fechando as bordas do mapa, com clareiras
+   apenas nas passagens; onde há água, o próprio lago faz o papel */
+function montaBorda(g, mapa) {
+  const L = mapa.limite;
+  const saidas = mapa.saidas || [];
+  const ag = mapa.agua;
+  const bloqueada = (x, z) => {
+    for (const s of saidas) {
+      const folga = 3;
+      if (s.borda === 'leste' && x > L.x && z > s.de - folga && z < s.ate + folga) return true;
+      if (s.borda === 'oeste' && x < -L.x && z > s.de - folga && z < s.ate + folga) return true;
+      if (s.borda === 'sul' && z > L.z && x > s.de - folga && x < s.ate + folga) return true;
+      if (s.borda === 'norte' && z < -L.z && x > s.de - folga && x < s.ate + folga) return true;
+    }
+    if (ag && x > ag.x0 - 1 && x < ag.x1 + 1 && z > ag.z0 - 1 && z < ag.z1 + 1) return true;
+    return false;
+  };
+  const planta = (x, z, i) => {
+    if (bloqueada(x, z)) return;
+    arvore(g, x + (Math.random() - 0.5), z + (Math.random() - 0.5), i % 2);
+  };
+  const passo = 2.4;
+  let i = 0;
+  for (let x = -L.x - 1.5; x <= L.x + 1.5; x += passo, i++) {
+    planta(x, -L.z - 1.5, i); planta(x, L.z + 1.5, i);
+    planta(x + 1.2, -L.z - 3.4, i + 1); planta(x + 1.2, L.z + 3.4, i + 1);
+  }
+  for (let z = -L.z - 1.5; z <= L.z + 1.5; z += passo, i++) {
+    planta(-L.x - 1.5, z, i); planta(L.x + 1.5, z, i);
+    planta(-L.x - 3.4, z + 1.2, i + 1); planta(L.x + 3.4, z + 1.2, i + 1);
+  }
 }
 
 function arvore(scene, x, z, pinheiro) {
@@ -82,19 +136,39 @@ function arvore(scene, x, z, pinheiro) {
   g.position.set(x, 0, z); scene.add(g);
 }
 
+/* grama alta: tufos em cruz (dois planos), altos o bastante para cobrir as
+   pernas do domador — o jogador "afunda" no mato, como nos clássicos */
 function montaGrama(scene, G) {
-  const c = document.createElement('canvas'); c.width = c.height = 16;
+  const c = document.createElement('canvas'); c.width = 24; c.height = 32;
   const x = c.getContext('2d');
-  x.fillStyle = '#3f8f38'; for (let i = 0; i < 5; i++) x.fillRect(1 + i * 3, 6, 2, 10);
-  x.fillStyle = '#4da043'; for (let i = 0; i < 4; i++) x.fillRect(3 + i * 3, 3, 2, 7);
+  const tons = ['#2f7a2c', '#3f8f38', '#4da043', '#63b04f'];
+  for (let i = 0; i < 9; i++) {
+    x.fillStyle = tons[i % tons.length];
+    const bx = 1 + i * 2.5, alt = 18 + (i * 7) % 14;
+    x.fillRect(bx, 32 - alt, 2, alt);
+    x.fillStyle = '#8fd977'; x.fillRect(bx, 32 - alt, 2, 3); // ponta clara
+  }
   const t = new THREE.CanvasTexture(c); t.magFilter = THREE.NearestFilter;
   const mat = new THREE.MeshLambertMaterial({ map: t, transparent: true, alphaTest: 0.4, side: THREE.DoubleSide });
-  const n = Math.round((G.x1 - G.x0) * (G.z1 - G.z0) * 0.8);
+  // tapete escuro marcando a zona de encontro
+  const base = new THREE.Mesh(
+    new THREE.PlaneGeometry(G.x1 - G.x0 + 1, G.z1 - G.z0 + 1),
+    new THREE.MeshLambertMaterial({ color: 0x4e9a3f }));
+  base.rotation.x = -Math.PI / 2;
+  base.position.set((G.x0 + G.x1) / 2, 0.012, (G.z0 + G.z1) / 2);
+  base.receiveShadow = true; scene.add(base);
+  const n = Math.round((G.x1 - G.x0) * (G.z1 - G.z0) * 1.1);
+  const geo = new THREE.PlaneGeometry(1.1, 1.15);
   for (let i = 0; i < n; i++) {
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.9), mat);
-    m.position.set(G.x0 + Math.random() * (G.x1 - G.x0), 0.45,
-                   G.z0 + Math.random() * (G.z1 - G.z0));
-    m.rotation.y = Math.random() * Math.PI; scene.add(m);
+    const px = G.x0 + Math.random() * (G.x1 - G.x0);
+    const pz = G.z0 + Math.random() * (G.z1 - G.z0);
+    const rot = Math.random() * Math.PI;
+    for (const extra of [0, Math.PI / 2]) {
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(px, 0.575, pz);
+      m.rotation.y = rot + extra;
+      scene.add(m);
+    }
   }
 }
 
@@ -149,11 +223,13 @@ export function montaMapa(cena, mapa) {
   g.visible = !cena.arenaG.visible;
   cena.scene.add(g);
   cena.mundoG = g;
-  montaChao(g);
+  montaChao(g, Math.max(mapa.limite.x, mapa.limite.z) * 2 + 24);
   (mapa.arvores || []).forEach(([x, z, p]) => arvore(g, x, z, p));
+  (mapa.casas || []).forEach(([x, z, cor]) => casa(g, x, z, cor));
   if (mapa.grama) montaGrama(g, mapa.grama);
   if (mapa.agua) montaAgua(g, mapa.agua);
   (mapa.saidas || []).forEach((s) => trilhaSaida(g, mapa, s));
+  montaBorda(g, mapa);
 }
 
 /* arena de batalha — ringue de floresta centrado na origem (a sim luta em

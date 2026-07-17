@@ -17,6 +17,54 @@ export function criarHUD() {
       $('hpE').style.display = v ? 'block' : 'none';
       if (!v) $('cap').style.display = 'none';
     },
+    // painel e minimapa só fazem sentido na exploração
+    exploracaoVisivel(v) {
+      $('painel').style.display = v ? 'block' : 'none';
+      $('miniWrap').style.display = v ? 'block' : 'none';
+    },
+    localAtual(nome) {
+      $('pMapa').textContent = nome;
+      $('miniNome').textContent = nome;
+    },
+    miniMapa(mundo) {
+      const cv = $('mini'), ctx = cv.getContext('2d');
+      const mapa = mundo.mapa, L = mapa.limite;
+      const W = cv.width, H = cv.height;
+      ctx.clearRect(0, 0, W, H);
+      const esc = Math.min((W - 14) / (L.x * 2), (H - 14) / (L.z * 2));
+      const X = (x) => W / 2 + x * esc, Z = (z) => H / 2 + z * esc;
+      ctx.fillStyle = '#3c6b33';
+      ctx.fillRect(X(-L.x), Z(-L.z), L.x * 2 * esc, L.z * 2 * esc);
+      const G = mapa.grama;
+      if (G) {
+        ctx.fillStyle = '#63b04f';
+        ctx.fillRect(X(G.x0), Z(G.z0), (G.x1 - G.x0) * esc, (G.z1 - G.z0) * esc);
+      }
+      if (mapa.agua) {
+        const a = mapa.agua;
+        ctx.fillStyle = '#3f8fd4';
+        ctx.fillRect(X(a.x0), Z(a.z0), (a.x1 - a.x0) * esc, (a.z1 - a.z0) * esc);
+      }
+      ctx.fillStyle = '#2a5226';
+      for (const [ax, az] of mapa.arvores || []) ctx.fillRect(X(ax) - 1.5, Z(az) - 1.5, 3, 3);
+      ctx.fillStyle = '#c96a3f';
+      for (const [cx2, cz] of mapa.casas || []) ctx.fillRect(X(cx2) - 3, Z(cz) - 3, 6, 6);
+      // passagens em amarelo na borda
+      ctx.fillStyle = '#ffd23f';
+      for (const s of mapa.saidas || []) {
+        const m = (s.de + s.ate) / 2;
+        if (s.borda === 'leste') ctx.fillRect(X(L.x) - 2, Z(m) - 4, 4, 8);
+        if (s.borda === 'oeste') ctx.fillRect(X(-L.x) - 2, Z(m) - 4, 4, 8);
+        if (s.borda === 'sul') ctx.fillRect(X(m) - 4, Z(L.z) - 2, 8, 4);
+        if (s.borda === 'norte') ctx.fillRect(X(m) - 4, Z(-L.z) - 2, 8, 4);
+      }
+      // o domador
+      const p = mundo.domador.pos;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(X(p.x), Z(p.z), 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#e05a41';
+      ctx.beginPath(); ctx.arc(X(p.x), Z(p.z), 2.6, 0, Math.PI * 2); ctx.fill();
+    },
     atualizaHP(b) {
       const cor = (f) => { const r = f.hp / f.max;
         return r > .5 ? '#6fe06a' : r > .25 ? '#ffd23f' : '#ff5a4a'; };

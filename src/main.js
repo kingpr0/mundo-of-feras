@@ -42,6 +42,7 @@ function novoMundo(chave) {
 }
 let mundo = novoMundo(chaveMapa);
 montaMapa(cena, mundo.mapa);
+hud.localAtual(mundo.mapa.nome);
 let batalha = null;
 let feraAtual = null; // modelo da fera selvagem em cena (encontro/batalha)
 let escolha = 0;      // menu do encontro: 0 = lutar, 1 = fugir
@@ -139,6 +140,7 @@ function aoEvento(evt) {
 function iniciaEncontro() {
   sfx.encontro(); hud.flash();
   modo = 'encontro'; escolha = 0;
+  hud.exploracaoVisivel(false);
   mostraArena(cena, true);
   MD.mostra(domador, false);
   feraAtual = feras[mundo.selvagem.especie];
@@ -185,6 +187,7 @@ function trocaMapa(destino) {
   const pp = mundo.domador.pos;
   cena.camPos.set(pp.x, pp.y + 17, pp.z + 12);
   cena.camAlvo.set(pp.x, 0.8, pp.z);
+  hud.localAtual(mundo.mapa.nome);
   hud.toast(`— ${mundo.mapa.nome} —`, 1800);
 }
 function fugir() {
@@ -194,6 +197,7 @@ function fugir() {
   MD.mostra(domador, true);
   daImunidade(mundo);
   modo = 'explorar';
+  hud.exploracaoVisivel(true);
   hud.dica(DICA_EXPLORAR);
   hud.toast('Você fugiu em segurança!');
 }
@@ -205,13 +209,11 @@ function encerraBatalha() {
   if (feraAtual) { MD.mostra(feraAtual, false); feraAtual = null; }
   MD.mostra(domador, true);
   hud.batalhaVisivel(false);
-  if (batalha.resultado === 'vitoria' || batalha.resultado === 'captura') {
-    mundo.selvagem.vivo = false; mundo.respawnT = 10;
-    if (batalha.resultado === 'captura') { capturadas++; hud.equipe(capturadas); }
-  } else {
+  if (batalha.resultado === 'captura') { capturadas++; hud.equipe(capturadas); }
+  if (batalha.resultado === 'derrota')
     mundo.domador.pos = { x: mundo.mapa.spawn.x, y: 0, z: mundo.mapa.spawn.z };
-  }
   daImunidade(mundo);
+  hud.exploracaoVisivel(true);
   hud.dica(DICA_EXPLORAR);
   batalha = null; modo = 'explorar';
 }
@@ -296,8 +298,8 @@ function loop(agora) {
     if (mundo.domador.correndo && Math.random() < 0.25)
       poof(cena, { ...mundo.domador.pos, y: 0.15 }, 0xcbb28a, 1, 1.2);
     if (evt === 'encontro') iniciaEncontro();
-    else if (evt === 'respawn') hud.toast('Algo farfalha na grama alta...');
     else if (evt && evt.tipo === 'saida') trocaMapa(evt.saida.destino);
+    hud.miniMapa(mundo);
   } else if (modo === 'encontro') {
     if (cimaE || baixoE) { escolha = 1 - escolha; hud.escolha(true, escolha); sfx.swing(); }
     if (jE) confirmaEscolha();
