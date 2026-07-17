@@ -20,13 +20,13 @@ O jogo se passa nas **Ilhas de Vento Verde**, um arquipélago onde humanos e fer
 
 O estilo visual é **HD-2D**: personagens e feras em pixel art vivendo dentro de cenários 3D com iluminação moderna, sombras longas, profundidade de campo (efeito diorama) e luz quente. Referências principais: Octopath Traveler II (mundo e clima), Star Ocean: The Second Story R (ação em tempo real com sprites 2D em arena 3D) e Eastward (teto de qualidade de pixel art de personagens).
 
-**Treinadores** (protagonista e NPCs): silhuetas, proporções e figurinos inspirados nos aventureiros estilizados de **Farever** (Shiro Games) — fantasia colorida, trajes de aventureiro com personalidade — traduzidos para pixel art e **sempre desarmados**, reforçando visualmente que quem luta são as feras.
+**Treinadores** (protagonista e NPCs): proporção **chibi** — cabeça grande, corpo pequeno, carismático e legível de longe (referência: personagens de World of ClaudeCraft) — com figurinos inspirados nos aventureiros estilizados de **Farever** (Shiro Games) — fantasia colorida, trajes de aventureiro com personalidade — traduzidos para pixel art e **sempre desarmados**, reforçando visualmente que quem luta são as feras.
 
 **Feras**: pixel art original, 100% autoral (exigência legal e de identidade). Cada espécie precisa de silhueta reconhecível a distância e paleta que comunique seu tipo.
 
 ## 4. Câmeras
 
-**Exploração — câmera estilo League of Legends:** ângulo fixo olhando de cima em diagonal (pitch na faixa de 50–60°, a calibrar), sem rotação pelo jogador, seguindo o personagem com suavização (camera lag). O jogador nunca controla a câmera no mundo; ela é parte da identidade visual, como no LoL e nos HD-2D.
+**Exploração — câmera estilo League of Legends:** ângulo fixo olhando de cima em diagonal (pitch na faixa de 50–60°, a calibrar), **bem afastada do personagem** (enquadramento amplo, como no LoL), sem rotação pelo jogador, seguindo o personagem com suavização (camera lag). O jogador nunca controla a câmera no mundo; ela é parte da identidade visual, como no LoL e nos HD-2D.
 
 **Batalha — câmera lock-on orbital (estilo Pokkén Tournament, fase de campo):** a câmera fica atrás da fera do jogador, sempre apontada para o adversário. Mover para frente aproxima, para trás afasta, e para os lados **orbita** ao redor do oponente. O adversário é o ponto de referência do movimento, não o mapa. Consequência de arte: a fera do jogador é vista de costas e a adversária de frente (sprites billboard encarando a câmera).
 
@@ -36,7 +36,7 @@ Explorar vilarejos e rotas → encontrar feras selvagens na grama alta → trans
 
 ## 6. Exploração e estrutura de mundo
 
-A estrutura dos mapas iniciais segue o modelo consagrado de **Pokémon Red/Blue**: um vilarejo inicial pequeno, rotas conectando assentamentos, grama alta como zona de encontro, obstáculos naturais controlando o ritmo de progressão — tudo reinterpretado com a estilização HD-2D moderna (vegetação 3D, iluminação de fim de tarde, água animada). Ao contato com uma fera selvagem, transição de batalha. Feras muito raras não aparecem em grama comum: habitam locais especiais e escondidos do mapa **(proposta)**.
+A estrutura dos mapas iniciais segue o modelo consagrado de **Pokémon Red/Blue**: um vilarejo inicial pequeno, rotas conectando assentamentos, grama alta como zona de encontro, obstáculos naturais controlando o ritmo de progressão — tudo reinterpretado com a estilização HD-2D moderna (vegetação 3D, iluminação de fim de tarde, água animada). **As feras selvagens são invisíveis durante a exploração**: o jogador só descobre qual fera encontrou quando a batalha começa — decisão tomada para criar suspense no encontro. Feras muito raras não aparecem em grama comum: habitam locais especiais e escondidos do mapa **(proposta)**.
 
 ## 7. Sistema de Feras
 
@@ -131,7 +131,7 @@ Unreal Engine 5.8, desenvolvimento em **Blueprints** (C++ pontual quando necess�
 
 ## 15. Questões em aberto (decisões pendentes do criador)
 
-Nome definitivo do jogo; o jogador escolhe entre 3 iniciais raras (Fogo/Água/Planta, à la Pokémon) ou a Brasinha é fixa?; encontros visíveis no mapa ou invisíveis na grama?; existe bloqueio/esquiva com botão dedicado na luta?; troca de fera durante a batalha é permitida?; itens de cura e de batalha existem?; economia (dinheiro, custo dos Cristais); estrutura da campanha (líderes de ginásio single-player? história principal?); nome do Compêndio; level máximo; e confirmação das propostas marcadas ao longo do documento.
+Nome definitivo do jogo; o jogador escolhe entre 3 iniciais raras (Fogo/Água/Planta, à la Pokémon) ou a Brasinha é fixa?; existe bloqueio/esquiva com botão dedicado na luta?; troca de fera durante a batalha é permitida?; itens de cura e de batalha existem?; economia (dinheiro, custo dos Cristais); estrutura da campanha (líderes de ginásio single-player? história principal?); nome do Compêndio; level máximo; e confirmação das propostas marcadas ao longo do documento.
 
 ---
 
