@@ -13,16 +13,22 @@ export const MUNDO_LAYOUT = {
   spawnDomador: vec(-4, 0, 6),
 };
 
-export function criarMundo() {
+// selvagens = chaves das espécies que podem aparecer na grama alta
+export function criarMundo(selvagens = ['cascorro'], rnd = Math.random) {
   return {
     domador: { pos: copia(MUNDO_LAYOUT.spawnDomador), dir: 1, andando: false, frente: false, animT: 0 },
     selvagem: {
-      especie: 'cascorro', vivo: true,
+      especie: sorteiaEspecie(selvagens, rnd), vivo: true,
       pos: vec(8, 0, 0), dir: 1,
       wanderT: 0, wanderDir: vec(),
     },
+    selvagens,
     respawnT: 0,
   };
+}
+
+function sorteiaEspecie(lista, rnd) {
+  return lista[Math.floor(rnd() * lista.length)];
 }
 
 function colideArvore(pos) {
@@ -73,6 +79,7 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
     if (m.respawnT <= 0) {
       const G = MUNDO_LAYOUT.grama;
       s.vivo = true;
+      s.especie = sorteiaEspecie(m.selvagens, rnd);
       s.pos = vec(G.x0 + rnd() * (G.x1 - G.x0), 0, G.z0 + rnd() * (G.z1 - G.z0));
       return 'respawn';
     }

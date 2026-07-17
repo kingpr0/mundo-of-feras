@@ -16,6 +16,7 @@
     "nome": "Cascorro",
     "tipo": "comum",
     "raridade": "comum",
+    "selvagem": true,
     "vida": 105,
     "velocidade": 2.9,
     "ataque": 1.3,
@@ -23,6 +24,20 @@
     "golpes": {
       "normal":   { "dano": 8,  "alcance": 1.7, "empurrao": 3.4, "prep": 0.10, "ativo": 0.12, "recup": 0.22, "forte": false },
       "especial": { "dano": 15, "alcance": 2.2, "empurrao": 6.5, "prep": 0.32, "ativo": 0.18, "recup": 0.45, "forte": true }
+    }
+  },
+  "voltim": {
+    "nome": "Voltim",
+    "tipo": "eletrico",
+    "raridade": "comum",
+    "selvagem": true,
+    "vida": 55,
+    "velocidade": 5.6,
+    "ataque": 0.95,
+    "impulso": 8.5,
+    "golpes": {
+      "normal":   { "dano": 6,  "alcance": 1.5, "empurrao": 2.6, "prep": 0.06, "ativo": 0.10, "recup": 0.14, "forte": false },
+      "especial": { "dano": 13, "alcance": 2.6, "empurrao": 5.0, "prep": 0.24, "ativo": 0.16, "recup": 0.38, "forte": true }
     }
   }
 }

@@ -26,6 +26,7 @@ export function criarHUD() {
       $('fillE').style.background = cor(b.e);
     },
     capDisponivel(v) { $('cap').style.display = v ? 'block' : 'none'; },
+    nomeInimigo(n) { $('nomeE').textContent = n; },
     equipe(n) { $('nCap').textContent = n; },
     escondeTitulo() { $('titulo').style.display = 'none'; },
     dano(pos, valor, forte) {

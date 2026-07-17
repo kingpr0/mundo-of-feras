@@ -15,12 +15,12 @@ function novoLutador(chave, esp, pos) {
   };
 }
 
-export function criarBatalha(especies, posDomador, posSelvagem) {
+export function criarBatalha(especies, chaveSelvagem, posDomador, posSelvagem) {
   const dirE = normXZ(sub(posSelvagem, posDomador));
   const posBra = soma(posDomador, escala(dirE, 1.4));
   return {
     p: novoLutador('brasinha', especies.brasinha, posBra),
-    e: novoLutador('cascorro', especies.cascorro, posSelvagem),
+    e: novoLutador(chaveSelvagem, especies[chaveSelvagem], posSelvagem),
     aiT: 0.7, iaMov: null,
     fim: false, resultado: null,
     captura: null,

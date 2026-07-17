@@ -18,11 +18,13 @@ const hud = criarHUD();
 const domador = fazSprite(cena.scene, TEX.pParado, 1.5);
 const brasinha = fazSprite(cena.scene, TEX.brasinha, 1.7); brasinha.g.visible = false;
 const selvagem = fazSprite(cena.scene, TEX.cascorro, 1.8);
+selvagem.g.visible = false; // feras selvagens só aparecem quando a luta começa (suspense)
 const cristal = fazSprite(cena.scene, TEX.cristal, 0.55, false); cristal.g.visible = false;
 
 /* ---------- estado ---------- */
 let modo = 'titulo'; // titulo | explorar | batalha
-let mundo = criarMundo();
+const chavesSelvagens = Object.keys(especies).filter((k) => especies[k].selvagem);
+let mundo = criarMundo(chavesSelvagens);
 let batalha = null;
 let hitstop = 0, tempo = 0, capturadas = 1;
 
@@ -34,7 +36,7 @@ addEventListener('keydown', (e) => {
   if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
   if (e.code === 'Enter' && modo === 'titulo') {
     hud.escondeTitulo(); modo = 'explorar'; cv.focus();
-    hud.toast('Ande até a grama alta e encoste no Cascorro!');
+    hud.toast('Explore a grama alta... dizem que feras selvagens vivem escondidas nela!');
   }
 });
 addEventListener('keyup', (e) => keys[e.code] = false);
@@ -65,11 +67,11 @@ function aoEvento(evt) {
     case 'cristalSuga': poof(cena, evt.pos, 0x59e0d0, 14, 4); break;
     case 'cristalTreme': sfx.cristalTreme(); break;
     case 'capturado': sfx.capturado(); hitstop = 0.15;
-      hud.toast('Cascorro foi capturado! Entrou para a sua equipe!'); break;
+      hud.toast(`${batalha.e.esp.nome} foi capturado! Entrou para a sua equipe!`); break;
     case 'escapou': cristal.g.visible = false;
-      hud.toast('Ah, quase! O Cascorro escapou do cristal!'); break;
+      hud.toast(`Ah, quase! O ${batalha.e.esp.nome} escapou do cristal!`); break;
     case 'vitoria': sfx.vitoria(); hitstop = 0.22;
-      hud.toast('Cascorro selvagem desmaiou! Você venceu!'); break;
+      hud.toast(`${batalha.e.esp.nome} selvagem desmaiou! Você venceu!`); break;
     case 'derrota': sfx.derrota(); hitstop = 0.22;
       hud.toast('Brasinha desmaiou... Você correu de volta.'); break;
   }
@@ -78,13 +80,17 @@ function aoEvento(evt) {
 /* ---------- transições ---------- */
 function iniciaBatalha() {
   sfx.encontro(); hud.flash();
-  batalha = criarBatalha(especies, mundo.domador.pos, mundo.selvagem.pos);
+  const chave = mundo.selvagem.especie;
+  batalha = criarBatalha(especies, chave, mundo.domador.pos, mundo.selvagem.pos);
   modo = 'batalha';
   brasinha.g.visible = true; brasinha.mat.opacity = 1; brasinha.mat.transparent = true;
-  selvagem.mat.opacity = 1; selvagem.g.scale.setScalar(1);
+  trocaTex(selvagem, TEX[chave]);
+  selvagem.g.visible = true; selvagem.mat.opacity = 1; selvagem.g.scale.setScalar(1);
   poof(cena, { ...batalha.p.pos, y: 0.9 }, 0xffd23f, 14, 4);
+  poof(cena, { ...batalha.e.pos, y: 0.9 }, 0xffffff, 14, 4); // a fera se revela
+  hud.nomeInimigo(especies[chave].nome.toUpperCase());
   hud.batalhaVisivel(true); hud.atualizaHP(batalha);
-  hud.toast('Um Cascorro selvagem apareceu! Brasinha, eu escolho você!');
+  hud.toast(`Um ${especies[chave].nome} selvagem apareceu! Brasinha, eu escolho você!`);
 }
 function encerraBatalha() {
   hud.flash();
@@ -97,7 +103,7 @@ function encerraBatalha() {
   } else {
     mundo.domador.pos = { ...MUNDO_LAYOUT.spawnDomador };
   }
-  selvagem.g.visible = mundo.selvagem.vivo;
+  selvagem.g.visible = false; // volta a ficar escondida na exploração
   batalha = null; modo = 'explorar';
 }
 
@@ -133,13 +139,10 @@ function sincronizaVisual(dt) {
     setPos(cristal, batalha.captura ? batalha.captura.pos : { x: 0, y: -5, z: 0 });
     billboard(cristal, cena.camera);
   } else {
-    selvagem.g.visible = s.vivo;
-    if (s.vivo) {
-      setPos(selvagem, { ...s.pos, y: Math.abs(Math.sin(tempo * 5)) * 0.06 });
-      selvagem.g.scale.setScalar(1); selvagem.mat.opacity = 1;
-    }
+    // na exploração a fera existe na sim, mas não é desenhada (encontro surpresa)
+    selvagem.g.visible = false;
   }
-  billboard(selvagem, cena.camera, modo !== 'batalha' && s.dir < 0);
+  billboard(selvagem, cena.camera, false);
 
   // brasinha
   if (modo === 'batalha' && batalha) {
@@ -175,7 +178,7 @@ function loop(agora) {
                          z: eixo(['KeyW','ArrowUp'], ['KeyS','ArrowDown']) } };
     const evt = passoMundo(mundo, inp, dt);
     if (evt === 'encontro') iniciaBatalha();
-    if (evt === 'respawn') hud.toast('Um Cascorro selvagem voltou à grama alta!');
+    if (evt === 'respawn') hud.toast('Algo farfalha na grama alta...');
   } else if (modo === 'batalha' && batalha) {
     const inpP = {
       mov: { x: eixo(['KeyA','ArrowLeft'], ['KeyD','ArrowRight']),
