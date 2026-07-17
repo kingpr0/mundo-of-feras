@@ -5,22 +5,20 @@ import { vec, copia, soma, escala, normXZ, distXZ } from './vec.js';
 const RAIO_ARVORE = 0.75;
 const BORDA_SAIDA = 0.4; // distância da borda que dispara a passagem
 
+// chance média de encontro: ~1 a cada 1,8s andando na grama alta
+const CHANCE_ENCONTRO = 0.55;
+
 // mapa = uma entrada de mapas.json; selvagens = chaves das espécies da grama
 export function criarMundo(mapa, selvagens = ['cascorro'], rnd = Math.random) {
-  const G = mapa.grama;
   return {
     mapa,
     domador: {
       pos: vec(mapa.spawn.x, 0, mapa.spawn.z),
       dir: 1, andando: false, correndo: false, animT: 0,
     },
-    selvagem: {
-      especie: sorteiaEspecie(selvagens, rnd), vivo: true,
-      pos: vec((G.x0 + G.x1) / 2, 0, (G.z0 + G.z1) / 2), dir: 1,
-      wanderT: 0, wanderDir: vec(),
-    },
+    // a próxima fera a aparecer (sorteada de novo a cada encontro)
+    selvagem: { especie: sorteiaEspecie(selvagens, rnd) },
     selvagens,
-    respawnT: 0,
     imunidade: 0, // segundos sem novos encontros (após fugir/batalhar/trocar de mapa)
   };
 }
@@ -34,10 +32,16 @@ export function daImunidade(m, segundos = 2) {
   m.imunidade = segundos;
 }
 
+// meia-largura/profundidade da base das casas (para colisão)
+export const CASA_MEIA = { x: 2.0, z: 1.8 };
+
 function colide(mapa, pos) {
   for (const a of mapa.arvores) {
     const dx = pos.x - a[0], dz = pos.z - a[1];
     if (dx * dx + dz * dz < RAIO_ARVORE * RAIO_ARVORE) return true;
+  }
+  for (const c of mapa.casas || []) {
+    if (Math.abs(pos.x - c[0]) < CASA_MEIA.x && Math.abs(pos.z - c[1]) < CASA_MEIA.z) return true;
   }
   const ag = mapa.agua;
   if (ag && pos.x > ag.x0 && pos.x < ag.x1 && pos.z > ag.z0 && pos.z < ag.z1) return true;
@@ -77,7 +81,7 @@ export function entradaDoMapa(mapa, origem) {
 }
 
 // inp = { mov: {x,z} (-1..1), correr }
-// retorna: 'encontro' | 'respawn' | { tipo:'saida', saida } | null
+// retorna: 'encontro' | { tipo:'saida', saida } | null
 export function passoMundo(m, inp, dt, rnd = Math.random) {
   if (m.imunidade > 0) m.imunidade -= dt;
   const d = m.domador;
@@ -92,31 +96,15 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
     prende(m.mapa, d.pos);
     if (mov.x !== 0) d.dir = mov.x > 0 ? 1 : -1;
     d.animT += dt;
-  } else { d.animT = 0; }
 
-  const s = m.selvagem;
-  if (s.vivo) {
-    s.wanderT -= dt;
-    if (s.wanderT <= 0) {
-      s.wanderT = 0.9 + rnd() * 1.6;
-      const a = rnd() * Math.PI * 2;
-      s.wanderDir = rnd() < 0.3 ? vec() : vec(Math.cos(a), 0, Math.sin(a));
-    }
-    s.pos = soma(s.pos, escala(s.wanderDir, 1.3 * dt));
+    // encontro à moda clássica: chance por tempo andado dentro da grama alta
     const G = m.mapa.grama;
-    s.pos.x = Math.max(G.x0, Math.min(G.x1, s.pos.x));
-    s.pos.z = Math.max(G.z0, Math.min(G.z1, s.pos.z));
-    if (s.wanderDir.x !== 0) s.dir = s.wanderDir.x > 0 ? 1 : -1;
-    if (m.imunidade <= 0 && distXZ(s.pos, d.pos) < 1.25) return 'encontro';
-  } else {
-    m.respawnT -= dt;
-    if (m.respawnT <= 0) {
-      const G = m.mapa.grama;
-      s.vivo = true;
-      s.especie = sorteiaEspecie(m.selvagens, rnd);
-      s.pos = vec(G.x0 + rnd() * (G.x1 - G.x0), 0, G.z0 + rnd() * (G.z1 - G.z0));
-      return 'respawn';
+    const naGrama = G && d.pos.x > G.x0 && d.pos.x < G.x1 &&
+                    d.pos.z > G.z0 && d.pos.z < G.z1;
+    if (naGrama && m.imunidade <= 0 && rnd() < dt * CHANCE_ENCONTRO) {
+      m.selvagem.especie = sorteiaEspecie(m.selvagens, rnd);
+      return 'encontro';
     }
-  }
+  } else { d.animT = 0; }
   return null;
 }
