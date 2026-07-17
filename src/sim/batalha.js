@@ -74,7 +74,11 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
     if (inp.mov.x !== 0 || inp.mov.z !== 0)
       f.pos = soma(p, escala(normXZ(vec(inp.mov.x, 0, inp.mov.z)), f.esp.velocidade * dt));
     if (inp.pulo && f.pos.y <= 0.01) { f.vy = f.esp.impulso; emitir({ tipo: 'pulo' }); }
-    if (inp.a) { f.estado = 'atk'; f.golpe = f.esp.golpes.normal; f.t = 0; f.acertou = false; emitir({ tipo: 'swing' }); }
+    if (inp.c1 && f.esp.golpes.comando1 && f.pos.y <= 0.01) {
+      f.estado = 'atk'; f.golpe = f.esp.golpes.comando1; f.t = 0; f.acertou = false;
+      emitir({ tipo: 'comando', nome: f.esp.golpes.comando1.nome, pos: copia(p) });
+    }
+    else if (inp.a) { f.estado = 'atk'; f.golpe = f.esp.golpes.normal; f.t = 0; f.acertou = false; emitir({ tipo: 'swing' }); }
     else if (inp.f && f.pos.y <= 0.01) { f.estado = 'atk'; f.golpe = f.esp.golpes.especial; f.t = 0; f.acertou = false; emitir({ tipo: 'especial' }); }
   }
   f.vy -= GRAVIDADE * dt;
@@ -88,7 +92,7 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
 
 function iaSelvagem(b, dt, rnd) {
   const e = b.e, p = b.p;
-  const inp = { mov: vec(), pulo: false, a: false, f: false };
+  const inp = { mov: vec(), pulo: false, a: false, f: false, c1: false };
   if (e.estado !== 'idle') return inp;
   b.aiT -= dt;
   const dist = distXZ(e.pos, p.pos);
@@ -98,10 +102,13 @@ function iaSelvagem(b, dt, rnd) {
     if (dist > 4.5) b.iaMov = rnd() < 0.85 ? dir : null;
     else if (dist > 2.2) b.iaMov = dir;
     else {
+      // a IA gera os mesmos inputs abstratos que um jogador (GDD §9.6/§12),
+      // inclusive o golpe de comando da espécie
       const r = rnd();
-      if (r < 0.5) { inp.a = true; b.iaMov = null; }
-      else if (r < 0.68) { inp.f = true; b.iaMov = null; }
-      else if (r < 0.86) b.iaMov = escala(dir, -1);
+      if (r < 0.45) { inp.a = true; b.iaMov = null; }
+      else if (r < 0.62) { inp.f = true; b.iaMov = null; }
+      else if (r < 0.72) { inp.c1 = true; b.iaMov = null; }
+      else if (r < 0.88) b.iaMov = escala(dir, -1);
       else { inp.pulo = true; b.iaMov = dir; }
     }
     if (p.estado === 'atk' && p.golpe && p.golpe.forte && dist < 4 && rnd() < 0.35) inp.pulo = true;
@@ -147,12 +154,12 @@ function passoCaptura(b, dt, emitir, rnd) {
   }
 }
 
-// inpP = { mov:{x,z} relativo ao lock-on, pulo, a, f, capturar }
+// inpP = { mov:{x,z} relativo ao lock-on, pulo, a, f, c1 (golpe de comando), capturar }
 // Retorna 'encerrar' quando a batalha terminou de vez (após a pausa final).
 export function passoBatalha(b, inpP, dt, emitir, rnd = Math.random) {
   if (b.fim) {
-    passoLutador(b, b.p, { mov: vec(), pulo: false, a: false, f: false }, b.e, dt, emitir);
-    passoLutador(b, b.e, { mov: vec(), pulo: false, a: false, f: false }, b.p, dt, emitir);
+    passoLutador(b, b.p, { mov: vec(), pulo: false, a: false, f: false, c1: false }, b.e, dt, emitir);
+    passoLutador(b, b.e, { mov: vec(), pulo: false, a: false, f: false, c1: false }, b.p, dt, emitir);
     b.fimT -= dt;
     return b.fimT <= 0 ? 'encerrar' : null;
   }
@@ -162,7 +169,7 @@ export function passoBatalha(b, inpP, dt, emitir, rnd = Math.random) {
   const fw = normXZ(sub(b.e.pos, b.p.pos));
   const rt = perpXZ(fw);
   const mov = soma(escala(fw, -inpP.mov.z), escala(rt, inpP.mov.x)); // W = aproximar
-  passoLutador(b, b.p, { mov, pulo: inpP.pulo, a: inpP.a, f: inpP.f }, b.e, dt, emitir);
+  passoLutador(b, b.p, { mov, pulo: inpP.pulo, a: inpP.a, f: inpP.f, c1: inpP.c1 }, b.e, dt, emitir);
   passoLutador(b, b.e, iaSelvagem(b, dt, rnd), b.p, dt, emitir);
   if (inpP.capturar && podeCapturar(b)) lancaCristal(b, emitir);
   return null;
