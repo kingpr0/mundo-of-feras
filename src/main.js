@@ -2,11 +2,11 @@
 // (render/) e roda o loop. A simulação decide; o main traduz eventos em
 // som, partículas e HUD. Nenhuma regra de jogo vive aqui.
 import * as THREE from 'three';
-import { criarMundo, passoMundo, MUNDO_LAYOUT } from './sim/mundo.js';
+import { criarMundo, passoMundo, daImunidade, MUNDO_LAYOUT } from './sim/mundo.js';
 import { criarBatalha, passoBatalha, podeCapturar } from './sim/batalha.js';
 import { guardaDirecao, sequenciaCompleta } from './sim/comandos.js';
-import { criarCena, poof, passoParticulas, passoCamera } from './render/cena.js';
-import { TEX, QUADROS_ANDAR, fazSprite, trocaTex, billboard, setPos } from './render/sprites.js';
+import { criarCena, poof, passoParticulas, passoCamera, mostraArena } from './render/cena.js';
+import * as MD from './render/modelos.js';
 import { criarHUD } from './render/hud.js';
 import { audioInit, sfx } from './render/audio.js';
 
@@ -16,20 +16,28 @@ const cv = document.getElementById('cv');
 const cena = criarCena(cv);
 const hud = criarHUD();
 
-const domador = fazSprite(cena.scene, TEX.pParado, 1.5);
-const brasinha = fazSprite(cena.scene, TEX.brasinha, 1.7); brasinha.g.visible = false;
-const selvagem = fazSprite(cena.scene, TEX.cascorro, 1.8);
-selvagem.g.visible = false; // feras selvagens só aparecem quando a luta começa (suspense)
-const cristal = fazSprite(cena.scene, TEX.cristal, 0.55, false); cristal.g.visible = false;
+// modelos 3D (low-poly chibi)
+const domador = MD.criarDomador(cena.scene);
+const brasinha = MD.criarFera(cena.scene, 'brasinha'); MD.mostra(brasinha, false);
+const feras = {};
+for (const k of Object.keys(especies))
+  if (especies[k].selvagem) { feras[k] = MD.criarFera(cena.scene, k); MD.mostra(feras[k], false); }
+const cristal = MD.criarCristal(cena.scene); MD.mostra(cristal, false);
+
+// posições de largada no ringue (a arena visual é centrada na origem)
+const RINGUE = { dom: { x: -5, y: 0, z: 0 }, fera: { x: 3.5, y: 0, z: 0 } };
+const DICA_EXPLORAR = 'Setas: andar · explore a grama alta';
 
 /* ---------- estado ---------- */
-let modo = 'titulo'; // titulo | explorar | batalha
+let modo = 'titulo'; // titulo | explorar | encontro | batalha
 const chavesSelvagens = Object.keys(especies).filter((k) => especies[k].selvagem);
 let mundo = criarMundo(chavesSelvagens);
 let batalha = null;
+let feraAtual = null; // modelo da fera selvagem em cena (encontro/batalha)
+let escolha = 0;      // menu do encontro: 0 = lutar, 1 = fugir
 let hitstop = 0, tempo = 0, capturadas = 1;
 
-/* ---------- entrada ---------- */
+/* ---------- entrada (padrão: setas + Z/X/C; WASD e J/K seguem como extras) */
 const keys = {};
 let jE = false, kE = false, cE = false, spE = false, pJ = false, pK = false, pC = false, pS = false;
 let cimaE = false, baixoE = false, pCima = false, pBaixo = false;
@@ -39,32 +47,33 @@ addEventListener('keydown', (e) => {
   if (e.code === 'Enter' && modo === 'titulo') {
     hud.escondeTitulo(); modo = 'explorar'; cv.focus();
     hud.toast('Explore a grama alta... dizem que feras selvagens vivem escondidas nela!');
+    hud.dica(DICA_EXPLORAR);
   }
 });
 addEventListener('keyup', (e) => keys[e.code] = false);
 cv.addEventListener('pointerdown', () => { audioInit(); cv.focus(); });
 function edges() {
-  const J = keys.KeyJ || keys.KeyZ, K = keys.KeyK || keys.KeyX,
+  const J = keys.KeyZ || keys.KeyJ, K = keys.KeyX || keys.KeyK,
         C = keys.KeyC || keys.KeyL, S = keys.Space;
   jE = J && !pJ; kE = K && !pK; cE = C && !pC; spE = S && !pS;
   pJ = J; pK = K; pC = C; pS = S;
-  const CIMA = keys.KeyW || keys.ArrowUp, BAIXO = keys.KeyS || keys.ArrowDown;
+  const CIMA = keys.ArrowUp || keys.KeyW, BAIXO = keys.ArrowDown || keys.KeyS;
   cimaE = CIMA && !pCima; baixoE = BAIXO && !pBaixo;
   pCima = CIMA; pBaixo = BAIXO;
 }
+const eixo = (neg, pos) => (keys[pos[0]] || keys[pos[1]] ? 1 : 0) - (keys[neg[0]] || keys[neg[1]] ? 1 : 0);
 
 /* ---------- golpes de comando: buffer de sequências direcionais ----------
    O main só CAPTURA as teclas e envia o input abstrato c1; o matching é da
    lógica pura em sim/comandos.js e a execução é da batalha. Direções
-   relativas ao lock-on: frente = W (aproximar), baixo = S — notação de
-   fighting game: ↓→ = S, W. */
+   relativas ao lock-on: frente = ↑ (aproximar), baixo = ↓ — notação de
+   fighting game: ↓→ = seta baixo, seta cima. */
 const SIMBOLO = { baixo: '↓', frente: '→' };
 let seqBuf = [];
 function guardaDirecoes() {
   if (baixoE) guardaDirecao(seqBuf, 'baixo', tempo);
   if (cimaE) guardaDirecao(seqBuf, 'frente', tempo);
 }
-const eixo = (neg, pos) => (keys[pos[0]] || keys[pos[1]] ? 1 : 0) - (keys[neg[0]] || keys[neg[1]] ? 1 : 0);
 
 /* ---------- eventos da simulação -> apresentação ---------- */
 function aoEvento(evt) {
@@ -83,12 +92,12 @@ function aoEvento(evt) {
     case 'comando': sfx.especial(); cena.shake = 0.22;
       poof(cena, { ...evt.pos, y: 1 }, 0xffffff, 8, 3.5);
       hud.toast(`${evt.nome}!`, 900); break;
-    case 'cristalVoa': sfx.cristalVoa(); cristal.g.visible = true; break;
+    case 'cristalVoa': sfx.cristalVoa(); MD.mostra(cristal, true); break;
     case 'cristalSuga': poof(cena, evt.pos, 0x59e0d0, 14, 4); break;
     case 'cristalTreme': sfx.cristalTreme(); break;
     case 'capturado': sfx.capturado(); hitstop = 0.15;
       hud.toast(`${batalha.e.esp.nome} foi capturado! Entrou para a sua equipe!`); break;
-    case 'escapou': cristal.g.visible = false;
+    case 'escapou': MD.mostra(cristal, false);
       hud.toast(`Ah, quase! O ${batalha.e.esp.nome} escapou do cristal!`); break;
     case 'vitoria': sfx.vitoria(); hitstop = 0.22;
       hud.toast(`${batalha.e.esp.nome} selvagem desmaiou! Você venceu!`); break;
@@ -98,28 +107,59 @@ function aoEvento(evt) {
 }
 
 /* ---------- transições ---------- */
-function iniciaBatalha() {
+// encontro: corta para a arena, mostra a fera e pergunta Lutar/Fugir
+function iniciaEncontro() {
   sfx.encontro(); hud.flash();
+  modo = 'encontro'; escolha = 0;
+  mostraArena(cena, true);
+  MD.mostra(domador, false);
+  feraAtual = feras[mundo.selvagem.especie];
+  MD.setOpacidade(feraAtual, 1); MD.setEscala(feraAtual, 1);
+  MD.setPos(feraAtual, RINGUE.fera);
+  MD.encara(feraAtual, RINGUE.dom.x, RINGUE.dom.z);
+  feraAtual.g.rotation.y = feraAtual.giro;
+  MD.mostra(feraAtual, true);
+  poof(cena, { ...RINGUE.fera, y: 0.9 }, 0xffffff, 14, 4);
+  hud.nomeInimigo(especies[mundo.selvagem.especie].nome.toUpperCase());
+  hud.escolha(true, escolha);
+  hud.dica('↑/↓ escolhe · Z confirma');
+  hud.toast(`Um ${especies[mundo.selvagem.especie].nome} selvagem apareceu!`);
+}
+function confirmaEscolha() {
+  hud.escolha(false);
+  if (escolha === 0) iniciaBatalha();
+  else fugir();
+}
+function iniciaBatalha() {
   const chave = mundo.selvagem.especie;
-  batalha = criarBatalha(especies, chave, mundo.domador.pos, mundo.selvagem.pos);
+  batalha = criarBatalha(especies, chave, RINGUE.dom, RINGUE.fera);
   modo = 'batalha';
-  brasinha.g.visible = true; brasinha.mat.opacity = 1; brasinha.mat.transparent = true;
-  trocaTex(selvagem, TEX[chave]);
-  selvagem.g.visible = true; selvagem.mat.opacity = 1; selvagem.g.scale.setScalar(1);
+  MD.mostra(brasinha, true); MD.setOpacidade(brasinha, 1);
+  MD.setPos(brasinha, batalha.p.pos);
   poof(cena, { ...batalha.p.pos, y: 0.9 }, 0xffd23f, 14, 4);
-  poof(cena, { ...batalha.e.pos, y: 0.9 }, 0xffffff, 14, 4); // a fera se revela
-  hud.nomeInimigo(especies[chave].nome.toUpperCase());
   hud.batalhaVisivel(true); hud.atualizaHP(batalha);
-  hud.toast(`Um ${especies[chave].nome} selvagem apareceu! Brasinha, eu escolho você!`);
   seqBuf = [];
   const c1 = batalha.p.esp.golpes.comando1;
-  const seqTxt = c1 ? ` · ${c1.sequencia.map((d) => SIMBOLO[d]).join('')}+J ${c1.nome}` : '';
-  hud.dica(`W/S aproxima-afasta · A/D orbita · ESPAÇO pula · J golpe · K especial${seqTxt} · C captura`);
+  const seqTxt = c1 ? ` · ${c1.sequencia.map((d) => SIMBOLO[d]).join('')}+Z ${c1.nome}` : '';
+  hud.dica(`↑/↓ aproxima-afasta · ←/→ orbita · ESPAÇO pula · Z golpe · X especial${seqTxt} · C captura`);
+  hud.toast('Brasinha, eu escolho você!');
+}
+function fugir() {
+  hud.flash();
+  mostraArena(cena, false);
+  MD.mostra(feraAtual, false); feraAtual = null;
+  MD.mostra(domador, true);
+  daImunidade(mundo);
+  modo = 'explorar';
+  hud.dica(DICA_EXPLORAR);
+  hud.toast('Você fugiu em segurança!');
 }
 function encerraBatalha() {
   hud.flash();
-  brasinha.g.visible = false;
-  cristal.g.visible = false;
+  mostraArena(cena, false);
+  MD.mostra(brasinha, false); MD.mostra(cristal, false);
+  if (feraAtual) { MD.mostra(feraAtual, false); feraAtual = null; }
+  MD.mostra(domador, true);
   hud.batalhaVisivel(false);
   if (batalha.resultado === 'vitoria' || batalha.resultado === 'captura') {
     mundo.selvagem.vivo = false; mundo.respawnT = 10;
@@ -127,65 +167,52 @@ function encerraBatalha() {
   } else {
     mundo.domador.pos = { ...MUNDO_LAYOUT.spawnDomador };
   }
-  selvagem.g.visible = false; // volta a ficar escondida na exploração
-  hud.dica('WASD/setas: andar · explore a grama alta');
+  daImunidade(mundo);
+  hud.dica(DICA_EXPLORAR);
   batalha = null; modo = 'explorar';
 }
 
-/* ---------- sincroniza sprites com a simulação ---------- */
+/* ---------- sincroniza modelos com a simulação ---------- */
 function sincronizaVisual(dt) {
-  // domador
   const d = mundo.domador;
-  if (modo === 'batalha' && batalha) {
-    // caminha até o canto e assiste
-    const dx = batalha.domadorAlvo.x - d.pos.x, dz = batalha.domadorAlvo.z - d.pos.z;
-    const dist = Math.hypot(dx, dz);
-    if (dist > 0.15) {
-      d.pos.x += dx / dist * 3 * dt; d.pos.z += dz / dist * 3 * dt;
-      d.animT += dt;
-      trocaTex(domador, QUADROS_ANDAR[Math.floor(d.animT * 8) % 4]);
-    } else trocaTex(domador, TEX.pFrente);
-  } else if (d.andando) {
-    trocaTex(domador, d.frente ? TEX.pFrente : QUADROS_ANDAR[Math.floor(d.animT * 8) % 4]);
-  } else trocaTex(domador, TEX.pParado);
-  setPos(domador, d.pos);
-  billboard(domador, cena.camera, d.dir < 0 && !d.frente && modo !== 'batalha');
-
-  // selvagem
-  const s = mundo.selvagem;
-  if (modo === 'batalha' && batalha) {
-    setPos(selvagem, batalha.e.pos);
-    if (batalha.e.estado === 'ko') {
-      selvagem.mat.opacity = Math.max(0, 1 - batalha.e.t * 1.1);
-    }
-    if (batalha.captura && batalha.captura.escalaFera !== undefined)
-      selvagem.g.scale.setScalar(batalha.captura.escalaFera);
-    aplicaFlash(selvagem, batalha.e);
-    setPos(cristal, batalha.captura ? batalha.captura.pos : { x: 0, y: -5, z: 0 });
-    billboard(cristal, cena.camera);
-  } else {
-    // na exploração a fera existe na sim, mas não é desenhada (encontro surpresa)
-    selvagem.g.visible = false;
+  if (modo === 'explorar' || modo === 'titulo') {
+    MD.setPos(domador, d.pos);
+    MD.passoGiro(domador, dt);
+    MD.animaAndar(domador, d.animT, d.andando);
   }
-  billboard(selvagem, cena.camera, false);
-
-  // brasinha
+  if (modo === 'encontro' && feraAtual) {
+    // respiração da fera enquanto o jogador decide
+    MD.setPos(feraAtual, RINGUE.fera);
+    feraAtual.g.position.y = Math.abs(Math.sin(tempo * 3)) * 0.05;
+  }
   if (modo === 'batalha' && batalha) {
-    setPos(brasinha, batalha.p.pos);
-    if (batalha.p.estado === 'ko')
-      brasinha.mat.opacity = Math.max(0, 1 - batalha.p.t * 1.1);
+    MD.setPos(brasinha, batalha.p.pos);
+    MD.encara(brasinha, batalha.e.pos.x, batalha.e.pos.z);
+    MD.passoGiro(brasinha, dt);
+    if (batalha.p.estado === 'ko') MD.setOpacidade(brasinha, Math.max(0, 1 - batalha.p.t * 1.1));
     aplicaFlash(brasinha, batalha.p);
-    billboard(brasinha, cena.camera);
+
+    MD.setPos(feraAtual, batalha.e.pos);
+    MD.encara(feraAtual, batalha.p.pos.x, batalha.p.pos.z);
+    MD.passoGiro(feraAtual, dt);
+    if (batalha.e.estado === 'ko') MD.setOpacidade(feraAtual, Math.max(0, 1 - batalha.e.t * 1.1));
+    if (batalha.captura && batalha.captura.escalaFera !== undefined)
+      MD.setEscala(feraAtual, batalha.captura.escalaFera);
+    aplicaFlash(feraAtual, batalha.e);
+
+    if (batalha.captura) { MD.setPos(cristal, batalha.captura.pos); cristal.g.rotation.y += dt * 5; }
   }
 }
-function aplicaFlash(spr, f) {
-  if (f.flash > 0) spr.mat.color.setHex(f.flash > 0.5 ? 0xffffff : 0xff8888);
+function aplicaFlash(M, f) {
+  if (f.flash > 0) MD.flashCor(M, f.flash > 0.5 ? 0xffffff : 0xff5533);
   else if (f.estado === 'atk' && f.golpe && f.golpe.forte && f.t < f.golpe.prep)
-    spr.mat.color.setHex(Math.sin(tempo * 40) > 0 ? 0xffffff : 0xff5533);
-  else spr.mat.color.setHex(0xffffff);
+    MD.flashCor(M, Math.sin(tempo * 40) > 0 ? 0xffffff : 0xff5533);
+  else MD.flashCor(M, 0);
 }
 
 /* ---------- loop ---------- */
+// câmera do encontro: mesmo enquadramento da batalha, com posições fixas
+const camEncontro = { p: { pos: RINGUE.dom }, e: { pos: RINGUE.fera } };
 let ultimo = performance.now();
 function loop(agora) {
   requestAnimationFrame(loop);
@@ -199,11 +226,15 @@ function loop(agora) {
   hud.passoDanos(cena.camera, dt, THREE);
 
   if (modo === 'explorar') {
-    const inp = { mov: { x: eixo(['KeyA','ArrowLeft'], ['KeyD','ArrowRight']),
-                         z: eixo(['KeyW','ArrowUp'], ['KeyS','ArrowDown']) } };
+    const inp = { mov: { x: eixo(['ArrowLeft','KeyA'], ['ArrowRight','KeyD']),
+                         z: eixo(['ArrowUp','KeyW'], ['ArrowDown','KeyS']) } };
+    MD.giraDirecao(domador, inp.mov.x, inp.mov.z);
     const evt = passoMundo(mundo, inp, dt);
-    if (evt === 'encontro') iniciaBatalha();
+    if (evt === 'encontro') iniciaEncontro();
     if (evt === 'respawn') hud.toast('Algo farfalha na grama alta...');
+  } else if (modo === 'encontro') {
+    if (cimaE || baixoE) { escolha = 1 - escolha; hud.escolha(true, escolha); sfx.swing(); }
+    if (jE) confirmaEscolha();
   } else if (modo === 'batalha' && batalha) {
     guardaDirecoes();
     const seqC1 = batalha.p.esp.golpes.comando1 && batalha.p.esp.golpes.comando1.sequencia;
@@ -212,8 +243,8 @@ function loop(agora) {
       c1 = true; seqBuf = [];
     }
     const inpP = {
-      mov: { x: eixo(['KeyA','ArrowLeft'], ['KeyD','ArrowRight']),
-             z: eixo(['KeyW','ArrowUp'], ['KeyS','ArrowDown']) },
+      mov: { x: eixo(['ArrowLeft','KeyA'], ['ArrowRight','KeyD']),
+             z: eixo(['ArrowUp','KeyW'], ['ArrowDown','KeyS']) },
       pulo: spE, a: jE && !c1, f: kE, c1, capturar: cE,
     };
     const fim = passoBatalha(batalha, inpP, dt, aoEvento);
@@ -223,7 +254,8 @@ function loop(agora) {
   }
 
   sincronizaVisual(dt);
-  passoCamera(cena, modo, mundo, batalha, dt);
+  passoCamera(cena, modo === 'encontro' ? 'batalha' : modo, mundo,
+              modo === 'encontro' ? camEncontro : batalha, dt);
   cena.renderer.render(cena.scene, cena.camera);
 }
 cv.focus(); setTimeout(() => cv.focus(), 300);

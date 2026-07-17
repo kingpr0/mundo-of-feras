@@ -34,6 +34,12 @@
     animation:pisca .5s infinite; }
   #dica { position:fixed; bottom:8px; left:50%; transform:translateX(-50%);
     color:rgba(232,227,255,.55); font-size:11px; }
+  #escolha { position:fixed; bottom:80px; right:48px; background:rgba(13,11,20,.92);
+    border:2px solid #ffd23f; padding:16px 26px; display:none; flex-direction:column;
+    gap:12px; min-width:150px; }
+  .opt { color:#8f89a6; font-size:18px; font-weight:bold; letter-spacing:2px; }
+  .opt.sel { color:#ffd23f; }
+  .opt.sel::before { content:'▶ '; }
   #equipe { position:fixed; top:12px; left:12px; color:#ffe9b0; font-size:12px;
     text-shadow:2px 2px 0 #26202e; }
   .dmg { position:fixed; color:#ffd23f; font-weight:bold; font-size:16px;
@@ -51,18 +57,22 @@
   <div class="hpwrap" id="hpE"><div class="hpname" id="nomeE">CASCORRO</div>
     <div class="hpbar"><div class="hpfill" id="fillE"></div></div></div>
   <div id="cap">! FERA FRACA — pressione C para CAPTURAR !</div>
+  <div id="escolha">
+    <div class="opt sel" id="optLutar">LUTAR</div>
+    <div class="opt" id="optFugir">FUGIR</div>
+  </div>
   <div id="toast"></div>
-  <div id="dica">WASD/setas: andar · na luta: W/S aproxima-afasta · A/D orbita · ESPAÇO pula · J golpe · K especial · C captura</div>
+  <div id="dica">Setas: andar · na luta: ↑/↓ aproxima-afasta · ←/→ orbita · ESPAÇO pula · Z golpe · X especial · C captura</div>
   <div id="flash"></div>
   <div id="titulo">
     <h1>DUELO DE FERAS</h1>
     <p>arquitetura modular v0.1 — repositório mundo-of-feras</p>
-    <p style="margin-top:14px">EXPLORAR: WASD / setas</p>
+    <p style="margin-top:14px">EXPLORAR: setas</p>
     <p>Feras selvagens vivem escondidas na grama alta — pise com cuidado!</p>
-    <p>LUTA: W/S aproxima e afasta · A/D orbita · ESPAÇO pula<br>
-       J golpe rápido · K especial · C capturar (fera fraca)</p>
-    <p>GOLPE DE COMANDO: sequência + J, estilo jogo de luta<br>
-       (↓ = S/seta baixo · → = W/seta cima, avançar no oponente)</p>
+    <p>LUTA: ↑/↓ aproxima e afasta · ←/→ orbita · ESPAÇO pula<br>
+       Z golpe rápido · X especial · C capturar (fera fraca)</p>
+    <p>GOLPE DE COMANDO: sequência + Z, estilo jogo de luta<br>
+       (↓ = seta baixo · → = seta cima, avançar no oponente)</p>
     <p class="go">— clique no jogo e pressione ENTER —</p>
   </div>
 </div>

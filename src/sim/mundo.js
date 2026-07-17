@@ -24,7 +24,13 @@ export function criarMundo(selvagens = ['cascorro'], rnd = Math.random) {
     },
     selvagens,
     respawnT: 0,
+    imunidade: 0, // segundos sem novos encontros (após fugir/batalhar)
   };
+}
+
+// impede novos encontros por alguns segundos (ex.: logo após fugir)
+export function daImunidade(m, segundos = 2) {
+  m.imunidade = segundos;
 }
 
 function sorteiaEspecie(lista, rnd) {
@@ -48,6 +54,7 @@ function prende(pos) {
 
 // inp = { mov: {x,z} (-1..1) } | retorna 'encontro' quando o duelo deve começar
 export function passoMundo(m, inp, dt, rnd = Math.random) {
+  if (m.imunidade > 0) m.imunidade -= dt;
   const d = m.domador;
   d.andando = inp.mov.x !== 0 || inp.mov.z !== 0;
   if (d.andando) {
@@ -73,7 +80,7 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
     s.pos.x = Math.max(G.x0, Math.min(G.x1, s.pos.x));
     s.pos.z = Math.max(G.z0, Math.min(G.z1, s.pos.z));
     if (s.wanderDir.x !== 0) s.dir = s.wanderDir.x > 0 ? 1 : -1;
-    if (distXZ(s.pos, d.pos) < 1.25) return 'encontro';
+    if (m.imunidade <= 0 && distXZ(s.pos, d.pos) < 1.25) return 'encontro';
   } else {
     m.respawnT -= dt;
     if (m.respawnT <= 0) {

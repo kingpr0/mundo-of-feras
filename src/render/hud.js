@@ -28,6 +28,13 @@ export function criarHUD() {
     capDisponivel(v) { $('cap').style.display = v ? 'block' : 'none'; },
     nomeInimigo(n) { $('nomeE').textContent = n; },
     dica(txt) { $('dica').textContent = txt; },
+    escolha(v, sel = 0) {
+      $('escolha').style.display = v ? 'flex' : 'none';
+      if (v) {
+        $('optLutar').className = 'opt' + (sel === 0 ? ' sel' : '');
+        $('optFugir').className = 'opt' + (sel === 1 ? ' sel' : '');
+      }
+    },
     equipe(n) { $('nCap').textContent = n; },
     escondeTitulo() { $('titulo').style.display = 'none'; },
     dano(pos, valor, forte) {
