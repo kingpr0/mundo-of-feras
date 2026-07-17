@@ -22,12 +22,16 @@ export function criarCena(canvas) {
   scene.add(sol);
   scene.add(new THREE.HemisphereLight(0xbcd9ff, 0x3a5a34, 0.55));
 
-  montaChao(scene);
-  MUNDO_LAYOUT.arvores.forEach(([x, z, p]) => arvore(scene, x, z, p));
-  montaGrama(scene);
+  // mundo e arena são grupos alternáveis: a batalha acontece num ringue
+  // separado, estilizado pelo bioma (floresta, por enquanto)
+  const mundoG = new THREE.Group(); scene.add(mundoG);
+  montaChao(mundoG);
+  MUNDO_LAYOUT.arvores.forEach(([x, z, p]) => arvore(mundoG, x, z, p));
+  montaGrama(mundoG);
+  const arenaG = montaArena(scene);
 
   const estado = {
-    renderer, scene, camera,
+    renderer, scene, camera, mundoG, arenaG,
     camPos: new THREE.Vector3(0, 12, 15),
     camAlvo: new THREE.Vector3(),
     shake: 0,
@@ -97,6 +101,46 @@ function montaGrama(scene) {
   }
 }
 
+/* arena de batalha — ringue de floresta centrado na origem (a sim luta em
+   torno de 0,0, então basta esconder o mundo e mostrar a arena) */
+function montaArena(scene) {
+  const g = new THREE.Group(); g.visible = false; scene.add(g);
+  const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
+  // clareira de grama + platô de terra batida
+  const base = new THREE.Mesh(new THREE.CircleGeometry(34, 24), lamb(0x578f43));
+  base.rotation.x = -Math.PI / 2; base.position.y = 0.004; base.receiveShadow = true; g.add(base);
+  const terra = new THREE.Mesh(new THREE.CircleGeometry(10.5, 28), lamb(0xb08a5a));
+  terra.rotation.x = -Math.PI / 2; terra.position.y = 0.01; terra.receiveShadow = true; g.add(terra);
+  const borda = new THREE.Mesh(new THREE.TorusGeometry(10.5, 0.22, 8, 28), lamb(0x8a6a50));
+  borda.rotation.x = -Math.PI / 2; borda.position.y = 0.05; g.add(borda);
+  // cerca de troncos: postes + travessão
+  for (let i = 0; i < 20; i++) {
+    const a = (i / 20) * Math.PI * 2;
+    const poste = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.16, 0.95, 6), lamb(0x7a5233));
+    poste.position.set(Math.cos(a) * 11.8, 0.47, Math.sin(a) * 11.8);
+    poste.castShadow = true; g.add(poste);
+  }
+  const trave = new THREE.Mesh(new THREE.TorusGeometry(11.8, 0.07, 6, 28), lamb(0x9a7243));
+  trave.rotation.x = -Math.PI / 2; trave.position.y = 0.8; g.add(trave);
+  // mata fechando a arena (fora da cerca) e pedras decorando a beirada
+  for (let i = 0; i < 18; i++) {
+    const a = (i / 18) * Math.PI * 2 + 0.17;
+    const r = 15 + (i % 3) * 2.2;
+    arvore(g, Math.cos(a) * r, Math.sin(a) * r, i % 2 === 0 ? 1 : 0);
+  }
+  [[8.6, 2.6], [-7.9, -4.4], [1.8, -9.3]].forEach(([x, z], i) => {
+    const pedra = new THREE.Mesh(new THREE.DodecahedronGeometry(0.4 + i * 0.12), lamb(0x8d939c));
+    pedra.position.set(x, 0.3, z); pedra.castShadow = true; g.add(pedra);
+  });
+  return g;
+}
+
+// alterna entre o mapa de exploração e o ringue de batalha
+export function mostraArena(cena, ligar) {
+  cena.arenaG.visible = ligar;
+  cena.mundoG.visible = !ligar;
+}
+
 /* partículas */
 const geoP = new THREE.PlaneGeometry(0.14, 0.14);
 export function poof(cena, pos, cor, n = 10, vel = 3) {
@@ -126,8 +170,9 @@ export function passoCamera(cena, modo, mundo, batalha, dt) {
     const pp = batalha.p.pos, ee = batalha.e.pos;
     const d = Math.hypot(ee.x - pp.x, ee.z - pp.z) || 1;
     const fx = (ee.x - pp.x) / d, fz = (ee.z - pp.z) / d;
-    desejo = new THREE.Vector3(pp.x - fx * 4.4, pp.y + 2.4, pp.z - fz * 4.4);
-    olhar = new THREE.Vector3(pp.x + (ee.x - pp.x) * .42, 1.1, pp.z + (ee.z - pp.z) * .42);
+    // mais alta e mais afastada: leitura da arena inteira
+    desejo = new THREE.Vector3(pp.x - fx * 7.4, pp.y + 4.8, pp.z - fz * 7.4);
+    olhar = new THREE.Vector3(pp.x + (ee.x - pp.x) * .45, 1.0, pp.z + (ee.z - pp.z) * .45);
   } else {
     const pp = mundo.domador.pos;
     desejo = new THREE.Vector3(pp.x, pp.y + 17, pp.z + 12);
