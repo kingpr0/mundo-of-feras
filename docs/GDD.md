@@ -115,7 +115,7 @@ O **protagonista** e os **Domadores NPC** compartilham a direção visual Fareve
 
 ## 11. Interface
 
-Exploração: minimalista — equipe (ícones das 6 feras, ativa destacada), interações contextuais. Batalha: barras de vida com nome e level nos cantos superiores, indicador de captura piscando quando disponível, e **lista de comandos da fera ativa acessível em pausa** (essencial: o jogador precisa poder consultar as sequências estilo MK da fera que está usando). Menus: equipe, ficha da fera (stats, golpes, XP) e **Compêndio de Feras** (a "dex" — nome a definir).
+Exploração: **minimapa** no canto superior direito (layout da área, grama, água, casas, passagens e a posição do jogador, com o nome do mapa) e **painel lateral do Domador** à esquerda (equipe, feras capturadas, local atual). Interações contextuais. Batalha: barras de vida com nome e level nos cantos superiores, indicador de captura piscando quando disponível, e **lista de comandos da fera ativa acessível em pausa** (essencial: o jogador precisa poder consultar as sequências estilo MK da fera que está usando). Menus: equipe, ficha da fera (stats, golpes, XP) e **Compêndio de Feras** (a "dex" — nome a definir).
 
 ## 12. Multiplayer (visão de futuro)
 
