@@ -2,6 +2,7 @@
   "name": "mundo-of-feras",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "Duelo de Feras — RPG de captura de feras com batalhas de luta em tempo real (HD-2D, web)",
   "scripts": {
     "dev": "npx --yes serve -l 3000 ."
