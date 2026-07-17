@@ -1,0 +1,138 @@
+# DUELO DE FERAS — Documento de Game Design (GDD)
+
+**Versão 0.1 — documento vivo** | Título provisório | Plataforma-alvo: PC (Steam) | Engine: Unreal Engine 5.8
+
+Este documento descreve o jogo do zero, para qualquer pessoa que vá construí-lo. Decisões já tomadas pelo criador aparecem como fatos; sugestões minhas ainda não aprovadas estão marcadas como **(proposta)**; e tudo que ainda precisa de decisão está listado nas Questões em Aberto ao final.
+
+---
+
+## 1. Visão geral
+
+Duelo de Feras é um RPG de captura de monstros no estilo estrutural de Pokémon clássico — explorar, capturar, treinar, desafiar — com um diferencial central: **as batalhas não são por turnos; são lutas de ação em tempo real, no estilo dos jogos de luta**. O jogador controla sua fera diretamente na arena: movimenta, pula, ataca, desvia e executa golpes especiais com comandos de direção, como em Mortal Kombat.
+
+Os três pilares do design, em ordem de prioridade: primeiro, **a luta precisa ser gostosa** — impacto, leitura do adversário e habilidade importam mais que números; segundo, **colecionar precisa dar orgulho** — 30 feras originais com identidade forte, raridade e evolução; terceiro, **o mundo convida a explorar** — visual HD-2D marcante e estrutura clássica de vilarejos e rotas.
+
+## 2. Mundo e fantasia do jogador
+
+O jogo se passa nas **Ilhas de Vento Verde**, um arquipélago onde humanos e feras vivem em harmonia. O jogador é um **Domador** — os únicos humanos que ousam duelar lado a lado com as feras. O tom é aventura leve e acolhedora, com espaço para mistério nas áreas das feras muito raras. Os Domadores **não lutam**: comandam. Quem entra na arena é sempre a fera.
+
+## 3. Direção de arte
+
+O estilo visual é **HD-2D**: personagens e feras em pixel art vivendo dentro de cenários 3D com iluminação moderna, sombras longas, profundidade de campo (efeito diorama) e luz quente. Referências principais: Octopath Traveler II (mundo e clima), Star Ocean: The Second Story R (ação em tempo real com sprites 2D em arena 3D) e Eastward (teto de qualidade de pixel art de personagens).
+
+**Treinadores** (protagonista e NPCs): silhuetas, proporções e figurinos inspirados nos aventureiros estilizados de **Farever** (Shiro Games) — fantasia colorida, trajes de aventureiro com personalidade — traduzidos para pixel art e **sempre desarmados**, reforçando visualmente que quem luta são as feras.
+
+**Feras**: pixel art original, 100% autoral (exigência legal e de identidade). Cada espécie precisa de silhueta reconhecível a distância e paleta que comunique seu tipo.
+
+## 4. Câmeras
+
+**Exploração — câmera estilo League of Legends:** ângulo fixo olhando de cima em diagonal (pitch na faixa de 50–60°, a calibrar), sem rotação pelo jogador, seguindo o personagem com suavização (camera lag). O jogador nunca controla a câmera no mundo; ela é parte da identidade visual, como no LoL e nos HD-2D.
+
+**Batalha — câmera lock-on orbital (estilo Pokkén Tournament, fase de campo):** a câmera fica atrás da fera do jogador, sempre apontada para o adversário. Mover para frente aproxima, para trás afasta, e para os lados **orbita** ao redor do oponente. O adversário é o ponto de referência do movimento, não o mapa. Consequência de arte: a fera do jogador é vista de costas e a adversária de frente (sprites billboard encarando a câmera).
+
+## 5. Loop principal
+
+Explorar vilarejos e rotas → encontrar feras selvagens na grama alta → transição para a arena → **luta em tempo real** → enfraquecer a fera (vida baixa) → capturar com o Cristal de Captura ou nocautear → ganhar XP → subir de level, aprender golpes, evoluir → enfrentar Domadores NPC e áreas mais difíceis → repetir, com equipe e habilidade do jogador crescendo juntas.
+
+## 6. Exploração e estrutura de mundo
+
+A estrutura dos mapas iniciais segue o modelo consagrado de **Pokémon Red/Blue**: um vilarejo inicial pequeno, rotas conectando assentamentos, grama alta como zona de encontro, obstáculos naturais controlando o ritmo de progressão — tudo reinterpretado com a estilização HD-2D moderna (vegetação 3D, iluminação de fim de tarde, água animada). Ao contato com uma fera selvagem, transição de batalha. Feras muito raras não aparecem em grama comum: habitam locais especiais e escondidos do mapa **(proposta)**.
+
+## 7. Sistema de Feras
+
+### 7.1 Números e tipos
+
+**30 espécies no total**, divididas em **5 tipos**: Fogo, Água, Planta, Elétrico e Comum.
+
+Tabela de vantagens **(proposta, multiplicadores 1.5x vantagem / 0.75x desvantagem)**: Água vence Fogo; Fogo vence Planta; Planta vence Água; Elétrico vence Água; Planta resiste a Elétrico (fecha o ciclo); Comum não tem vantagens nem fraquezas — é o tipo neutro e versátil.
+
+### 7.2 Raridades
+
+Três raridades, com três efeitos definidos: **probabilidade de encontro**, **poder dos golpes especiais** e **dificuldade de execução dos comandos especiais**.
+
+| Raridade | Evolução | Taxa de encontro (proposta) | Especiais |
+|---|---|---|---|
+| Comum | Evolui 1 vez (linha de 2 estágios, ex.: Rattata→Raticate) | ~70% | Mais fracos, comandos fáceis |
+| Rara | Evolui 2 vezes (linha de 3, ex.: Charmander→Charmeleon→Charizard) | ~27% | Fortes, comandos médios |
+| Muito Rara | Não evolui | ~3% (locais especiais) | Muito fortes, comandos difíceis |
+
+### 7.3 A matriz das 30 espécies (proposta de distribuição)
+
+A conta fecha com elegância se cada tipo tiver: **1 linha comum (2 espécies) + 1 linha rara (3 espécies) + 1 fera muito rara (1 espécie) = 6 espécies por tipo × 5 tipos = 30**. Isso dá a cada tipo um "bicho de entrada", uma "linha estrela" e uma "lenda".
+
+As feras já criadas no protótipo se encaixam assim **(proposta)**: **Brasinha** = Fogo, linha rara (a inicial do jogador, 3 estágios); **Cascorro** = tipo Comum, linha comum; **Voltim** = Elétrico; **Folhito** = Planta. Falta criar a representante de Água e as demais espécies.
+
+### 7.4 Atributos (stats)
+
+Cada fera tem **(base do protótipo + proposta)**: Vida, Ataque, Defesa, Velocidade (movimento na arena) e Impulso (altura do pulo). Stats base variam por espécie e crescem com o level.
+
+## 8. Progressão
+
+Modelo Pokémon: feras ganham **XP por batalha** (vencida ou capturada), sobem de **level**, seus **stats crescem** e seus **golpes melhoram** com o nível. Evolução por level **(proposta de marcos)**: linhas comuns evoluem por volta do nível 16; linhas raras nos níveis ~14 e ~32. A evolução troca o sprite, melhora stats e pode aprimorar os golpes de comando. Curva de XP, level máximo e fórmulas exatas: em aberto (partiremos das fórmulas públicas da série Pokémon como base testada, adaptando ao combate de ação).
+
+## 9. Sistema de batalha (o coração do jogo)
+
+### 9.1 Estrutura
+
+Duelo **1v1 em tempo real** numa arena plana, câmera lock-on orbital. O jogador controla a fera ativa da equipe; a adversária é uma fera selvagem (IA) ou a fera de um Domador NPC (IA, futuramente outro jogador).
+
+### 9.2 Controles e golpes
+
+Toda fera tem exatamente **4 golpes**, em 4 slots de função fixa:
+
+| Slot | Acionamento | Descrição |
+|---|---|---|
+| Golpe Normal | Botão A | Universal: soco, mordida ou investida conforme a anatomia da fera. Rápido, fraco, base do jogo neutro |
+| Especial de Tipo | Botão B | Definido pelo tipo: lança-chamas, jato d'água, lâminas de folha, descarga elétrica. Feras do tipo Comum fazem algo mais simples, como uma investida veloz |
+| Comando 1 | Sequência direcional + botão (estilo Mortal Kombat) | Golpe assinatura da espécie |
+| Comando 2 | Sequência direcional mais longa + botão | O golpe mais forte da espécie |
+
+**A regra de ouro da raridade**: quanto mais rara a fera, mais fortes os golpes de comando — e mais difícil a execução **(proposta de escala)**: comuns usam direção + botão; raras usam quarto de círculo (↓↘→ + botão); muito raras exigem sequências longas ou timing apertado. Poder exige maestria: uma fera muito rara nas mãos de um iniciante rende menos que uma comum bem pilotada — essa troca é intencional e central ao design.
+
+Movimentação: aproximar/afastar/orbitar (relativa ao adversário) + **pulo**. Versões aéreas de golpes: a definir.
+
+### 9.3 Propriedades dos golpes (a dupla identidade)
+
+Cada golpe carrega dados de RPG e de fighting game ao mesmo tempo: **poder** (escala com Ataque e level), **tipo** (aplica vantagem/desvantagem), e frame data — **preparação** (startup, a janela de reação do oponente), **janela ativa** (quando a hitbox acerta), **recuperação** (punição se errar), **alcance** e **empurrão** (knockback). Golpes fortes são telegrafados visualmente (a fera "carrega" piscando antes de soltar).
+
+### 9.4 Game feel (inegociáveis validados no protótipo)
+
+**Hit-stop** (congelamento de ~0,05–0,1s no impacto), knockback proporcional, breve invulnerabilidade pós-acerto (anti-stunlock), tremor de tela, números de dano, faíscas de impacto e sons distintos por peso de golpe. Esses detalhes são o que separa "funcionar" de "ser gostoso" — tratados como requisito, não como polimento.
+
+### 9.5 Captura
+
+Feras selvagens com vida abaixo de **~35%** podem ser capturadas: o jogador lança o **Cristal de Captura** (botão contextual). A chance cresce quanto menor a vida restante; raridades maiores resistem mais **(proposta)**. Falhou: a fera se enfurece e a luta continua. Capturou: entra na equipe (máx. 6 ativas).
+
+### 9.6 IA adversária
+
+Feras selvagens: comportamento simples por arquétipo (agressiva, cautelosa, territorial), com dificuldade crescendo por região. Feras de Domadores NPC: IA mais deliberada — telegrafa, pune erros do jogador, explora vantagem de tipo. A IA gera os mesmos inputs abstratos que um jogador humano geraria — decisão de arquitetura deliberada para o futuro online.
+
+## 10. Treinadores e NPCs
+
+O **protagonista** e os **Domadores NPC** compartilham a direção visual Farever-sem-armas. Domadores NPC desafiam o jogador em batalhas sequenciais (a equipe deles, uma fera por vez). Vencer rende XP em dobro **(proposta)** e recompensas. Estrutura de líderes/insígnias da campanha: em aberto.
+
+## 11. Interface
+
+Exploração: minimalista — equipe (ícones das 6 feras, ativa destacada), interações contextuais. Batalha: barras de vida com nome e level nos cantos superiores, indicador de captura piscando quando disponível, e **lista de comandos da fera ativa acessível em pausa** (essencial: o jogador precisa poder consultar as sequências estilo MK da fera que está usando). Menus: equipe, ficha da fera (stats, golpes, XP) e **Compêndio de Feras** (a "dex" — nome a definir).
+
+## 12. Multiplayer (visão de futuro)
+
+**Ginásios**: locais no mundo onde jogadores desafiam outros jogadores em duelos 1v1 online usando as feras que capturaram e treinaram. Roadmap deliberado: **batalhas vs IA → versus local (2 jogadores, 1 PC) → versus online**. Decisões de arquitetura já em prática para viabilizar isso sem retrabalho: inputs abstratos separados de quem os gera (teclado, IA ou rede), dados de espécie separados dos dados do indivíduo, e lógica de dano pensada para autoridade de servidor.
+
+## 13. Arquitetura técnica
+
+Unreal Engine 5.8, desenvolvimento em **Blueprints** (C++ pontual quando necessário). Animação 2D: **Paper2D + PaperZD** (flipbooks + máquinas de estado de animação). Dados: **Data Tables** para espécies e golpes (editáveis em planilha externa), **Structs** para o indivíduo (level, XP, golpes atuais, apelido — o que viaja no save e, futuramente, pela rede). Assets placeholder: pacote Ninja Adventure (licença CC0) para mundo e dublês de feras durante o desenvolvimento; arte final original substituirá tudo. Fluxo de trabalho assistido por IA: Claude (design, arquitetura e ensino) + Claude Code conectado ao MCP oficial da UE 5.8 (automação de tarefas de editor, sempre com revisão humana).
+
+## 14. Estado atual e roadmap
+
+**Concluído**: protótipo jogável validando o loop completo (exploração → luta em tempo real → captura → equipe); na Unreal: exploração HD-2D com personagem animado (PaperZD), câmera de exploração e arena com câmera lock-on orbital funcionando.
+
+**Fases**: ① Fundamentos ✅ ② Exploração ✅ ③ **Arena de luta** (em andamento: billboard → fera jogável → golpes e hitbox → dano e reação → IA) ④ Sistema de feras (Data Tables, captura, equipe, XP e evolução) ⑤ Costura (transições mundo↔batalha, save) ⑥ Conteúdo (30 feras, mapas, NPCs, campanha) ⑦ Versus local → online.
+
+## 15. Questões em aberto (decisões pendentes do criador)
+
+Nome definitivo do jogo; o jogador escolhe entre 3 iniciais raras (Fogo/Água/Planta, à la Pokémon) ou a Brasinha é fixa?; encontros visíveis no mapa ou invisíveis na grama?; existe bloqueio/esquiva com botão dedicado na luta?; troca de fera durante a batalha é permitida?; itens de cura e de batalha existem?; economia (dinheiro, custo dos Cristais); estrutura da campanha (líderes de ginásio single-player? história principal?); nome do Compêndio; level máximo; e confirmação das propostas marcadas ao longo do documento.
+
+---
+
+*Documento gerado a partir das decisões de design do criador do projeto. Atualizar a cada sistema novo definido.*

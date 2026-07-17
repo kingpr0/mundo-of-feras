@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Duelo de Feras — Fatia HD-2D Web</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:100%; height:100%; overflow:hidden; background:#0d0b14;
+    font-family:'Courier New',monospace; }
+  #cv { display:block; width:100%; height:100%; outline:none; }
+  #hud { position:fixed; inset:0; pointer-events:none; }
+  .vinheta { position:fixed; inset:0;
+    background:radial-gradient(ellipse at center, transparent 52%, rgba(12,6,26,.55) 100%); }
+  #flash { position:fixed; inset:0; background:#fff; opacity:0; transition:opacity .12s; }
+  #titulo { position:fixed; inset:0; display:flex; flex-direction:column; align-items:center;
+    justify-content:center; background:rgba(10,8,20,.82); color:#fff6df; text-align:center;
+    pointer-events:auto; }
+  #titulo h1 { color:#ffd23f; font-size:34px; letter-spacing:2px; text-shadow:3px 3px 0 #26202e; }
+  #titulo p { margin:6px 0; font-size:14px; color:#e8e3ff; }
+  #titulo .go { margin-top:18px; color:#ffd23f; animation:pisca 1s infinite; font-size:15px; }
+  @keyframes pisca { 50% { opacity:.25; } }
+  .hpwrap { position:fixed; top:14px; width:250px; display:none; }
+  #hpP { left:16px; } #hpE { right:16px; }
+  .hpname { color:#fff6df; font-size:13px; font-weight:bold; text-shadow:2px 2px 0 #26202e;
+    margin-bottom:3px; }
+  .hpbar { height:10px; background:#3a3350; border:2px solid #16121f; }
+  .hpfill { height:100%; width:100%; background:#6fe06a; transition:width .12s; }
+  #toast { position:fixed; bottom:64px; left:50%; transform:translateX(-50%);
+    background:rgba(13,11,20,.92); color:#fff6df; border:2px solid #ffd23f;
+    padding:10px 18px; font-size:14px; display:none; max-width:80%; text-align:center; }
+  #cap { position:fixed; top:52px; left:50%; transform:translateX(-50%); color:#59e0d0;
+    font-size:15px; font-weight:bold; text-shadow:2px 2px 0 #072a26; display:none;
+    animation:pisca .5s infinite; }
+  #dica { position:fixed; bottom:8px; left:50%; transform:translateX(-50%);
+    color:rgba(232,227,255,.55); font-size:11px; }
+  #equipe { position:fixed; top:12px; left:12px; color:#ffe9b0; font-size:12px;
+    text-shadow:2px 2px 0 #26202e; }
+  .dmg { position:fixed; color:#ffd23f; font-weight:bold; font-size:16px;
+    text-shadow:2px 2px 0 #26202e; }
+  .dmg.forte { color:#ff6b4a; font-size:20px; }
+</style>
+</head>
+<body>
+<canvas id="cv" tabindex="0"></canvas>
+<div id="hud">
+  <div class="vinheta"></div>
+  <div id="equipe">♦ Brasinha &nbsp;|&nbsp; feras: <span id="nCap">1</span></div>
+  <div class="hpwrap" id="hpP"><div class="hpname">♦ BRASINHA</div>
+    <div class="hpbar"><div class="hpfill" id="fillP"></div></div></div>
+  <div class="hpwrap" id="hpE"><div class="hpname" id="nomeE">CASCORRO</div>
+    <div class="hpbar"><div class="hpfill" id="fillE"></div></div></div>
+  <div id="cap">! FERA FRACA — pressione C para CAPTURAR !</div>
+  <div id="toast"></div>
+  <div id="dica">WASD/setas: andar · na luta: W/S aproxima-afasta · A/D orbita · ESPAÇO pula · J golpe · K especial de fogo · C captura</div>
+  <div id="flash"></div>
+  <div id="titulo">
+    <h1>DUELO DE FERAS</h1>
+    <p>fatia vertical HD-2D — experimento web</p>
+    <p style="margin-top:14px">EXPLORAR: WASD / setas</p>
+    <p>Encoste no Cascorro selvagem na grama alta para duelar</p>
+    <p>LUTA: W/S aproxima e afasta · A/D orbita · ESPAÇO pula<br>
+       J golpe rápido · K sopro de fogo · C capturar (fera fraca)</p>
+    <p class="go">— clique no jogo e pressione ENTER —</p>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+"use strict";
+/* ============================================================
+   DUELO DE FERAS — fatia vertical web (Three.js, HD-2D real)
+   Mundo 3D iluminado + sprites pixel com sombra dinâmica.
+   Exploração (câmera estilo LoL) -> encontro -> a BRASINHA
+   entra em campo (o Domador assiste do canto) -> batalha
+   lock-on orbital -> nocaute ou captura -> volta ao mundo.
+   ============================================================ */
+
+/* ---------- ÁUDIO ---------- */
+let AC=null;
+function audioInit(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+  if(AC&&AC.state==='suspended') AC.resume(); }
+function beep(f,d,t='square',v=.11,s=0){ if(!AC)return;
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.type=t; o.frequency.setValueAtTime(f,AC.currentTime);
+  if(s) o.frequency.exponentialRampToValueAtTime(Math.max(30,f+s),AC.currentTime+d);
+  g.gain.setValueAtTime(v,AC.currentTime);
+  g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+d);
+  o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime+d); }
+const sfx={
+  hit:()=>beep(160,.09,'sawtooth',.15,-80),
+  hitF:()=>{beep(90,.18,'sawtooth',.2,-50);beep(50,.22,'square',.13);},
+  jump:()=>beep(240,.12,'square',.07,260),
+  swing:()=>beep(520,.05,'triangle',.06,-200),
+  enc:()=>{beep(440,.1,'square',.1,-120);setTimeout(()=>beep(330,.14,'square',.1,-100),110);},
+  fogo:()=>beep(120,.3,'sawtooth',.12,220),
+  orb:()=>beep(600,.1,'triangle',.1,300),
+  wob:()=>beep(300,.08,'triangle',.09,-60),
+  cap:()=>[523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,.14,'square',.1),i*110)),
+  win:()=>[392,523,659,784].forEach((f,i)=>setTimeout(()=>beep(f,.13,'triangle',.1),i*100)),
+  lose:()=>[330,262,196].forEach((f,i)=>setTimeout(()=>beep(f,.2,'triangle',.1),i*160)),
+};
+
+/* ---------- PIXEL ART (mesma do protótipo) ---------- */
+const PAL={
+  pS:{c:'#2ea6a6',C:'#1d7a7a',h:'#6b4a2f',s:'#f2c096',e:'#26202e',t:'#ffd23f',b:'#d9553f',p:'#3a5bd9',k:'#33313d'},
+  pF:{c:'#2ea6a6',C:'#1d7a7a',s:'#f2c096',e:'#26202e',t:'#ffd23f',p:'#3a5bd9',k:'#33313d'},
+  bra:{o:'#ff8a3d',d:'#d1462f',y:'#ffd93b',w:'#fff3da',k:'#26202e'},
+  cas:{g:'#9aa3ad',G:'#6e7680',r:'#8a6a50',k:'#26202e',w:'#f4efe6'},
+  orb:{a:'#59e0d0',A:'#1f9b8e',w:'#ffffff'},
+};
+const CORPO_PS=[ // jogador de lado, sem as pernas (linhas 0-10)
+"................","......cccc......",".....cccccc.....",".....CCCCCCC....",
+".....hssse......",".....ssssss.....","......ssss......","....bttttt......",
+"...bbtttttts....","...bbtttttts....","....bttttt......"];
+const PERNAS={
+  parado:[".....pppp.......",".....p..p.......",".....p..p.......","....kk..kk......","................"],
+  a1:[".....pppp.......",".....p...p......","....p.....p.....","...kk......kk...","................"],
+  a2:[".....pppp.......","......pp........","......pp........",".....kkk........","................"],
+  a3:[".....pppp.......",".....p...p......","....p....p......","...kk.....kk....","................"],
+};
+const MAPA_PF=[
+"................",".....cccccc.....","....cccccccc....","....CCCCCCCC....",
+"....ssssssss....","....sesssses....","....ssssssss....",".....ssss.......",
+"....tttttttt....","...stttttttts...","...stttttttts...","....tttttttt....",
+"....pppppppp....","....ppp..ppp....","...kkk....kkk...","................"];
+const MAPA_BRA=[
+"................","......d...d.....","......dd.dd.....",".yy...ooooo.....",
+"yyy..ooooooo....",".dy..ookoooo....","..d..ooooooww...","..dd.ooooooww...",
+"...ddooooooo....","....dooowwoo....",".....ooowwoo....",".....oooooo.....",
+"......o..oo.....","......d...d.....","................","................"];
+const MAPA_CAS=[
+"................","....GG..GG......","...GGGGGGGG.....","..GgggggggG.....",
+"..Ggggkgggg.....","..GgggggggggG...",".GGgggggggwww...",".GgggggggggG....",
+".Gggggggggg.....","..Grrrrrrrg.....","..grrrrrrrr.....","..gg.gg.gg......",
+"..GG.GG.GG......","................","................","................"];
+const MAPA_ORB=[
+"..AAAA..",".AaaaaA.","AaawwaaA","AaaaaaaA","AaaaaaaA",".AaaaaA.","..AAAA..","........"];
+
+function texDoMapa(mapa,pal){
+  const w=mapa[0].length,h=mapa.length;
+  const c=document.createElement('canvas'); c.width=w; c.height=h;
+  const x=c.getContext('2d');
+  for(let r=0;r<h;r++) for(let q=0;q<w;q++){
+    const ch=mapa[r][q]; if(ch==='.')continue;
+    x.fillStyle=pal[ch]||'#f0f'; x.fillRect(q,r,1,1);
+  }
+  const t=new THREE.CanvasTexture(c);
+  t.magFilter=THREE.NearestFilter; t.minFilter=THREE.NearestFilter;
+  return t;
+}
+const TEX={
+  pParado:texDoMapa(CORPO_PS.concat(PERNAS.parado),PAL.pS),
+  pA1:texDoMapa(CORPO_PS.concat(PERNAS.a1),PAL.pS),
+  pA2:texDoMapa(CORPO_PS.slice(1).concat(PERNAS.a2,["................"]),PAL.pS),
+  pA3:texDoMapa(CORPO_PS.concat(PERNAS.a3),PAL.pS),
+  pFrente:texDoMapa(MAPA_PF,PAL.pF),
+  bra:texDoMapa(MAPA_BRA,PAL.bra),
+  cas:texDoMapa(MAPA_CAS,PAL.cas),
+  orb:texDoMapa(MAPA_ORB,PAL.orb),
+};
+const QUADROS_ANDAR=[TEX.pA1,TEX.pA2,TEX.pA3,TEX.pA2];
+
+/* ---------- CENA ---------- */
+const cv=document.getElementById('cv');
+const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x9fd0ff);
+scene.fog=new THREE.Fog(0xf0dcc0,24,58);
+const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,.1,200);
+
+const sol=new THREE.DirectionalLight(0xffd9a0,1.25);
+sol.position.set(14,13,7); sol.castShadow=true;
+sol.shadow.mapSize.set(2048,2048);
+sol.shadow.camera.left=-30; sol.shadow.camera.right=30;
+sol.shadow.camera.top=30; sol.shadow.camera.bottom=-30;
+scene.add(sol);
+scene.add(new THREE.HemisphereLight(0xbcd9ff,0x3a5a34,.55));
+
+/* chão pintado */
+(function(){
+  const c=document.createElement('canvas'); c.width=c.height=512;
+  const x=c.getContext('2d');
+  for(let ty=0;ty<16;ty++) for(let tx=0;tx<16;tx++){
+    x.fillStyle=((tx+ty)%2===0)?'#67b34f':'#5fa848';
+    x.fillRect(tx*32,ty*32,32,32);
+    if((tx*7+ty*13)%11===0){ x.fillStyle='#8fd977'; x.fillRect(tx*32+12,ty*32+14,6,6); }
+    if((tx*5+ty*11)%17===0){ x.fillStyle='#ffd6e8'; x.fillRect(tx*32+20,ty*32+8,5,5);
+      x.fillStyle='#ffe9b0'; x.fillRect(tx*32+21,ty*32+6,3,3); }
+  }
+  const t=new THREE.CanvasTexture(c);
+  t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(5,5);
+  const ch=new THREE.Mesh(new THREE.PlaneGeometry(70,70),
+    new THREE.MeshLambertMaterial({map:t}));
+  ch.rotation.x=-Math.PI/2; ch.receiveShadow=true; scene.add(ch);
+})();
+
+/* sprite billboard com sombra recortada */
+function fazSprite(tex,altura){
+  const mat=new THREE.MeshLambertMaterial({map:tex,transparent:true,alphaTest:.5,side:THREE.DoubleSide});
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(altura,altura),mat);
+  m.castShadow=true;
+  m.customDepthMaterial=new THREE.MeshDepthMaterial({
+    depthPacking:THREE.RGBADepthPacking,map:tex,alphaTest:.5});
+  m.position.y=altura/2;
+  const g=new THREE.Group(); g.add(m); scene.add(g);
+  return {g,m,mat,altura};
+}
+function trocaTex(spr,tex){
+  spr.mat.map=tex; spr.mat.needsUpdate=true;
+  spr.m.customDepthMaterial.map=tex; spr.m.customDepthMaterial.needsUpdate=true;
+}
+
+/* árvores e grama alta */
+const solidos=[];
+function arvore(x,z,pinheiro){
+  const g=new THREE.Group();
+  const tr=new THREE.Mesh(new THREE.CylinderGeometry(.16,.22,1.1,6),
+    new THREE.MeshLambertMaterial({color:0x7a5233}));
+  tr.position.y=.55; tr.castShadow=true; g.add(tr);
+  if(pinheiro){
+    [[1.5,1.2],[2.2,.9],[2.9,.6]].forEach(([y,r])=>{
+      const c=new THREE.Mesh(new THREE.ConeGeometry(r,1.2,7),
+        new THREE.MeshLambertMaterial({color:0x2a6e3e}));
+      c.position.y=y; c.castShadow=true; g.add(c);
+    });
+  } else {
+    [[1.6,.9,0,0],[2.3,1.05,0,0],[1.9,.7,.7,.2],[1.9,.7,-.7,-.2]].forEach(([y,r,dx,dz])=>{
+      const s=new THREE.Mesh(new THREE.SphereGeometry(r,8,6),
+        new THREE.MeshLambertMaterial({color:0x2f7a33}));
+      s.position.set(dx,y,dz); s.castShadow=true; g.add(s);
+    });
+  }
+  g.position.set(x,0,z); scene.add(g);
+  solidos.push({x,z,r:.75});
+}
+[[-9,-7,0],[-11,-3,1],[-8,3,0],[-12,8,1],[9,-9,1],[12,-4,0],[11,3,1],[8,9,0],
+ [-3,-12,0],[4,-11,1],[-4,12,1],[3,13,0],[14,10,0],[-14,-10,1]].forEach(([x,z,p])=>arvore(x,z,p));
+
+const GRAMA={x0:3,z0:-4,x1:13,z1:5}; // zona de grama alta
+(function(){
+  const c=document.createElement('canvas'); c.width=c.height=16;
+  const x=c.getContext('2d');
+  x.fillStyle='#3f8f38'; for(let i=0;i<5;i++) x.fillRect(1+i*3,6,2,10);
+  x.fillStyle='#4da043'; for(let i=0;i<4;i++) x.fillRect(3+i*3,3,2,7);
+  const t=new THREE.CanvasTexture(c); t.magFilter=THREE.NearestFilter;
+  const mat=new THREE.MeshLambertMaterial({map:t,transparent:true,alphaTest:.4,side:THREE.DoubleSide});
+  for(let i=0;i<70;i++){
+    const m=new THREE.Mesh(new THREE.PlaneGeometry(.9,.9),mat);
+    m.position.set(GRAMA.x0+Math.random()*(GRAMA.x1-GRAMA.x0),.45,
+                   GRAMA.z0+Math.random()*(GRAMA.z1-GRAMA.z0));
+    m.rotation.y=Math.random()*Math.PI; scene.add(m);
+  }
+})();
+
+/* ---------- ENTIDADES ---------- */
+const domador=fazSprite(TEX.pParado,1.5); domador.g.position.set(-4,0,6);
+const brasinha=fazSprite(TEX.bra,1.7); brasinha.g.visible=false;
+const selvagem=fazSprite(TEX.cas,1.8);
+selvagem.g.position.set(8,0,0);
+const cristal=fazSprite(TEX.orb,.55); cristal.g.visible=false; cristal.m.castShadow=false;
+
+/* partículas simples */
+const parts=[];
+const geoP=new THREE.PlaneGeometry(.14,.14);
+function poof(pos,cor,n=10,vel=3){
+  for(let i=0;i<n;i++){
+    const m=new THREE.Mesh(geoP,new THREE.MeshBasicMaterial({color:cor,transparent:true}));
+    m.position.copy(pos); scene.add(m);
+    parts.push({m,vx:(Math.random()-.5)*vel,vy:Math.random()*vel,
+      vz:(Math.random()-.5)*vel,vida:.5+Math.random()*.3});
+  }
+}
+
+/* ---------- HUD ---------- */
+const $=id=>document.getElementById(id);
+let toastT=null;
+function toast(txt,dur=2600){ const t=$('toast'); t.textContent=txt; t.style.display='block';
+  clearTimeout(toastT); toastT=setTimeout(()=>t.style.display='none',dur); }
+function flash(){ const f=$('flash'); f.style.opacity=.85;
+  setTimeout(()=>f.style.opacity=0,130); }
+function dmgNum(pos,val,forte){
+  const d=document.createElement('div');
+  d.className='dmg'+(forte?' forte':''); d.textContent=val;
+  document.getElementById('hud').appendChild(d);
+  const p={pos:pos.clone(),el:d,vida:.85};
+  dmgs.push(p);
+}
+const dmgs=[];
+
+/* ---------- ENTRADA ---------- */
+const keys={};
+let jEdge=false,kEdge=false,cEdge=false,pJ=false,pK=false,pC=false,spEdge=false,pSp=false;
+addEventListener('keydown',e=>{
+  audioInit(); keys[e.code]=true;
+  if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
+  if(e.code==='Enter'&&modo==='titulo') comecar();
+});
+addEventListener('keyup',e=>keys[e.code]=false);
+cv.addEventListener('pointerdown',()=>{ audioInit(); cv.focus(); });
+function edges(){
+  const J=keys.KeyJ||keys.KeyZ, K=keys.KeyK||keys.KeyX, C=keys.KeyC||keys.KeyL,
+        S=keys.Space;
+  jEdge=J&&!pJ; kEdge=K&&!pK; cEdge=C&&!pC; spEdge=S&&!pSp;
+  pJ=J; pK=K; pC=C; pSp=S;
+}
+
+/* ---------- ESTADO ---------- */
+let modo='titulo'; // titulo | explorar | batalha
+let tempo=0, hitstop=0, shake=0;
+let anda=0, dir=1, usaFrente=false;
+let wanderT=0, wDir=new THREE.Vector3();
+let respawnT=0, capturadas=1;
+
+function comecar(){ $('titulo').style.display='none'; modo='explorar'; cv.focus();
+  toast('Ande até a grama alta e encoste no Cascorro!'); }
+
+/* lutadores */
+function novoLutador(spr,hp,spd,dmg){
+  return {spr,hp,max:hp,spd,dmg,vy:0,estado:'idle',t:0,atk:null,
+    invuln:0,flash:0,kb:new THREE.Vector3(),acertou:false};
+}
+const ATK={
+  A:{st:.08,ac:.12,rc:.18,dmg:7,kb:3.2,alc:1.7,forte:false},
+  F:{st:.28,ac:.2,rc:.4,dmg:14,kb:6,alc:2.7,forte:true},   // sopro de fogo
+};
+let B=null; // estado da batalha
+
+function iniciaBatalha(){
+  sfx.enc(); flash();
+  modo='batalha';
+  // Brasinha entra em campo!
+  const pos=domador.g.position.clone();
+  const dirE=selvagem.g.position.clone().sub(pos).setY(0).normalize();
+  brasinha.g.position.copy(pos.clone().add(dirE.clone().multiplyScalar(1.4)));
+  brasinha.g.visible=true;
+  brasinha.mat.opacity=1; brasinha.mat.transparent=true;
+  poof(brasinha.g.position.clone().setY(.9),0xffd23f,14,4);
+  // Domador vai pro canto assistir
+  B={
+    p:novoLutador(brasinha,70,4.6,1.1),
+    e:novoLutador(selvagem,105,2.9,1.3),
+    aiT:.7, fim:false, captura:null,
+    domadorAlvo:pos.clone().add(new THREE.Vector3(-dirE.z,0,dirE.x).multiplyScalar(3.5)),
+  };
+  $('hpP').style.display='block'; $('hpE').style.display='block';
+  atualizaHP();
+  toast('Um Cascorro selvagem apareceu! Brasinha, eu escolho você!');
+}
+function atualizaHP(){
+  $('fillP').style.width=(B.p.hp/B.p.max*100)+'%';
+  $('fillE').style.width=(B.e.hp/B.e.max*100)+'%';
+  $('fillP').style.background=corHP(B.p); $('fillE').style.background=corHP(B.e);
+}
+function corHP(f){ const r=f.hp/f.max; return r>.5?'#6fe06a':r>.25?'#ffd23f':'#ff5a4a'; }
+
+function fimBatalha(vitoria,capturou){
+  B.fim=true;
+  setTimeout(()=>{
+    flash();
+    brasinha.g.visible=false;
+    $('hpP').style.display='none'; $('hpE').style.display='none'; $('cap').style.display='none';
+    if(vitoria){
+      selvagem.g.visible=false; respawnT=10;
+    } else {
+      domador.g.position.set(-4,0,6);
+    }
+    B=null; modo='explorar';
+  },1400);
+}
+
+/* dano */
+function acerta(vitima,atacante,a){
+  const dano=Math.round(a.dmg*atacante.dmg);
+  vitima.hp=Math.max(0,vitima.hp-dano);
+  vitima.estado='hurt'; vitima.t=0;
+  vitima.invuln=.5; vitima.flash=1;
+  const dirKb=vitima.spr.g.position.clone().sub(atacante.spr.g.position).setY(0).normalize();
+  vitima.kb.copy(dirKb.multiplyScalar(a.kb));
+  hitstop=a.forte?.09:.05; shake=a.forte?.5:.28;
+  (a.forte?sfx.hitF:sfx.hit)();
+  poof(vitima.spr.g.position.clone().setY(1),a.forte?0xff6b4a:0xffd23f,12,4.5);
+  dmgNum(vitima.spr.g.position.clone().setY(2),dano,a.forte);
+  atualizaHP();
+  if(vitima.hp<=0){
+    vitima.estado='ko'; vitima.t=0;
+    if(vitima===B.e){ sfx.win(); toast('Cascorro selvagem desmaiou! Você venceu!'); fimBatalha(true,false); }
+    else { sfx.lose(); toast('Brasinha desmaiou... Você correu de volta.'); fimBatalha(false,false); }
+  }
+}
+
+function atualizaLutador(f,inp,dt,outro){
+  const p=f.spr.g.position;
+  if(f.estado==='ko'){ f.t+=dt; f.spr.mat.opacity=Math.max(0,1-f.t);
+    f.spr.mat.transparent=true; return; }
+  if(f.estado==='hurt'){
+    f.t+=dt; p.add(f.kb.clone().multiplyScalar(dt)); f.kb.multiplyScalar(1-3*dt);
+    if(f.t>.26) f.estado='idle';
+  } else if(f.estado==='atk'){
+    f.t+=dt; const a=f.atk;
+    // avanço durante o golpe
+    if(f.t>=a.st&&f.t<=a.st+a.ac){
+      const fr=outro.spr.g.position.clone().sub(p).setY(0).normalize();
+      p.add(fr.multiplyScalar((a.forte?3:4.5)*dt));
+      if(!f.acertou){
+        const d=p.distanceTo(outro.spr.g.position);
+        if(d<a.alc&&outro.invuln<=0&&outro.estado!=='ko'){ f.acertou=true; acerta(outro,f,a); }
+      }
+      if(a.forte&&Math.random()<dt*40)
+        poof(p.clone().add(outro.spr.g.position.clone().sub(p).setY(0).normalize().multiplyScalar(1.1)).setY(1),
+          Math.random()<.5?0xff8a3d:0xffd93b,2,2.5);
+    }
+    if(f.t>=a.st+a.ac+a.rc){ f.estado='idle'; f.atk=null; }
+  } else {
+    if(inp.mov.lengthSq()>0){ p.add(inp.mov.clone().multiplyScalar(f.spd*dt)); }
+    if(inp.pulo&&f.spr.g.position.y<=0.01){ f.vy=7.5; sfx.jump(); }
+    if(inp.a){ f.estado='atk'; f.atk=ATK.A; f.t=0; f.acertou=false; sfx.swing(); }
+    else if(inp.f&&p.y<=0.01){ f.estado='atk'; f.atk=ATK.F; f.t=0; f.acertou=false; sfx.fogo(); }
+  }
+  // física vertical
+  f.vy-=22*dt; p.y=Math.max(0,p.y+f.vy*dt);
+  if(p.y===0) f.vy=Math.max(0,f.vy);
+  // limites da área
+  p.x=Math.max(-16,Math.min(16,p.x)); p.z=Math.max(-14,Math.min(14,p.z));
+  if(f.invuln>0) f.invuln-=dt;
+  if(f.flash>0){ f.flash-=dt*4;
+    f.spr.mat.color.setHex(f.flash>.5?0xffffff:0xff8888);
+  } else f.spr.mat.color.setHex(0xffffff);
+  // telegraph do golpe forte
+  if(f.estado==='atk'&&f.atk&&f.atk.forte&&f.t<f.atk.st)
+    f.spr.mat.color.setHex(Math.sin(tempo*40)>0?0xffffff:0xff5533);
+}
+
+/* IA do selvagem */
+function iaSelvagem(dt){
+  const e=B.e,p=B.p;
+  const inp={mov:new THREE.Vector3(),pulo:false,a:false,f:false};
+  if(e.estado!=='idle') return inp;
+  B.aiT-=dt;
+  const dist=e.spr.g.position.distanceTo(p.spr.g.position);
+  const dir=p.spr.g.position.clone().sub(e.spr.g.position).setY(0).normalize();
+  if(B.aiT<=0){
+    B.aiT=.3+Math.random()*.35;
+    if(dist>4.5) B.iaMov=(Math.random()<.85)?dir:null;
+    else if(dist>2.2) B.iaMov=dir;
+    else {
+      const r=Math.random();
+      if(r<.5){ inp.a=true; B.iaMov=null; }
+      else if(r<.68){ inp.f=true; B.iaMov=null; }
+      else if(r<.86) B.iaMov=dir.clone().negate();
+      else { inp.pulo=true; B.iaMov=dir; }
+    }
+    if(p.estado==='atk'&&p.atk===ATK.F&&dist<4&&Math.random()<.35) inp.pulo=true;
+  }
+  if(B.iaMov) inp.mov.copy(B.iaMov);
+  return inp;
+}
+
+/* captura */
+function podeCapturar(){ return B&&!B.fim&&!B.captura&&B.e.estado!=='ko'&&B.e.hp/B.e.max<=.35; }
+function lancaCristal(){
+  B.captura={fase:'voo',t:0,ini:brasinha.g.position.clone().setY(1.2),wob:0};
+  cristal.g.visible=true; sfx.orb();
+}
+function atualizaCaptura(dt){
+  const c=B.captura, alvo=selvagem.g.position.clone().setY(.9);
+  c.t+=dt;
+  if(c.fase==='voo'){
+    const t=Math.min(1,c.t/.6);
+    cristal.g.position.lerpVectors(c.ini,alvo,t);
+    cristal.g.position.y+=Math.sin(t*Math.PI)*2;
+    if(t>=1){ c.fase='sugar'; c.t=0;
+      poof(alvo,0x59e0d0,14,4); }
+  } else if(c.fase==='sugar'){
+    selvagem.g.scale.setScalar(Math.max(.01,1-c.t*2.4));
+    if(c.t>.4){ c.fase='treme'; c.t=0; sfx.wob(); }
+  } else if(c.fase==='treme'){
+    cristal.g.position.x=alvo.x+Math.sin(c.t*16)*.15;
+    if(c.t>(c.wob+1)*.5){ c.wob++; if(c.wob<3) sfx.wob(); }
+    if(c.wob>=3){
+      const chance=Math.min(.88,(1-B.e.hp/B.e.max)*1.15);
+      cristal.g.visible=false;
+      if(Math.random()<chance){
+        sfx.cap(); capturadas++; $('nCap').textContent=capturadas;
+        toast('Cascorro foi capturado! Entrou para a sua equipe!');
+        selvagem.g.scale.setScalar(1);
+        fimBatalha(true,true);
+      } else {
+        selvagem.g.scale.setScalar(1);
+        B.e.invuln=.8; B.captura=null;
+        toast('Ah, quase! O Cascorro escapou do cristal!');
+      }
+    }
+  }
+}
+
+/* ---------- CÂMERA ---------- */
+const camAlvo=new THREE.Vector3(), camPos=new THREE.Vector3(0,12,15);
+function atualizaCamera(dt){
+  let desejo,olhar;
+  if(modo==='batalha'&&B){
+    const pp=brasinha.g.position, ee=selvagem.g.position;
+    const dirE=ee.clone().sub(pp).setY(0).normalize();
+    desejo=pp.clone().sub(dirE.multiplyScalar(4.4)); desejo.y=pp.y+2.4;
+    olhar=pp.clone().lerp(ee,.42); olhar.y=1.1;
+  } else {
+    const pp=domador.g.position;
+    desejo=pp.clone().add(new THREE.Vector3(0,12,8.6)); // estilo LoL
+    olhar=pp.clone(); olhar.y=.8;
+  }
+  camPos.lerp(desejo,Math.min(1,8*dt));
+  camAlvo.lerp(olhar,Math.min(1,10*dt));
+  camera.position.copy(camPos);
+  if(shake>0){ shake-=dt*2;
+    camera.position.x+=(Math.random()-.5)*shake*.5;
+    camera.position.y+=(Math.random()-.5)*shake*.5; }
+  camera.lookAt(camAlvo);
+}
+
+/* billboard (sprite encara a câmera, travado no eixo Y) */
+function billboard(spr,flip){
+  const m=spr.g;
+  m.rotation.y=Math.atan2(camera.position.x-m.position.x,camera.position.z-m.position.z);
+  spr.m.scale.x=flip?-1:1;
+}
+
+/* ---------- LOOP ---------- */
+let ultimo=performance.now();
+function loop(agora){
+  requestAnimationFrame(loop);
+  let dt=(agora-ultimo)/1000; ultimo=agora;
+  if(dt>.05)dt=.05;
+  tempo+=dt; edges();
+
+  if(hitstop>0){ hitstop-=dt; renderer.render(scene,camera); return; }
+
+  // partículas
+  for(let i=parts.length-1;i>=0;i--){ const p=parts[i];
+    p.vida-=dt; p.m.position.x+=p.vx*dt; p.m.position.y+=p.vy*dt; p.m.position.z+=p.vz*dt;
+    p.vy-=6*dt; p.m.material.opacity=Math.max(0,p.vida*2); p.m.material.transparent=true;
+    p.m.lookAt(camera.position);
+    if(p.vida<=0){ scene.remove(p.m); parts.splice(i,1); } }
+  // números de dano
+  for(let i=dmgs.length-1;i>=0;i--){ const d=dmgs[i];
+    d.vida-=dt; d.pos.y+=1.4*dt;
+    const v=d.pos.clone().project(camera);
+    d.el.style.left=((v.x*.5+.5)*innerWidth-10)+'px';
+    d.el.style.top=((-v.y*.5+.5)*innerHeight-10)+'px';
+    d.el.style.opacity=Math.min(1,d.vida*2.5);
+    if(d.vida<=0){ d.el.remove(); dmgs.splice(i,1); } }
+
+  if(modo==='explorar'){
+    const mov=new THREE.Vector3(
+      (keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0),0,
+      (keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0));
+    const andando=mov.lengthSq()>0;
+    if(andando){
+      mov.normalize();
+      const novo=domador.g.position.clone().add(mov.clone().multiplyScalar(4.2*dt));
+      let bloqueado=false;
+      for(const s of solidos)
+        if((novo.x-s.x)**2+(novo.z-s.z)**2<s.r*s.r){ bloqueado=true; break; }
+      if(!bloqueado){ domador.g.position.copy(novo); }
+      domador.g.position.x=Math.max(-16,Math.min(16,domador.g.position.x));
+      domador.g.position.z=Math.max(-14,Math.min(14,domador.g.position.z));
+      if(mov.x!==0) dir=mov.x>0?1:-1;
+      usaFrente=(mov.x===0&&mov.z!==0);
+      anda+=dt;
+      trocaTex(domador,usaFrente?TEX.pFrente:QUADROS_ANDAR[Math.floor(anda*8)%4]);
+    } else { anda=0; trocaTex(domador,TEX.pParado); usaFrente=false; }
+    billboard(domador,dir<0&&!usaFrente);
+
+    // selvagem vagando na grama
+    if(selvagem.g.visible){
+      wanderT-=dt;
+      if(wanderT<=0){ wanderT=.9+Math.random()*1.6;
+        const a=Math.random()*Math.PI*2;
+        wDir.set(Math.cos(a),0,Math.sin(a));
+        if(Math.random()<.3) wDir.set(0,0,0); }
+      const nv=selvagem.g.position.clone().add(wDir.clone().multiplyScalar(1.3*dt));
+      nv.x=Math.max(GRAMA.x0,Math.min(GRAMA.x1,nv.x));
+      nv.z=Math.max(GRAMA.z0,Math.min(GRAMA.z1,nv.z));
+      selvagem.g.position.copy(nv);
+      selvagem.g.position.y=Math.abs(Math.sin(tempo*5))*.06;
+      billboard(selvagem,wDir.x<0);
+      if(selvagem.g.position.distanceTo(domador.g.position)<1.25) iniciaBatalha();
+    } else {
+      respawnT-=dt;
+      if(respawnT<=0){
+        selvagem.g.visible=true;
+        selvagem.mat.opacity=1; selvagem.g.scale.setScalar(1);
+        selvagem.g.position.set(GRAMA.x0+Math.random()*(GRAMA.x1-GRAMA.x0),0,
+          GRAMA.z0+Math.random()*(GRAMA.z1-GRAMA.z0));
+        toast('Um Cascorro selvagem voltou à grama alta!'); }
+    }
+  }
+
+  if(modo==='batalha'&&B){
+    // domador caminha para o canto e assiste
+    const dd=B.domadorAlvo.clone().sub(domador.g.position); dd.y=0;
+    if(dd.length()>.15){ domador.g.position.add(dd.normalize().multiplyScalar(3*dt));
+      anda+=dt; trocaTex(domador,QUADROS_ANDAR[Math.floor(anda*8)%4]); }
+    else trocaTex(domador,TEX.pFrente);
+    billboard(domador,false);
+
+    if(B.captura){ atualizaCaptura(dt); }
+    else if(!B.fim){
+      // base de movimento relativa ao adversário (lock-on)
+      const fw=selvagem.g.position.clone().sub(brasinha.g.position).setY(0).normalize();
+      const rt=new THREE.Vector3(-fw.z,0,fw.x);
+      const mov=new THREE.Vector3();
+      if(keys.KeyW||keys.ArrowUp) mov.add(fw);
+      if(keys.KeyS||keys.ArrowDown) mov.sub(fw);
+      if(keys.KeyD||keys.ArrowRight) mov.add(rt);
+      if(keys.KeyA||keys.ArrowLeft) mov.sub(rt);
+      if(mov.lengthSq()>0) mov.normalize();
+      atualizaLutador(B.p,{mov,pulo:spEdge,a:jEdge,f:kEdge},dt,B.e);
+      atualizaLutador(B.e,iaSelvagem(dt),dt,B.p);
+      if(podeCapturar()&&cEdge) lancaCristal();
+    } else {
+      atualizaLutador(B.p,{mov:new THREE.Vector3(),pulo:false,a:false,f:false},dt,B.e);
+      atualizaLutador(B.e,{mov:new THREE.Vector3(),pulo:false,a:false,f:false},dt,B.p);
+    }
+    billboard(brasinha,false); billboard(selvagem,false);
+    $('cap').style.display=podeCapturar()?'block':'none';
+  }
+
+  atualizaCamera(dt);
+  renderer.render(scene,camera);
+}
+
+function redimensiona(){
+  camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+}
+addEventListener('resize',redimensiona); redimensiona();
+cv.focus(); setTimeout(()=>cv.focus(),300);
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
