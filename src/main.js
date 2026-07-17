@@ -4,6 +4,7 @@
 import * as THREE from 'three';
 import { criarMundo, passoMundo, MUNDO_LAYOUT } from './sim/mundo.js';
 import { criarBatalha, passoBatalha, podeCapturar } from './sim/batalha.js';
+import { guardaDirecao, sequenciaCompleta } from './sim/comandos.js';
 import { criarCena, poof, passoParticulas, passoCamera } from './render/cena.js';
 import { TEX, QUADROS_ANDAR, fazSprite, trocaTex, billboard, setPos } from './render/sprites.js';
 import { criarHUD } from './render/hud.js';
@@ -31,6 +32,7 @@ let hitstop = 0, tempo = 0, capturadas = 1;
 /* ---------- entrada ---------- */
 const keys = {};
 let jE = false, kE = false, cE = false, spE = false, pJ = false, pK = false, pC = false, pS = false;
+let cimaE = false, baixoE = false, pCima = false, pBaixo = false;
 addEventListener('keydown', (e) => {
   audioInit(); keys[e.code] = true;
   if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
@@ -46,6 +48,21 @@ function edges() {
         C = keys.KeyC || keys.KeyL, S = keys.Space;
   jE = J && !pJ; kE = K && !pK; cE = C && !pC; spE = S && !pS;
   pJ = J; pK = K; pC = C; pS = S;
+  const CIMA = keys.KeyW || keys.ArrowUp, BAIXO = keys.KeyS || keys.ArrowDown;
+  cimaE = CIMA && !pCima; baixoE = BAIXO && !pBaixo;
+  pCima = CIMA; pBaixo = BAIXO;
+}
+
+/* ---------- golpes de comando: buffer de sequências direcionais ----------
+   O main só CAPTURA as teclas e envia o input abstrato c1; o matching é da
+   lógica pura em sim/comandos.js e a execução é da batalha. Direções
+   relativas ao lock-on: frente = W (aproximar), baixo = S — notação de
+   fighting game: ↓→ = S, W. */
+const SIMBOLO = { baixo: '↓', frente: '→' };
+let seqBuf = [];
+function guardaDirecoes() {
+  if (baixoE) guardaDirecao(seqBuf, 'baixo', tempo);
+  if (cimaE) guardaDirecao(seqBuf, 'frente', tempo);
 }
 const eixo = (neg, pos) => (keys[pos[0]] || keys[pos[1]] ? 1 : 0) - (keys[neg[0]] || keys[neg[1]] ? 1 : 0);
 
@@ -63,6 +80,9 @@ function aoEvento(evt) {
     case 'pulo': sfx.pulo(); break;
     case 'swing': sfx.swing(); break;
     case 'especial': sfx.especial(); break;
+    case 'comando': sfx.especial(); cena.shake = 0.22;
+      poof(cena, { ...evt.pos, y: 1 }, 0xffffff, 8, 3.5);
+      hud.toast(`${evt.nome}!`, 900); break;
     case 'cristalVoa': sfx.cristalVoa(); cristal.g.visible = true; break;
     case 'cristalSuga': poof(cena, evt.pos, 0x59e0d0, 14, 4); break;
     case 'cristalTreme': sfx.cristalTreme(); break;
@@ -91,6 +111,10 @@ function iniciaBatalha() {
   hud.nomeInimigo(especies[chave].nome.toUpperCase());
   hud.batalhaVisivel(true); hud.atualizaHP(batalha);
   hud.toast(`Um ${especies[chave].nome} selvagem apareceu! Brasinha, eu escolho você!`);
+  seqBuf = [];
+  const c1 = batalha.p.esp.golpes.comando1;
+  const seqTxt = c1 ? ` · ${c1.sequencia.map((d) => SIMBOLO[d]).join('')}+J ${c1.nome}` : '';
+  hud.dica(`W/S aproxima-afasta · A/D orbita · ESPAÇO pula · J golpe · K especial${seqTxt} · C captura`);
 }
 function encerraBatalha() {
   hud.flash();
@@ -104,6 +128,7 @@ function encerraBatalha() {
     mundo.domador.pos = { ...MUNDO_LAYOUT.spawnDomador };
   }
   selvagem.g.visible = false; // volta a ficar escondida na exploração
+  hud.dica('WASD/setas: andar · explore a grama alta');
   batalha = null; modo = 'explorar';
 }
 
@@ -180,10 +205,16 @@ function loop(agora) {
     if (evt === 'encontro') iniciaBatalha();
     if (evt === 'respawn') hud.toast('Algo farfalha na grama alta...');
   } else if (modo === 'batalha' && batalha) {
+    guardaDirecoes();
+    const seqC1 = batalha.p.esp.golpes.comando1 && batalha.p.esp.golpes.comando1.sequencia;
+    let c1 = false;
+    if (jE && sequenciaCompleta(seqBuf, seqC1, tempo)) {
+      c1 = true; seqBuf = [];
+    }
     const inpP = {
       mov: { x: eixo(['KeyA','ArrowLeft'], ['KeyD','ArrowRight']),
              z: eixo(['KeyW','ArrowUp'], ['KeyS','ArrowDown']) },
-      pulo: spE, a: jE, f: kE, capturar: cE,
+      pulo: spE, a: jE && !c1, f: kE, c1, capturar: cE,
     };
     const fim = passoBatalha(batalha, inpP, dt, aoEvento);
     hud.atualizaHP(batalha);

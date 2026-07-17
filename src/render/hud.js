@@ -27,6 +27,7 @@ export function criarHUD() {
     },
     capDisponivel(v) { $('cap').style.display = v ? 'block' : 'none'; },
     nomeInimigo(n) { $('nomeE').textContent = n; },
+    dica(txt) { $('dica').textContent = txt; },
     equipe(n) { $('nCap').textContent = n; },
     escondeTitulo() { $('titulo').style.display = 'none'; },
     dano(pos, valor, forte) {
