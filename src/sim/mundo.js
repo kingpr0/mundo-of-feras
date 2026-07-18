@@ -48,8 +48,9 @@ export function daImunidade(m, segundos = 2) {
   m.imunidade = segundos;
 }
 
-// meia-largura/profundidade da base das casas (para colisão)
+// meia-largura/profundidade da base das casas e do centro (para colisão)
 export const CASA_MEIA = { x: 2.0, z: 1.8 };
+export const CENTRO_MEIA = { x: 2.8, z: 2.1 };
 
 function colide(mapa, pos) {
   for (const a of mapa.arvores) {
@@ -59,6 +60,8 @@ function colide(mapa, pos) {
   for (const c of mapa.casas || []) {
     if (Math.abs(pos.x - c[0]) < CASA_MEIA.x && Math.abs(pos.z - c[1]) < CASA_MEIA.z) return true;
   }
+  const ct = mapa.centro;
+  if (ct && Math.abs(pos.x - ct.x) < CENTRO_MEIA.x && Math.abs(pos.z - ct.z) < CENTRO_MEIA.z) return true;
   const ag = mapa.agua;
   if (ag && pos.x > ag.x0 && pos.x < ag.x1 && pos.z > ag.z0 && pos.z < ag.z1) return true;
   return false;
@@ -115,7 +118,7 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
     if (mov.x !== 0) d.dir = mov.x > 0 ? 1 : -1;
     d.animT += dt;
 
-    // porta de casa: andar para o norte encostado na frente dela entra
+    // porta de casa (ou do centro): andar para o norte encostado na frente entra
     if (mov.z < 0) {
       for (const c of m.mapa.casas || []) {
         if (Math.abs(d.pos.x - c[0]) < 0.75 &&
@@ -123,6 +126,11 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
           return { tipo: 'porta', destino: 'interior_casa',
                    retorno: { x: c[0], z: c[1] + CASA_MEIA.z + 1.2 } };
       }
+      const ct = m.mapa.centro;
+      if (ct && Math.abs(d.pos.x - ct.x) < 0.85 &&
+          d.pos.z > ct.z + CENTRO_MEIA.z && d.pos.z < ct.z + CENTRO_MEIA.z + 0.8)
+        return { tipo: 'porta', destino: 'interior_centro',
+                 retorno: { x: ct.x, z: ct.z + CENTRO_MEIA.z + 1.2 } };
     }
     // saindo de um interior: a porta fica no centro da parede sul
     if (m.mapa.tipo === 'interior' && mov.z > 0 &&
@@ -135,6 +143,13 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
         Math.hypot(d.pos.x - cav.x, d.pos.z - cav.z) < 2.6) {
       m.cavernaT = 4;
       return 'caverna';
+    }
+    // balcão do centro de curas: chegar perto cura a equipe
+    const cura = m.mapa.cura;
+    if (cura && m.cavernaT <= 0 &&
+        Math.hypot(d.pos.x - cura.x, d.pos.z - cura.z) < 1.6) {
+      m.cavernaT = 5;
+      return 'cura';
     }
 
     // encontro à moda clássica: chance por tempo andado dentro da grama alta

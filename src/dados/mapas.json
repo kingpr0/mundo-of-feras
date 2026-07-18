@@ -3,6 +3,7 @@
   "mapas": {
     "clareira": {
       "nome": "Vila Clareira",
+      "regiao": { "x": 0, "y": 0 },
       "limite": { "x": 24, "z": 24 },
       "arvores": [
         [-4, -8, 0], [3, -14, 1], [14, 2, 0], [-8, -16, 1], [0, 6, 0], [-18, -4, 1],
@@ -12,6 +13,7 @@
       "casas": [
         [-15, 14, "vermelho"], [-7, 16, "azul"], [-17, 6, "vermelho"]
       ],
+      "centro": { "x": -1, "z": 17 },
       "grama": { "x0": 8, "z0": -18, "x1": 20, "z1": -4 },
       "spawn": { "x": -11, "z": 10 },
       "selvagens": ["cascorro"],
@@ -22,6 +24,7 @@
     },
     "trilha": {
       "nome": "Trilha dos Pinheiros",
+      "regiao": { "x": 1, "y": 0 },
       "limite": { "x": 20, "z": 7 },
       "arvores": [
         [-6, -2, 0], [4, 3, 1], [12, -3, 0]
@@ -36,6 +39,7 @@
     },
     "lago": {
       "nome": "Beira do Lago",
+      "regiao": { "x": 2, "y": 0 },
       "limite": { "x": 22, "z": 22 },
       "agua": { "x0": 2, "z0": -22, "x1": 22, "z1": 22 },
       "arvores": [
@@ -44,13 +48,15 @@
       ],
       "grama": { "x0": -18, "z0": -8, "x1": -8, "z1": 6 },
       "spawn": { "x": -19, "z": 14 },
-      "selvagens": ["voltim"],
+      "selvagens": ["voltim", "gotim"],
       "saidas": [
-        { "borda": "oeste", "de": -2, "ate": 2, "destino": "trilha" }
+        { "borda": "oeste", "de": -2, "ate": 2, "destino": "trilha" },
+        { "borda": "norte", "de": -6, "ate": -2, "destino": "encosta" }
       ]
     },
     "campo": {
       "nome": "Campo Norte",
+      "regiao": { "x": 0, "y": -1 },
       "limite": { "x": 22, "z": 22 },
       "arvores": [
         [-16, 12, 0], [14, 14, 1], [-6, 2, 0], [16, -6, 1], [-18, -14, 1], [6, 8, 0]
@@ -68,21 +74,42 @@
     },
     "colinas": {
       "nome": "Colinas Rochosas",
+      "regiao": { "x": 0, "y": -2 },
       "limite": { "x": 20, "z": 16 },
       "borda": "montanha",
+      "chao": "terra",
       "arvores": [
-        [-12, 10, 1], [14, 8, 1], [10, -8, 0]
+        [-12, 10, 1], [14, 8, 1]
       ],
       "platos": [
         { "x0": -16, "z0": -12, "x1": -4, "z1": -2, "h": 1.1 },
-        { "x0": 4, "z0": 0, "x1": 14, "z1": 10, "h": 0.8 }
+        { "x0": 4, "z0": 2, "x1": 14, "z1": 10, "h": 0.8 }
       ],
       "caverna": { "x": 0, "z": -14 },
       "grama": { "x0": -14, "z0": 4, "x1": -4, "z1": 12 },
       "spawn": { "x": 0, "z": 13 },
       "selvagens": ["voltim"],
       "saidas": [
-        { "borda": "sul", "de": -2, "ate": 2, "destino": "campo" }
+        { "borda": "sul", "de": -2, "ate": 2, "destino": "campo" },
+        { "borda": "leste", "de": 2, "ate": 6, "destino": "encosta" }
+      ]
+    },
+    "encosta": {
+      "nome": "Encosta do Lago",
+      "regiao": { "x": 1, "y": -2 },
+      "limite": { "x": 14, "z": 14 },
+      "arvores": [
+        [-6, -8, 1], [4, -4, 0], [8, 6, 1], [-8, 4, 0]
+      ],
+      "platos": [
+        { "x0": -10, "z0": -10, "x1": -2, "z1": -4, "h": 0.7 }
+      ],
+      "grama": { "x0": 0, "z0": 2, "x1": 10, "z1": 10 },
+      "spawn": { "x": -12, "z": 8 },
+      "selvagens": ["voltim", "gotim"],
+      "saidas": [
+        { "borda": "oeste", "de": 2, "ate": 6, "destino": "colinas" },
+        { "borda": "sul", "de": -6, "ate": -2, "destino": "lago" }
       ]
     },
     "interior_casa": {
@@ -90,6 +117,16 @@
       "tipo": "interior",
       "limite": { "x": 4, "z": 3.2 },
       "spawn": { "x": 0, "z": 1.8 },
+      "arvores": [],
+      "saidas": []
+    },
+    "interior_centro": {
+      "nome": "Centro de Curas",
+      "tipo": "interior",
+      "estilo": "centro",
+      "limite": { "x": 5, "z": 3.6 },
+      "cura": { "x": 0, "z": -1.6 },
+      "spawn": { "x": 0, "z": 2.2 },
       "arvores": [],
       "saidas": []
     }
