@@ -2,7 +2,7 @@
 // Eventos são emitidos via callback para a camada visual reagir (sons, partículas, HUD).
 import { vec, copia, soma, sub, escala, normXZ, perpXZ, distXZ } from './vec.js';
 
-const ARENA = { x: 16, z: 14 };
+const ARENA = { raio: 9.4 }; // ringue circular — ninguém atravessa a cerca
 const GRAVIDADE = 22;
 
 function novoLutador(chave, esp, pos) {
@@ -15,11 +15,11 @@ function novoLutador(chave, esp, pos) {
   };
 }
 
-export function criarBatalha(especies, chaveSelvagem, posDomador, posSelvagem) {
+export function criarBatalha(especies, chaveJogador, chaveSelvagem, posDomador, posSelvagem) {
   const dirE = normXZ(sub(posSelvagem, posDomador));
   const posBra = soma(posDomador, escala(dirE, 1.4));
   return {
-    p: novoLutador('brasinha', especies.brasinha, posBra),
+    p: novoLutador(chaveJogador, especies[chaveJogador], posBra),
     e: novoLutador(chaveSelvagem, especies[chaveSelvagem], posSelvagem),
     aiT: 0.7, iaMov: null,
     fim: false, resultado: null,
@@ -77,8 +77,7 @@ function passoProjeteis(b, dt, emitir) {
       aplicaDano(b, alvo, Math.round(pr.dano * pr.dono.esp.ataque),
         normXZ(pr.vel), pr.empurrao, true, emitir);
       b.projeteis.splice(i, 1);
-    } else if (pr.vida <= 0 ||
-        Math.abs(pr.pos.x) > ARENA.x || Math.abs(pr.pos.z) > ARENA.z) {
+    } else if (pr.vida <= 0 || Math.hypot(pr.pos.x, pr.pos.z) > ARENA.raio + 4) {
       b.projeteis.splice(i, 1);
     }
   }
@@ -114,9 +113,10 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
     if (f.t >= g.prep + g.ativo + g.recup) { f.estado = 'idle'; f.golpe = null; }
   } else {
     if (inp.mov.x !== 0 || inp.mov.z !== 0) {
-      // magnitude < 1 permite à IA andar mais devagar que o jogador
+      // magnitude < 1 permite à IA andar mais devagar; correr acelera 1,5x
       const mag = Math.min(1, Math.hypot(inp.mov.x, inp.mov.z));
-      f.pos = soma(p, escala(normXZ(vec(inp.mov.x, 0, inp.mov.z)), f.esp.velocidade * mag * dt));
+      const vel = f.esp.velocidade * mag * (inp.correr ? 1.5 : 1);
+      f.pos = soma(p, escala(normXZ(vec(inp.mov.x, 0, inp.mov.z)), vel * dt));
     }
     if (inp.pulo && f.pos.y <= 0.01) { f.vy = f.esp.impulso; emitir({ tipo: 'pulo' }); }
     if (inp.c1 && f.esp.golpes.comando1 && f.pos.y <= 0.01) {
@@ -129,8 +129,8 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
   f.vy -= GRAVIDADE * dt;
   f.pos.y = Math.max(0, f.pos.y + f.vy * dt);
   if (f.pos.y === 0) f.vy = Math.max(0, f.vy);
-  f.pos.x = Math.max(-ARENA.x, Math.min(ARENA.x, f.pos.x));
-  f.pos.z = Math.max(-ARENA.z, Math.min(ARENA.z, f.pos.z));
+  const r = Math.hypot(f.pos.x, f.pos.z);
+  if (r > ARENA.raio) { f.pos.x *= ARENA.raio / r; f.pos.z *= ARENA.raio / r; }
   if (f.invuln > 0) f.invuln -= dt;
   if (f.flash > 0) f.flash -= dt * 4;
 }
@@ -162,6 +162,18 @@ function iaSelvagem(b, dt, rnd) {
   }
   if (b.iaMov) inp.mov = b.iaMov;
   return inp;
+}
+
+// recuar da batalha (menu): encerra sem vitória nem derrota
+export function fugirBatalha(b) {
+  if (!b.fim) { b.fim = true; b.fimT = 0.5; b.resultado = 'fuga'; }
+}
+
+// troca a fera ativa do jogador no meio do duelo (HP cheio por enquanto —
+// persistência de HP da equipe entra junto com o save)
+export function trocaFera(b, chave, especies) {
+  const pos = copia(b.p.pos);
+  b.p = novoLutador(chave, especies[chave], pos);
 }
 
 export function lancaCristal(b, emitir) {
@@ -217,8 +229,8 @@ export function passoBatalha(b, inpP, dt, emitir, rnd = Math.random) {
   // converte o input relativo (frente/trás/lados) em direção no mundo
   const fw = normXZ(sub(b.e.pos, b.p.pos));
   const rt = perpXZ(fw);
-  const mov = soma(escala(fw, -inpP.mov.z), escala(rt, inpP.mov.x)); // W = aproximar
-  passoLutador(b, b.p, { mov, pulo: inpP.pulo, a: inpP.a, f: inpP.f, c1: inpP.c1 }, b.e, dt, emitir);
+  const mov = soma(escala(fw, -inpP.mov.z), escala(rt, inpP.mov.x)); // ↑ = aproximar
+  passoLutador(b, b.p, { mov, pulo: inpP.pulo, a: inpP.a, f: inpP.f, c1: inpP.c1, correr: inpP.correr }, b.e, dt, emitir);
   passoLutador(b, b.e, iaSelvagem(b, dt, rnd), b.p, dt, emitir);
   if (inpP.capturar && podeCapturar(b)) lancaCristal(b, emitir);
   return null;
