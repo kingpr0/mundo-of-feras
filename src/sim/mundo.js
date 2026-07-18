@@ -20,7 +20,23 @@ export function criarMundo(mapa, selvagens = ['cascorro'], rnd = Math.random) {
     selvagem: { especie: sorteiaEspecie(selvagens, rnd) },
     selvagens,
     imunidade: 0, // segundos sem novos encontros (após fugir/batalhar/trocar de mapa)
+    cavernaT: 0,  // intervalo entre avisos da caverna
   };
+}
+
+// altura do terreno: platôs elevam o domador com rampa suave nas beiradas
+export function alturaTerreno(mapa, pos) {
+  let h = 0;
+  for (const p of mapa.platos || []) {
+    const margem = 1.4;
+    if (pos.x > p.x0 - margem && pos.x < p.x1 + margem &&
+        pos.z > p.z0 - margem && pos.z < p.z1 + margem) {
+      const dx = Math.min((pos.x - (p.x0 - margem)) / margem, ((p.x1 + margem) - pos.x) / margem, 1);
+      const dz = Math.min((pos.z - (p.z0 - margem)) / margem, ((p.z1 + margem) - pos.z) / margem, 1);
+      h = Math.max(h, p.h * Math.max(0, Math.min(dx, dz)));
+    }
+  }
+  return h;
 }
 
 function sorteiaEspecie(lista, rnd) {
@@ -81,21 +97,45 @@ export function entradaDoMapa(mapa, origem) {
 }
 
 // inp = { mov: {x,z} (-1..1), correr }
-// retorna: 'encontro' | { tipo:'saida', saida } | null
+// retorna: 'encontro' | 'caverna' | { tipo:'saida', saida } |
+//          { tipo:'porta', destino, retorno } | null
 export function passoMundo(m, inp, dt, rnd = Math.random) {
   if (m.imunidade > 0) m.imunidade -= dt;
+  if (m.cavernaT > 0) m.cavernaT -= dt;
   const d = m.domador;
   d.andando = inp.mov.x !== 0 || inp.mov.z !== 0;
   d.correndo = d.andando && !!inp.correr;
   if (d.andando) {
     const mov = normXZ(vec(inp.mov.x, 0, inp.mov.z));
     const novo = soma(d.pos, escala(mov, (d.correndo ? 4.2 * 1.5 : 4.2) * dt));
-    if (!colide(m.mapa, novo)) d.pos = novo;
+    if (!colide(m.mapa, novo)) { d.pos.x = novo.x; d.pos.z = novo.z; }
     const saida = verificaSaida(m.mapa, d.pos);
     if (saida) return { tipo: 'saida', saida };
     prende(m.mapa, d.pos);
     if (mov.x !== 0) d.dir = mov.x > 0 ? 1 : -1;
     d.animT += dt;
+
+    // porta de casa: andar para o norte encostado na frente dela entra
+    if (mov.z < 0) {
+      for (const c of m.mapa.casas || []) {
+        if (Math.abs(d.pos.x - c[0]) < 0.75 &&
+            d.pos.z > c[1] + CASA_MEIA.z && d.pos.z < c[1] + CASA_MEIA.z + 0.8)
+          return { tipo: 'porta', destino: 'interior_casa',
+                   retorno: { x: c[0], z: c[1] + CASA_MEIA.z + 1.2 } };
+      }
+    }
+    // saindo de um interior: a porta fica no centro da parede sul
+    if (m.mapa.tipo === 'interior' && mov.z > 0 &&
+        d.pos.z > m.mapa.limite.z - 0.5 && Math.abs(d.pos.x) < 1.2)
+      return { tipo: 'porta', destino: 'retorno' };
+
+    // boca da caverna: chegar perto avisa (interior dela vem no futuro)
+    const cav = m.mapa.caverna;
+    if (cav && m.cavernaT <= 0 &&
+        Math.hypot(d.pos.x - cav.x, d.pos.z - cav.z) < 2.6) {
+      m.cavernaT = 4;
+      return 'caverna';
+    }
 
     // encontro à moda clássica: chance por tempo andado dentro da grama alta
     const G = m.mapa.grama;
@@ -106,5 +146,6 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
       return 'encontro';
     }
   } else { d.animT = 0; }
+  d.pos.y = alturaTerreno(m.mapa, d.pos);
   return null;
 }

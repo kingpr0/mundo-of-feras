@@ -16,7 +16,8 @@
       "spawn": { "x": -11, "z": 10 },
       "selvagens": ["cascorro"],
       "saidas": [
-        { "borda": "leste", "de": -2, "ate": 2, "destino": "trilha" }
+        { "borda": "leste", "de": -2, "ate": 2, "destino": "trilha" },
+        { "borda": "norte", "de": -2, "ate": 2, "destino": "campo" }
       ]
     },
     "trilha": {
@@ -47,6 +48,50 @@
       "saidas": [
         { "borda": "oeste", "de": -2, "ate": 2, "destino": "trilha" }
       ]
+    },
+    "campo": {
+      "nome": "Campo Norte",
+      "limite": { "x": 22, "z": 22 },
+      "arvores": [
+        [-16, 12, 0], [14, 14, 1], [-6, 2, 0], [16, -6, 1], [-18, -14, 1], [6, 8, 0]
+      ],
+      "platos": [
+        { "x0": -14, "z0": -8, "x1": -2, "z1": 4, "h": 0.9 }
+      ],
+      "grama": { "x0": 4, "z0": -18, "x1": 18, "z1": -6 },
+      "spawn": { "x": 0, "z": 18 },
+      "selvagens": ["cascorro", "voltim"],
+      "saidas": [
+        { "borda": "sul", "de": -2, "ate": 2, "destino": "clareira" },
+        { "borda": "norte", "de": -2, "ate": 2, "destino": "colinas" }
+      ]
+    },
+    "colinas": {
+      "nome": "Colinas Rochosas",
+      "limite": { "x": 20, "z": 16 },
+      "borda": "montanha",
+      "arvores": [
+        [-12, 10, 1], [14, 8, 1], [10, -8, 0]
+      ],
+      "platos": [
+        { "x0": -16, "z0": -12, "x1": -4, "z1": -2, "h": 1.1 },
+        { "x0": 4, "z0": 0, "x1": 14, "z1": 10, "h": 0.8 }
+      ],
+      "caverna": { "x": 0, "z": -14 },
+      "grama": { "x0": -14, "z0": 4, "x1": -4, "z1": 12 },
+      "spawn": { "x": 0, "z": 13 },
+      "selvagens": ["voltim"],
+      "saidas": [
+        { "borda": "sul", "de": -2, "ate": 2, "destino": "campo" }
+      ]
+    },
+    "interior_casa": {
+      "nome": "Casa Aconchegante",
+      "tipo": "interior",
+      "limite": { "x": 4, "z": 3.2 },
+      "spawn": { "x": 0, "z": 1.8 },
+      "arvores": [],
+      "saidas": []
     }
   }
 }
