@@ -1,26 +1,31 @@
 // SIMULAÇÃO DA BATALHA — o coração do jogo. Regras puras, sem THREE, sem DOM.
 // Eventos são emitidos via callback para a camada visual reagir (sons, partículas, HUD).
 import { vec, copia, soma, sub, escala, normXZ, perpXZ, distXZ } from './vec.js';
+import { fatorNivel, NIVEL_INICIAL } from './progressao.js';
 
 const ARENA = { raio: 9.4 }; // ringue circular — ninguém atravessa a cerca
 const GRAVIDADE = 22;
 
-function novoLutador(chave, esp, pos) {
+function novoLutador(chave, esp, pos, nivel = NIVEL_INICIAL) {
+  const fator = fatorNivel(nivel);
+  const vida = Math.round(esp.vida * fator);
   return {
-    chave, esp,
+    chave, esp, nivel,
+    forca: esp.ataque * fator,
     pos: copia(pos), vy: 0,
-    hp: esp.vida, max: esp.vida,
-    estado: 'idle', t: 0, golpe: null, acertou: false,
+    hp: vida, max: vida,
+    estado: 'idle', t: 0, golpe: null, acertou: false, tiros: 0,
     invuln: 0, flash: 0, kb: vec(),
   };
 }
 
-export function criarBatalha(especies, chaveJogador, chaveSelvagem, posDomador, posSelvagem) {
+// jogador/selvagem = { chave, nivel }
+export function criarBatalha(especies, jogador, selvagem, posDomador, posSelvagem) {
   const dirE = normXZ(sub(posSelvagem, posDomador));
   const posBra = soma(posDomador, escala(dirE, 1.4));
   return {
-    p: novoLutador(chaveJogador, especies[chaveJogador], posBra),
-    e: novoLutador(chaveSelvagem, especies[chaveSelvagem], posSelvagem),
+    p: novoLutador(jogador.chave, especies[jogador.chave], posBra, jogador.nivel),
+    e: novoLutador(selvagem.chave, especies[selvagem.chave], posSelvagem, selvagem.nivel),
     aiT: 0.7, iaMov: null,
     fim: false, resultado: null,
     captura: null,
@@ -48,19 +53,24 @@ function aplicaDano(b, vitima, dano, dirKb, empurrao, forte, emitir) {
   }
 }
 function acerta(b, vitima, atacante, g, emitir) {
-  aplicaDano(b, vitima, Math.round(g.dano * atacante.esp.ataque),
+  aplicaDano(b, vitima, Math.round(g.dano * atacante.forca),
     normXZ(sub(vitima.pos, atacante.pos)), g.empurrao, g.forte, emitir);
 }
 
-/* projéteis: o especial de tipo (bola de fogo, esfera voltaica...) voa até
-   o alvo; pular na hora certa esquiva (a altura do apex passa por cima) */
-function disparaProjetil(b, f, outro, g, emitir) {
+/* projéteis: o especial de tipo (bola de fogo, jato d'água...) voa até o
+   alvo — inclusive disparado do ar, mirando na altura de quem recebe;
+   pular na hora certa ainda esquiva */
+function disparaProjetil(b, f, outro, g, cfg, emitir) {
   const dir = normXZ(sub(outro.pos, f.pos));
-  const pos = soma(copia(f.pos), vec(dir.x * 0.7, 0.9, dir.z * 0.7));
+  const pos = soma(copia(f.pos), vec(dir.x * 0.7, f.pos.y + 0.9, dir.z * 0.7));
+  const vel = escala(dir, cfg.vel);
+  // mira vertical: alcança o centro do alvo no tempo de voo estimado
+  const tVoo = Math.max(0.15, distXZ(pos, outro.pos) / cfg.vel);
+  vel.y = ((outro.pos.y + 0.6) - pos.y) / tVoo;
   b.projeteis.push({
     id: b.projId++, dono: f, alvo: outro,
-    pos, vel: escala(dir, g.projetil.vel),
-    dano: g.dano, empurrao: g.empurrao, raio: g.projetil.raio,
+    pos, vel,
+    dano: g.dano, empurrao: g.empurrao, raio: cfg.raio,
     vida: 1.8, tipo: f.esp.tipo,
   });
   emitir({ tipo: 'projetil', pos: copia(pos), elemento: f.esp.tipo });
@@ -74,7 +84,7 @@ function passoProjeteis(b, dt, emitir) {
     const centroY = alvo.pos.y + 0.6;
     if (alvo.estado !== 'ko' && alvo.invuln <= 0 &&
         distXZ(pr.pos, alvo.pos) < pr.raio && Math.abs(pr.pos.y - centroY) < 0.8) {
-      aplicaDano(b, alvo, Math.round(pr.dano * pr.dono.esp.ataque),
+      aplicaDano(b, alvo, Math.round(pr.dano * pr.dono.forca),
         normXZ(pr.vel), pr.empurrao, true, emitir);
       b.projeteis.splice(i, 1);
     } else if (pr.vida <= 0 || Math.hypot(pr.pos.x, pr.pos.z) > ARENA.raio + 4) {
@@ -94,11 +104,17 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
   } else if (f.estado === 'atk') {
     f.t += dt;
     const g = f.golpe;
-    if (g.projetil) {
+    if (g.rajada) {
+      // rajada (lança-chamas): vários tiros em sequência durante a janela ativa
+      if (f.tiros < g.rajada.tiros && f.t >= g.prep + f.tiros * g.rajada.intervalo) {
+        f.tiros++;
+        disparaProjetil(b, f, outro, g, g.rajada, emitir);
+      }
+    } else if (g.projetil) {
       // golpe de projétil: carrega parado e dispara ao fim da preparação
       if (!f.acertou && f.t >= g.prep) {
         f.acertou = true;
-        disparaProjetil(b, f, outro, g, emitir);
+        disparaProjetil(b, f, outro, g, g.projetil, emitir);
       }
     } else if (f.t >= g.prep && f.t <= g.prep + g.ativo) {
       const frente = normXZ(sub(outro.pos, p));
@@ -120,11 +136,15 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
     }
     if (inp.pulo && f.pos.y <= 0.01) { f.vy = f.esp.impulso; emitir({ tipo: 'pulo' }); }
     if (inp.c1 && f.esp.golpes.comando1 && f.pos.y <= 0.01) {
-      f.estado = 'atk'; f.golpe = f.esp.golpes.comando1; f.t = 0; f.acertou = false;
+      f.estado = 'atk'; f.golpe = f.esp.golpes.comando1; f.t = 0; f.acertou = false; f.tiros = 0;
       emitir({ tipo: 'comando', nome: f.esp.golpes.comando1.nome, pos: copia(p) });
     }
-    else if (inp.a) { f.estado = 'atk'; f.golpe = f.esp.golpes.normal; f.t = 0; f.acertou = false; emitir({ tipo: 'swing' }); }
-    else if (inp.f && f.pos.y <= 0.01) { f.estado = 'atk'; f.golpe = f.esp.golpes.especial; f.t = 0; f.acertou = false; emitir({ tipo: 'especial' }); }
+    else if (inp.a) { f.estado = 'atk'; f.golpe = f.esp.golpes.normal; f.t = 0; f.acertou = false; f.tiros = 0; emitir({ tipo: 'swing' }); }
+    // especiais de projétil podem ser disparados do ar; os corpo-a-corpo não
+    else if (inp.f && (f.pos.y <= 0.01 || f.esp.golpes.especial.projetil)) {
+      f.estado = 'atk'; f.golpe = f.esp.golpes.especial; f.t = 0; f.acertou = false; f.tiros = 0;
+      emitir({ tipo: 'especial' });
+    }
   }
   f.vy -= GRAVIDADE * dt;
   f.pos.y = Math.max(0, f.pos.y + f.vy * dt);
@@ -171,9 +191,9 @@ export function fugirBatalha(b) {
 
 // troca a fera ativa do jogador no meio do duelo (HP cheio por enquanto —
 // persistência de HP da equipe entra junto com o save)
-export function trocaFera(b, chave, especies) {
+export function trocaFera(b, chave, nivel, especies) {
   const pos = copia(b.p.pos);
-  b.p = novoLutador(chave, especies[chave], pos);
+  b.p = novoLutador(chave, especies[chave], pos, nivel);
 }
 
 export function lancaCristal(b, emitir) {
