@@ -40,6 +40,12 @@
   .opt { color:#8f89a6; font-size:18px; font-weight:bold; letter-spacing:2px; }
   .opt.sel { color:#ffd23f; }
   .opt.sel::before { content:'▶ '; }
+  #menu { position:fixed; top:50%; right:48px; transform:translateY(-50%);
+    background:rgba(13,11,20,.94); border:2px solid #ffd23f; padding:16px 24px;
+    min-width:200px; display:none; }
+  #menuTit { color:#ffd23f; font-size:14px; font-weight:bold; letter-spacing:2px;
+    margin-bottom:10px; border-bottom:1px solid #3a3350; padding-bottom:6px; }
+  #menuItens .opt { font-size:15px; margin:8px 0; }
   #painel { position:fixed; top:12px; left:12px; background:rgba(13,11,20,.88);
     border:2px solid #ffd23f; padding:10px 14px; min-width:150px; }
   #painel .ptit { color:#ffd23f; font-size:13px; font-weight:bold; letter-spacing:2px;
@@ -61,15 +67,15 @@
   <div class="vinheta"></div>
   <div id="painel">
     <div class="ptit">DOMADOR</div>
-    <div class="plin">♦ Brasinha</div>
+    <div class="plin">♦ <span id="pAtiva">Brasinha</span></div>
     <div class="plin">Feras: <span id="nCap">1</span></div>
     <div class="plin">Local: <span id="pMapa">—</span></div>
   </div>
   <div id="miniWrap">
     <div id="miniNome">—</div>
-    <canvas id="mini" width="170" height="170"></canvas>
+    <canvas id="mini" width="120" height="120"></canvas>
   </div>
-  <div class="hpwrap" id="hpP"><div class="hpname">♦ BRASINHA</div>
+  <div class="hpwrap" id="hpP"><div class="hpname" id="nomeP">♦ BRASINHA</div>
     <div class="hpbar"><div class="hpfill" id="fillP"></div></div></div>
   <div class="hpwrap" id="hpE"><div class="hpname" id="nomeE">CASCORRO</div>
     <div class="hpbar"><div class="hpfill" id="fillE"></div></div></div>
@@ -77,6 +83,10 @@
   <div id="escolha">
     <div class="opt sel" id="optLutar">LUTAR</div>
     <div class="opt" id="optFugir">FUGIR</div>
+  </div>
+  <div id="menu">
+    <div id="menuTit">MENU</div>
+    <div id="menuItens"></div>
   </div>
   <div id="toast"></div>
   <div id="dica">Setas: andar · na luta: ↑/↓ aproxima-afasta · ←/→ orbita · ESPAÇO pula · Z golpe · X especial · C captura</div>

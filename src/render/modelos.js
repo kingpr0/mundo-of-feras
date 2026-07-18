@@ -147,10 +147,10 @@ export function criarProjetil(scene, corHex) {
   const M = novoModelo(scene, 0.5);
   const mat = new THREE.MeshLambertMaterial({
     color: corHex, emissive: corHex, emissiveIntensity: 0.65 });
-  const m = new THREE.Mesh(new THREE.SphereGeometry(0.3, 12, 10), mat);
+  const m = new THREE.Mesh(new THREE.SphereGeometry(0.38, 12, 10), mat);
   m.castShadow = true; M.materiais.push(mat); M.g.add(m);
-  const halo = new THREE.Mesh(new THREE.OctahedronGeometry(0.42),
-    new THREE.MeshBasicMaterial({ color: corHex, transparent: true, opacity: 0.35 }));
+  const halo = new THREE.Mesh(new THREE.OctahedronGeometry(0.56),
+    new THREE.MeshBasicMaterial({ color: corHex, transparent: true, opacity: 0.4 }));
   M.g.add(halo);
   return M;
 }

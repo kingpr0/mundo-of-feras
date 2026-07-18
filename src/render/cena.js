@@ -100,6 +100,15 @@ function montaBorda(g, mapa) {
   };
   const planta = (x, z, i) => {
     if (bloqueada(x, z)) return;
+    if (mapa.borda === 'montanha') {
+      // muralha de rochas em vez de mata
+      const r = 1.3 + (i % 3) * 0.5;
+      const pedra = new THREE.Mesh(new THREE.DodecahedronGeometry(r),
+        new THREE.MeshLambertMaterial({ color: (i % 2) ? 0x7d838c : 0x6e7680 }));
+      pedra.position.set(x + (Math.random() - 0.5), r * 0.7, z + (Math.random() - 0.5));
+      pedra.castShadow = true; g.add(pedra);
+      return;
+    }
     arvore(g, x + (Math.random() - 0.5), z + (Math.random() - 0.5), i % 2);
   };
   const passo = 2.4;
@@ -136,20 +145,11 @@ function arvore(scene, x, z, pinheiro) {
   g.position.set(x, 0, z); scene.add(g);
 }
 
-/* grama alta: tufos em cruz (dois planos), altos o bastante para cobrir as
-   pernas do domador — o jogador "afunda" no mato, como nos clássicos */
+/* grama alta 3D: moitas volumétricas low-poly (cones finos agrupados, no
+   mesmo estilo das árvores) — o domador some no meio do mato de verdade */
 function montaGrama(scene, G) {
-  const c = document.createElement('canvas'); c.width = 24; c.height = 32;
-  const x = c.getContext('2d');
-  const tons = ['#2f7a2c', '#3f8f38', '#4da043', '#63b04f'];
-  for (let i = 0; i < 9; i++) {
-    x.fillStyle = tons[i % tons.length];
-    const bx = 1 + i * 2.5, alt = 18 + (i * 7) % 14;
-    x.fillRect(bx, 32 - alt, 2, alt);
-    x.fillStyle = '#8fd977'; x.fillRect(bx, 32 - alt, 2, 3); // ponta clara
-  }
-  const t = new THREE.CanvasTexture(c); t.magFilter = THREE.NearestFilter;
-  const mat = new THREE.MeshLambertMaterial({ map: t, transparent: true, alphaTest: 0.4, side: THREE.DoubleSide });
+  const mats = [0x2f7a2c, 0x3f8f38, 0x4da043, 0x5fb54a]
+    .map((c) => new THREE.MeshLambertMaterial({ color: c }));
   // tapete escuro marcando a zona de encontro
   const base = new THREE.Mesh(
     new THREE.PlaneGeometry(G.x1 - G.x0 + 1, G.z1 - G.z0 + 1),
@@ -157,16 +157,21 @@ function montaGrama(scene, G) {
   base.rotation.x = -Math.PI / 2;
   base.position.set((G.x0 + G.x1) / 2, 0.012, (G.z0 + G.z1) / 2);
   base.receiveShadow = true; scene.add(base);
-  const n = Math.round((G.x1 - G.x0) * (G.z1 - G.z0) * 1.1);
-  const geo = new THREE.PlaneGeometry(1.1, 1.15);
+  const geo = new THREE.ConeGeometry(0.3, 1.2, 5);
+  const n = Math.round((G.x1 - G.x0) * (G.z1 - G.z0) * 0.5);
   for (let i = 0; i < n; i++) {
-    const px = G.x0 + Math.random() * (G.x1 - G.x0);
-    const pz = G.z0 + Math.random() * (G.z1 - G.z0);
-    const rot = Math.random() * Math.PI;
-    for (const extra of [0, Math.PI / 2]) {
-      const m = new THREE.Mesh(geo, mat);
-      m.position.set(px, 0.575, pz);
-      m.rotation.y = rot + extra;
+    const px = G.x0 + 0.6 + Math.random() * (G.x1 - G.x0 - 1.2);
+    const pz = G.z0 + 0.6 + Math.random() * (G.z1 - G.z0 - 1.2);
+    // cada moita: 3 lâminas cônicas inclinadas para fora
+    for (let k = 0; k < 3; k++) {
+      const m = new THREE.Mesh(geo, mats[(i + k) % mats.length]);
+      const esc = 0.75 + Math.random() * 0.5;
+      m.scale.set(esc, esc, esc);
+      m.position.set(px + (Math.random() - 0.5) * 0.55, 0.6 * esc,
+                     pz + (Math.random() - 0.5) * 0.55);
+      m.rotation.set((Math.random() - 0.5) * 0.35, Math.random() * Math.PI,
+                     (Math.random() - 0.5) * 0.35);
+      m.castShadow = true;
       scene.add(m);
     }
   }
@@ -187,21 +192,64 @@ function montaAgua(g, ag) {
   g.add(agua);
 }
 
-// faixa de terra marcando a passagem para outro mapa
-function trilhaSaida(g, mapa, s) {
+/* platô elevado: dois degraus (base larga + topo), combinando com a rampa
+   suave da sim; o topo é gramado */
+function plato(g, p) {
+  const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
+  const w = p.x1 - p.x0, d = p.z1 - p.z0;
+  const cx = (p.x0 + p.x1) / 2, cz = (p.z0 + p.z1) / 2;
+  const baseM = new THREE.Mesh(new THREE.BoxGeometry(w + 2.4, p.h * 0.55, d + 2.4), lamb(0x9c7a4e));
+  baseM.position.set(cx, p.h * 0.275, cz); baseM.castShadow = baseM.receiveShadow = true;
+  g.add(baseM);
+  const topoM = new THREE.Mesh(new THREE.BoxGeometry(w, p.h, d), lamb(0xb08a5a));
+  topoM.position.set(cx, p.h / 2, cz); topoM.castShadow = topoM.receiveShadow = true;
+  g.add(topoM);
+  const gramaM = new THREE.Mesh(new THREE.BoxGeometry(w, 0.1, d), lamb(0x67b34f));
+  gramaM.position.set(cx, p.h + 0.05, cz); gramaM.receiveShadow = true;
+  g.add(gramaM);
+}
+
+/* boca de caverna nas rochas (o interior vem no futuro) */
+function bocaCaverna(g, c) {
+  const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
+  const rocha = new THREE.Mesh(new THREE.DodecahedronGeometry(3.2), lamb(0x6e7680));
+  rocha.position.set(c.x, 1.6, c.z - 1.2); rocha.scale.set(1.4, 1, 1);
+  rocha.castShadow = true; g.add(rocha);
+  for (const [dx, r] of [[-3.4, 1.4], [3.4, 1.6]]) {
+    const p = new THREE.Mesh(new THREE.DodecahedronGeometry(r), lamb(0x7d838c));
+    p.position.set(c.x + dx, r * 0.7, c.z - 0.6); p.castShadow = true; g.add(p);
+  }
+  const buraco = new THREE.Mesh(new THREE.CircleGeometry(1.15, 16),
+    new THREE.MeshBasicMaterial({ color: 0x0a0a12 }));
+  buraco.position.set(c.x, 1.05, c.z + 1.1);
+  g.add(buraco);
+}
+
+/* interior de casa: piso de madeira, paredes com porta ao sul e móveis */
+function montaInterior(g, mapa) {
+  const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
   const L = mapa.limite;
-  const larg = (s.ate - s.de) + 1.6, comp = 5;
-  const horizontal = s.borda === 'leste' || s.borda === 'oeste';
-  const m = new THREE.Mesh(
-    new THREE.PlaneGeometry(horizontal ? comp : larg, horizontal ? larg : comp),
-    new THREE.MeshLambertMaterial({ color: 0xc9a56b }));
-  m.rotation.x = -Math.PI / 2; m.receiveShadow = true;
-  const meio = (s.de + s.ate) / 2;
-  if (s.borda === 'leste') m.position.set(L.x - comp / 2, 0.015, meio);
-  if (s.borda === 'oeste') m.position.set(-L.x + comp / 2, 0.015, meio);
-  if (s.borda === 'sul') m.position.set(meio, 0.015, L.z - comp / 2);
-  if (s.borda === 'norte') m.position.set(meio, 0.015, -L.z + comp / 2);
-  g.add(m);
+  const piso = new THREE.Mesh(new THREE.BoxGeometry(L.x * 2 + 0.8, 0.1, L.z * 2 + 0.8), lamb(0xa8734a));
+  piso.position.y = -0.05; piso.receiveShadow = true; g.add(piso);
+  const parede = (w, d, x, z) => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, 2.6, d), lamb(0xe8d3b0));
+    m.position.set(x, 1.3, z); m.castShadow = true; g.add(m);
+  };
+  parede(L.x * 2 + 0.8, 0.4, 0, -L.z - 0.2);           // fundo
+  parede(0.4, L.z * 2 + 0.8, -L.x - 0.2, 0);           // esquerda
+  parede(0.4, L.z * 2 + 0.8, L.x + 0.2, 0);            // direita
+  const seg = L.x - 1;                                  // frente com vão da porta
+  parede(seg, 0.4, -(1 + seg / 2), L.z + 0.2);
+  parede(seg, 0.4, 1 + seg / 2, L.z + 0.2);
+  // móveis: cama, travesseiro, mesa e tapete
+  const cama = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.5, 2.4), lamb(0xd9553f));
+  cama.position.set(-L.x + 1.2, 0.25, -L.z + 1.5); cama.castShadow = true; g.add(cama);
+  const trav = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.25, 0.7), lamb(0xfff3da));
+  trav.position.set(-L.x + 1.2, 0.62, -L.z + 0.7); g.add(trav);
+  const mesa = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.9, 1.1), lamb(0x8a6a50));
+  mesa.position.set(L.x - 1.4, 0.45, -L.z + 1.3); mesa.castShadow = true; g.add(mesa);
+  const tapete = new THREE.Mesh(new THREE.CircleGeometry(1.1, 16), lamb(0x5fa848));
+  tapete.rotation.x = -Math.PI / 2; tapete.position.y = 0.02; g.add(tapete);
 }
 
 function descarta(obj) {
@@ -223,12 +271,14 @@ export function montaMapa(cena, mapa) {
   g.visible = !cena.arenaG.visible;
   cena.scene.add(g);
   cena.mundoG = g;
+  if (mapa.tipo === 'interior') { montaInterior(g, mapa); return; }
   montaChao(g, Math.max(mapa.limite.x, mapa.limite.z) * 2 + 24);
   (mapa.arvores || []).forEach(([x, z, p]) => arvore(g, x, z, p));
   (mapa.casas || []).forEach(([x, z, cor]) => casa(g, x, z, cor));
+  (mapa.platos || []).forEach((p) => plato(g, p));
   if (mapa.grama) montaGrama(g, mapa.grama);
   if (mapa.agua) montaAgua(g, mapa.agua);
-  (mapa.saidas || []).forEach((s) => trilhaSaida(g, mapa, s));
+  if (mapa.caverna) bocaCaverna(g, mapa.caverna);
   montaBorda(g, mapa);
 }
 

@@ -3,7 +3,7 @@
 // som, partículas e HUD. Nenhuma regra de jogo vive aqui.
 import * as THREE from 'three';
 import { criarMundo, passoMundo, daImunidade, entradaDoMapa } from './sim/mundo.js';
-import { criarBatalha, passoBatalha, podeCapturar } from './sim/batalha.js';
+import { criarBatalha, passoBatalha, podeCapturar, fugirBatalha, trocaFera } from './sim/batalha.js';
 import { guardaDirecao, sequenciaCompleta } from './sim/comandos.js';
 import { criarCena, poof, passoParticulas, passoCamera, mostraArena, montaMapa } from './render/cena.js';
 import * as MD from './render/modelos.js';
@@ -17,17 +17,19 @@ const cv = document.getElementById('cv');
 const cena = criarCena(cv);
 const hud = criarHUD();
 
-// modelos 3D (low-poly chibi)
+// modelos 3D: um conjunto para a fera do jogador e outro para a selvagem
+// (assim a mesma espécie pode aparecer dos dois lados do ringue)
 const domador = MD.criarDomador(cena.scene);
-const brasinha = MD.criarFera(cena.scene, 'brasinha'); MD.mostra(brasinha, false);
-const feras = {};
-for (const k of Object.keys(especies))
-  if (especies[k].selvagem) { feras[k] = MD.criarFera(cena.scene, k); MD.mostra(feras[k], false); }
+const modelosJog = {}, modelosIni = {};
+for (const k of Object.keys(especies)) {
+  modelosJog[k] = MD.criarFera(cena.scene, k); MD.mostra(modelosJog[k], false);
+  modelosIni[k] = MD.criarFera(cena.scene, k); MD.mostra(modelosIni[k], false);
+}
 const cristal = MD.criarCristal(cena.scene); MD.mostra(cristal, false);
 
 // posições de largada no ringue (a arena visual é centrada na origem)
 const RINGUE = { dom: { x: -5, y: 0, z: 0 }, fera: { x: 3.5, y: 0, z: 0 } };
-const DICA_EXPLORAR = 'Setas: andar (2 toques = correr) · explore a grama alta';
+const DICA_EXPLORAR = 'Setas: andar (2 toques = correr) · M abre o menu';
 // cor dos efeitos elementais por tipo de fera
 const CORES_TIPO = { fogo: 0xff8a3d, eletrico: 0xffe94d, agua: 0x4da3ff, planta: 0x5fd35a, comum: 0xcbd0d8 };
 const projMeshes = new Map(); // id do projétil (sim) -> modelo 3D
@@ -43,15 +45,22 @@ function novoMundo(chave) {
 let mundo = novoMundo(chaveMapa);
 montaMapa(cena, mundo.mapa);
 hud.localAtual(mundo.mapa.nome);
+
+let equipe = [{ especie: 'brasinha' }];
+let ativa = 0; // índice da fera ativa na equipe
 let batalha = null;
+let playerM = null;   // modelo da fera do jogador em batalha
 let feraAtual = null; // modelo da fera selvagem em cena (encontro/batalha)
 let escolha = 0;      // menu do encontro: 0 = lutar, 1 = fugir
-let hitstop = 0, tempo = 0, capturadas = 1;
+let menu = null;      // menu aberto: { tipo, sel } | null
+let retornoPorta = null; // para onde voltar ao sair de um interior
+let hitstop = 0, tempo = 0;
 
 /* ---------- entrada (padrão: setas + Z/X/C; WASD e J/K seguem como extras) */
 const keys = {};
 let jE = false, kE = false, cE = false, spE = false, pJ = false, pK = false, pC = false, pS = false;
 let cimaE = false, baixoE = false, pCima = false, pBaixo = false;
+let mE = false, escE = false, pM = false, pEsc = false;
 addEventListener('keydown', (e) => {
   audioInit(); keys[e.code] = true;
   if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
@@ -71,10 +80,14 @@ function edges() {
   const CIMA = keys.ArrowUp || keys.KeyW, BAIXO = keys.ArrowDown || keys.KeyS;
   cimaE = CIMA && !pCima; baixoE = BAIXO && !pBaixo;
   pCima = CIMA; pBaixo = BAIXO;
+  const M = keys.KeyM, ESC = keys.Escape;
+  mE = M && !pM; escE = ESC && !pEsc;
+  pM = M; pEsc = ESC;
 }
 const eixo = (neg, pos) => (keys[pos[0]] || keys[pos[1]] ? 1 : 0) - (keys[neg[0]] || keys[neg[1]] ? 1 : 0);
 
-/* corrida: dois toques rápidos na mesma direção e segurar o segundo */
+/* corrida: dois toques rápidos na mesma direção e segurar o segundo
+   (vale na exploração e dentro da arena) */
 const TECLAS_DIR = ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD'];
 const ultToque = {}, prevDir = {};
 let correndo = false;
@@ -90,11 +103,7 @@ function detectaCorrida() {
   if (!TECLAS_DIR.some((k) => keys[k])) correndo = false;
 }
 
-/* ---------- golpes de comando: buffer de sequências direcionais ----------
-   O main só CAPTURA as teclas e envia o input abstrato c1; o matching é da
-   lógica pura em sim/comandos.js e a execução é da batalha. Direções
-   relativas ao lock-on: frente = ↑ (aproximar), baixo = ↓ — notação de
-   fighting game: ↓→ = seta baixo, seta cima. */
+/* ---------- golpes de comando: buffer de sequências direcionais ---------- */
 const SIMBOLO = { baixo: '↓', frente: '→' };
 let seqBuf = [];
 function guardaDirecoes() {
@@ -120,7 +129,7 @@ function aoEvento(evt) {
       poof(cena, { ...evt.pos, y: 1 }, 0xffffff, 8, 3.5);
       hud.toast(`${evt.nome}!`, 900); break;
     case 'projetil': sfx.swing();
-      poof(cena, evt.pos, CORES_TIPO[evt.elemento] || 0xffffff, 8, 3); break;
+      poof(cena, evt.pos, CORES_TIPO[evt.elemento] || 0xffffff, 12, 3.2); break;
     case 'cristalVoa': sfx.cristalVoa(); MD.mostra(cristal, true); break;
     case 'cristalSuga': poof(cena, evt.pos, 0x59e0d0, 14, 4); break;
     case 'cristalTreme': sfx.cristalTreme(); break;
@@ -131,19 +140,78 @@ function aoEvento(evt) {
     case 'vitoria': sfx.vitoria(); hitstop = 0.22;
       hud.toast(`${batalha.e.esp.nome} selvagem desmaiou! Você venceu!`); break;
     case 'derrota': sfx.derrota(); hitstop = 0.22;
-      hud.toast('Brasinha desmaiou... Você correu de volta.'); break;
+      hud.toast(`${batalha.p.esp.nome} desmaiou... Você correu de volta.`); break;
+  }
+}
+
+/* ---------- menus (exploração e batalha) ---------- */
+const TITULO_MENU = { exploracao: 'MENU', batalha: 'BATALHA', equipeExp: 'EQUIPE', equipeBat: 'TROCAR FERA' };
+function itensMenu() {
+  if (menu.tipo === 'exploracao') return ['Equipe', 'Itens', 'Carteira', 'Insígnias', 'Fechar'];
+  if (menu.tipo === 'batalha') return ['Continuar', 'Trocar Fera', 'Itens', 'Fugir'];
+  return equipe.map((f, i) => especies[f.especie].nome + (i === ativa ? ' ◆' : ''));
+}
+function abreMenu(tipo) {
+  menu = { tipo, sel: 0 };
+  hud.menu(true, TITULO_MENU[tipo], itensMenu(), 0);
+}
+function fechaMenu() { menu = null; hud.menu(false); }
+function navegaMenu() {
+  const itens = itensMenu();
+  if (baixoE || cimaE) {
+    menu.sel = (menu.sel + (baixoE ? 1 : -1) + itens.length) % itens.length;
+    sfx.swing();
+    hud.menu(true, TITULO_MENU[menu.tipo], itens, menu.sel);
+  }
+  if (kE || escE) {
+    if (menu.tipo === 'equipeExp') abreMenu('exploracao');
+    else if (menu.tipo === 'equipeBat') abreMenu('batalha');
+    else fechaMenu();
+    return;
+  }
+  if (!jE) return;
+  const s = menu.sel;
+  if (menu.tipo === 'exploracao') {
+    if (s === 0) abreMenu('equipeExp');
+    else if (s === 1) hud.toast('Itens: em breve!');
+    else if (s === 2) hud.toast('Carteira: 0 moedas (economia em breve)');
+    else if (s === 3) hud.toast('Insígnias: nenhuma ainda');
+    else fechaMenu();
+  } else if (menu.tipo === 'batalha') {
+    if (s === 0) fechaMenu();
+    else if (s === 1) abreMenu('equipeBat');
+    else if (s === 2) hud.toast('Itens: em breve!');
+    else { fechaMenu(); fugirBatalha(batalha); }
+  } else if (menu.tipo === 'equipeExp') {
+    ativa = s;
+    hud.nomeJogador(especies[equipe[s].especie].nome);
+    hud.toast(`${especies[equipe[s].especie].nome} agora é a fera ativa!`);
+    abreMenu('exploracao');
+  } else if (menu.tipo === 'equipeBat') {
+    if (s === ativa) { hud.toast('Essa fera já está na arena!'); return; }
+    ativa = s;
+    const chave = equipe[s].especie;
+    trocaFera(batalha, chave, especies);
+    MD.mostra(playerM, false);
+    playerM = modelosJog[chave];
+    MD.setOpacidade(playerM, 1); MD.setEscala(playerM, 1);
+    MD.setPos(playerM, batalha.p.pos); MD.mostra(playerM, true);
+    poof(cena, { ...batalha.p.pos, y: 0.9 }, 0xffd23f, 14, 4);
+    hud.nomeJogador(especies[chave].nome);
+    hud.atualizaHP(batalha);
+    hud.toast(`Vai, ${especies[chave].nome}!`);
+    fechaMenu();
   }
 }
 
 /* ---------- transições ---------- */
-// encontro: corta para a arena, mostra a fera e pergunta Lutar/Fugir
 function iniciaEncontro() {
   sfx.encontro(); hud.flash();
   modo = 'encontro'; escolha = 0;
   hud.exploracaoVisivel(false);
   mostraArena(cena, true);
   MD.mostra(domador, false);
-  feraAtual = feras[mundo.selvagem.especie];
+  feraAtual = modelosIni[mundo.selvagem.especie];
   MD.setOpacidade(feraAtual, 1); MD.setEscala(feraAtual, 1);
   MD.setPos(feraAtual, RINGUE.fera);
   MD.encara(feraAtual, RINGUE.dom.x, RINGUE.dom.z);
@@ -161,34 +229,22 @@ function confirmaEscolha() {
   else fugir();
 }
 function iniciaBatalha() {
+  const chaveJog = equipe[ativa].especie;
   const chave = mundo.selvagem.especie;
-  batalha = criarBatalha(especies, chave, RINGUE.dom, RINGUE.fera);
+  batalha = criarBatalha(especies, chaveJog, chave, RINGUE.dom, RINGUE.fera);
   modo = 'batalha';
-  MD.mostra(brasinha, true); MD.setOpacidade(brasinha, 1);
-  MD.setPos(brasinha, batalha.p.pos);
+  playerM = modelosJog[chaveJog];
+  MD.setOpacidade(playerM, 1); MD.setEscala(playerM, 1);
+  MD.setPos(playerM, batalha.p.pos); MD.mostra(playerM, true);
   poof(cena, { ...batalha.p.pos, y: 0.9 }, 0xffd23f, 14, 4);
+  hud.nomeJogador(especies[chaveJog].nome);
   hud.batalhaVisivel(true); hud.atualizaHP(batalha);
   seqBuf = [];
   const c1 = batalha.p.esp.golpes.comando1;
   const seqTxt = c1 ? ` · ${c1.sequencia.map((d) => SIMBOLO[d]).join('')}+Z ${c1.nome}` : '';
-  hud.dica(`↑/↓ aproxima-afasta · ←/→ orbita · ESPAÇO pula · Z golpe · X especial${seqTxt} · C captura`);
-  hud.toast('Brasinha, eu escolho você!');
-}
-// passagem entre mapas: recria a sim no destino e remonta o cenário
-function trocaMapa(destino) {
-  hud.flash();
-  const origem = chaveMapa;
-  chaveMapa = destino;
-  mundo = novoMundo(destino);
-  mundo.domador.pos = entradaDoMapa(mundo.mapa, origem);
-  daImunidade(mundo, 1.2);
-  montaMapa(cena, mundo.mapa);
-  // câmera corta seco para o novo mapa (sem voar pelo cenário antigo)
-  const pp = mundo.domador.pos;
-  cena.camPos.set(pp.x, pp.y + 17, pp.z + 12);
-  cena.camAlvo.set(pp.x, 0.8, pp.z);
-  hud.localAtual(mundo.mapa.nome);
-  hud.toast(`— ${mundo.mapa.nome} —`, 1800);
+  const esp = batalha.p.esp.golpes.especial;
+  hud.dica(`Setas movem (2 toques corre) · ESPAÇO pula · Z golpe · X ${esp.nome || 'especial'}${seqTxt} · C captura · ESC menu`);
+  hud.toast(`${especies[chaveJog].nome}, eu escolho você!`);
 }
 function fugir() {
   hud.flash();
@@ -203,19 +259,41 @@ function fugir() {
 }
 function encerraBatalha() {
   hud.flash();
+  fechaMenu();
   mostraArena(cena, false);
   limpaProjeteis();
-  MD.mostra(brasinha, false); MD.mostra(cristal, false);
+  if (playerM) { MD.mostra(playerM, false); playerM = null; }
+  MD.mostra(cristal, false);
   if (feraAtual) { MD.mostra(feraAtual, false); feraAtual = null; }
   MD.mostra(domador, true);
   hud.batalhaVisivel(false);
-  if (batalha.resultado === 'captura') { capturadas++; hud.equipe(capturadas); }
+  if (batalha.resultado === 'captura') {
+    equipe.push({ especie: batalha.e.chave });
+    hud.equipe(equipe.length);
+  }
   if (batalha.resultado === 'derrota')
     mundo.domador.pos = { x: mundo.mapa.spawn.x, y: 0, z: mundo.mapa.spawn.z };
+  if (batalha.resultado === 'fuga') hud.toast('Você recuou da batalha!');
   daImunidade(mundo);
   hud.exploracaoVisivel(true);
   hud.dica(DICA_EXPLORAR);
   batalha = null; modo = 'explorar';
+}
+// passagem entre mapas: recria a sim no destino e remonta o cenário
+function trocaMapa(destino, entrada) {
+  hud.flash();
+  const origem = chaveMapa;
+  chaveMapa = destino;
+  mundo = novoMundo(destino);
+  mundo.domador.pos = entrada || entradaDoMapa(mundo.mapa, origem);
+  daImunidade(mundo, 1.2);
+  montaMapa(cena, mundo.mapa);
+  // câmera corta seco para o novo mapa (sem voar pelo cenário antigo)
+  const pp = mundo.domador.pos;
+  cena.camPos.set(pp.x, pp.y + 17, pp.z + 12);
+  cena.camAlvo.set(pp.x, 0.8, pp.z);
+  hud.localAtual(mundo.mapa.nome);
+  hud.toast(`— ${mundo.mapa.nome} —`, 1800);
 }
 
 /* ---------- sincroniza modelos com a simulação ---------- */
@@ -227,16 +305,15 @@ function sincronizaVisual(dt) {
     MD.animaAndar(domador, d.animT * (d.correndo ? 1.45 : 1), d.andando);
   }
   if (modo === 'encontro' && feraAtual) {
-    // respiração da fera enquanto o jogador decide
     MD.setPos(feraAtual, RINGUE.fera);
     feraAtual.g.position.y = Math.abs(Math.sin(tempo * 3)) * 0.05;
   }
-  if (modo === 'batalha' && batalha) {
-    MD.setPos(brasinha, batalha.p.pos);
-    MD.encara(brasinha, batalha.e.pos.x, batalha.e.pos.z);
-    MD.passoGiro(brasinha, dt);
-    if (batalha.p.estado === 'ko') MD.setOpacidade(brasinha, Math.max(0, 1 - batalha.p.t * 1.1));
-    aplicaFlash(brasinha, batalha.p);
+  if (modo === 'batalha' && batalha && playerM) {
+    MD.setPos(playerM, batalha.p.pos);
+    MD.encara(playerM, batalha.e.pos.x, batalha.e.pos.z);
+    MD.passoGiro(playerM, dt);
+    if (batalha.p.estado === 'ko') MD.setOpacidade(playerM, Math.max(0, 1 - batalha.p.t * 1.1));
+    aplicaFlash(playerM, batalha.p);
 
     MD.setPos(feraAtual, batalha.e.pos);
     MD.encara(feraAtual, batalha.p.pos.x, batalha.p.pos.z);
@@ -256,7 +333,7 @@ function sincronizaVisual(dt) {
       if (!M) { M = MD.criarProjetil(cena.scene, CORES_TIPO[pr.tipo] || 0xffffff); projMeshes.set(pr.id, M); }
       MD.setPos(M, pr.pos);
       M.g.rotation.y += dt * 9;
-      if (Math.random() < 0.45) poof(cena, pr.pos, CORES_TIPO[pr.tipo] || 0xffffff, 1, 1.4);
+      if (Math.random() < 0.8) poof(cena, pr.pos, CORES_TIPO[pr.tipo] || 0xffffff, 1, 1.6);
     }
     for (const [id, M] of projMeshes)
       if (!vivos.has(id)) { cena.scene.remove(M.g); projMeshes.delete(id); }
@@ -274,7 +351,6 @@ function aplicaFlash(M, f) {
 }
 
 /* ---------- loop ---------- */
-// câmera do encontro: mesmo enquadramento da batalha, com posições fixas
 const camEncontro = { p: { pos: RINGUE.dom }, e: { pos: RINGUE.fera } };
 let ultimo = performance.now();
 function loop(agora) {
@@ -289,36 +365,56 @@ function loop(agora) {
   hud.passoDanos(cena.camera, dt, THREE);
 
   if (modo === 'explorar') {
-    detectaCorrida();
-    const inp = { mov: { x: eixo(['ArrowLeft','KeyA'], ['ArrowRight','KeyD']),
-                         z: eixo(['ArrowUp','KeyW'], ['ArrowDown','KeyS']) },
-                  correr: correndo };
-    MD.giraDirecao(domador, inp.mov.x, inp.mov.z);
-    const evt = passoMundo(mundo, inp, dt);
-    if (mundo.domador.correndo && Math.random() < 0.25)
-      poof(cena, { ...mundo.domador.pos, y: 0.15 }, 0xcbb28a, 1, 1.2);
-    if (evt === 'encontro') iniciaEncontro();
-    else if (evt && evt.tipo === 'saida') trocaMapa(evt.saida.destino);
+    if (menu) navegaMenu();
+    else if (mE || escE) abreMenu('exploracao');
+    else {
+      detectaCorrida();
+      const inp = { mov: { x: eixo(['ArrowLeft','KeyA'], ['ArrowRight','KeyD']),
+                           z: eixo(['ArrowUp','KeyW'], ['ArrowDown','KeyS']) },
+                    correr: correndo };
+      MD.giraDirecao(domador, inp.mov.x, inp.mov.z);
+      const evt = passoMundo(mundo, inp, dt);
+      if (mundo.domador.correndo && Math.random() < 0.25)
+        poof(cena, { ...mundo.domador.pos, y: mundo.domador.pos.y + 0.15 }, 0xcbb28a, 1, 1.2);
+      if (evt === 'encontro') iniciaEncontro();
+      else if (evt === 'caverna')
+        hud.toast('Uma caverna sombria... escura demais para entrar agora. (em breve!)', 3000);
+      else if (evt && evt.tipo === 'porta') {
+        if (evt.destino === 'retorno' && retornoPorta) {
+          const r = retornoPorta; retornoPorta = null;
+          trocaMapa(r.mapa, { x: r.pos.x, y: 0, z: r.pos.z });
+        } else {
+          retornoPorta = { mapa: chaveMapa, pos: evt.retorno };
+          trocaMapa(evt.destino);
+        }
+      }
+      else if (evt && evt.tipo === 'saida') trocaMapa(evt.saida.destino);
+    }
     hud.miniMapa(mundo);
   } else if (modo === 'encontro') {
     if (cimaE || baixoE) { escolha = 1 - escolha; hud.escolha(true, escolha); sfx.swing(); }
     if (jE) confirmaEscolha();
   } else if (modo === 'batalha' && batalha) {
-    guardaDirecoes();
-    const seqC1 = batalha.p.esp.golpes.comando1 && batalha.p.esp.golpes.comando1.sequencia;
-    let c1 = false;
-    if (jE && sequenciaCompleta(seqBuf, seqC1, tempo)) {
-      c1 = true; seqBuf = [];
+    if (menu) navegaMenu();
+    else if (escE || mE) abreMenu('batalha');
+    else {
+      detectaCorrida();
+      guardaDirecoes();
+      const seqC1 = batalha.p.esp.golpes.comando1 && batalha.p.esp.golpes.comando1.sequencia;
+      let c1 = false;
+      if (jE && sequenciaCompleta(seqBuf, seqC1, tempo)) {
+        c1 = true; seqBuf = [];
+      }
+      const inpP = {
+        mov: { x: eixo(['ArrowLeft','KeyA'], ['ArrowRight','KeyD']),
+               z: eixo(['ArrowUp','KeyW'], ['ArrowDown','KeyS']) },
+        pulo: spE, a: jE && !c1, f: kE, c1, correr: correndo, capturar: cE,
+      };
+      const fim = passoBatalha(batalha, inpP, dt, aoEvento);
+      hud.atualizaHP(batalha);
+      hud.capDisponivel(podeCapturar(batalha));
+      if (fim === 'encerrar') encerraBatalha();
     }
-    const inpP = {
-      mov: { x: eixo(['ArrowLeft','KeyA'], ['ArrowRight','KeyD']),
-             z: eixo(['ArrowUp','KeyW'], ['ArrowDown','KeyS']) },
-      pulo: spE, a: jE && !c1, f: kE, c1, capturar: cE,
-    };
-    const fim = passoBatalha(batalha, inpP, dt, aoEvento);
-    hud.atualizaHP(batalha);
-    hud.capDisponivel(podeCapturar(batalha));
-    if (fim === 'encerrar') encerraBatalha();
   }
 
   sincronizaVisual(dt);

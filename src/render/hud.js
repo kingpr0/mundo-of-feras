@@ -45,10 +45,19 @@ export function criarHUD() {
         ctx.fillStyle = '#3f8fd4';
         ctx.fillRect(X(a.x0), Z(a.z0), (a.x1 - a.x0) * esc, (a.z1 - a.z0) * esc);
       }
+      ctx.fillStyle = '#8a7a52';
+      for (const p of mapa.platos || [])
+        ctx.fillRect(X(p.x0), Z(p.z0), (p.x1 - p.x0) * esc, (p.z1 - p.z0) * esc);
       ctx.fillStyle = '#2a5226';
       for (const [ax, az] of mapa.arvores || []) ctx.fillRect(X(ax) - 1.5, Z(az) - 1.5, 3, 3);
       ctx.fillStyle = '#c96a3f';
       for (const [cx2, cz] of mapa.casas || []) ctx.fillRect(X(cx2) - 3, Z(cz) - 3, 6, 6);
+      if (mapa.caverna) {
+        ctx.fillStyle = '#16121f';
+        ctx.beginPath();
+        ctx.arc(X(mapa.caverna.x), Z(mapa.caverna.z), 3.4, 0, Math.PI * 2);
+        ctx.fill();
+      }
       // passagens em amarelo na borda
       ctx.fillStyle = '#ffd23f';
       for (const s of mapa.saidas || []) {
@@ -75,7 +84,23 @@ export function criarHUD() {
     },
     capDisponivel(v) { $('cap').style.display = v ? 'block' : 'none'; },
     nomeInimigo(n) { $('nomeE').textContent = n; },
+    nomeJogador(n) { $('nomeP').textContent = '♦ ' + n; $('pAtiva').textContent = n; },
     dica(txt) { $('dica').textContent = txt; },
+    // menu genérico (exploração e batalha): título + lista com seleção
+    menu(v, titulo = '', itens = [], sel = 0) {
+      const m = $('menu');
+      m.style.display = v ? 'block' : 'none';
+      if (!v) return;
+      $('menuTit').textContent = titulo;
+      const lista = $('menuItens');
+      lista.innerHTML = '';
+      itens.forEach((txt, i) => {
+        const d = document.createElement('div');
+        d.className = 'opt' + (i === sel ? ' sel' : '');
+        d.textContent = txt;
+        lista.appendChild(d);
+      });
+    },
     escolha(v, sel = 0) {
       $('escolha').style.display = v ? 'flex' : 'none';
       if (v) {
