@@ -60,7 +60,7 @@ Três raridades, com três efeitos definidos: **probabilidade de encontro**, **p
 
 A conta fecha com elegância se cada tipo tiver: **1 linha comum (2 espécies) + 1 linha rara (3 espécies) + 1 fera muito rara (1 espécie) = 6 espécies por tipo × 5 tipos = 30**. Isso dá a cada tipo um "bicho de entrada", uma "linha estrela" e uma "lenda".
 
-As feras já criadas no protótipo se encaixam assim **(proposta)**: **Brasinha** = Fogo, linha rara (a inicial do jogador, 3 estágios); **Cascorro** = tipo Comum, linha comum; **Voltim** = Elétrico; **Folhito** = Planta. Falta criar a representante de Água e as demais espécies.
+As feras já criadas no protótipo se encaixam assim **(proposta)**: **Brasinha** = Fogo, linha rara (a inicial do jogador, 3 estágios); **Cascorro** = tipo Comum, linha comum; **Voltim** = Elétrico; **Folhito** = Planta; **Gotim** = Água, linha comum (o pinguinzinho-gota, frágil e equilibrado). Faltam as demais espécies.
 
 ### 7.4 Atributos (stats)
 
@@ -68,7 +68,7 @@ Cada fera tem **(base do protótipo + proposta)**: Vida, Ataque, Defesa, Velocid
 
 ## 8. Progressão
 
-Modelo Pokémon: feras ganham **XP por batalha** (vencida ou capturada), sobem de **level**, seus **stats crescem** e seus **golpes melhoram** com o nível. Evolução por level **(proposta de marcos)**: linhas comuns evoluem por volta do nível 16; linhas raras nos níveis ~14 e ~32. A evolução troca o sprite, melhora stats e pode aprimorar os golpes de comando. Curva de XP, level máximo e fórmulas exatas: em aberto (partiremos das fórmulas públicas da série Pokémon como base testada, adaptando ao combate de ação).
+Modelo Pokémon: feras ganham **XP por batalha** (vencida ou capturada), sobem de **level**, seus **stats crescem** e seus **golpes melhoram** com o nível. **Implementado no protótipo (fórmulas iniciais)**: XP para subir = 20 + nível×10; XP por vitória = 12 + nível do inimigo×4; vida e força crescem 5% por nível; feras selvagens aparecem no nível do jogador ±2. A barra de evolução e o nível aparecem junto à barra de vida, estilo Pokémon. Evolução por level **(proposta de marcos)**: linhas comuns evoluem por volta do nível 16; linhas raras nos níveis ~14 e ~32. A evolução troca o sprite, melhora stats e pode aprimorar os golpes de comando. Curva de XP, level máximo e fórmulas exatas: em aberto (partiremos das fórmulas públicas da série Pokémon como base testada, adaptando ao combate de ação).
 
 ## 9. Sistema de batalha (o coração do jogo)
 
@@ -84,7 +84,7 @@ Toda fera tem exatamente **4 golpes**, em 4 slots de função fixa:
 |---|---|---|
 | Golpe Normal | Botão A | Universal: soco, mordida ou investida conforme a anatomia da fera. Rápido, fraco, base do jogo neutro |
 | Especial de Tipo | Botão B | Definido pelo tipo: lança-chamas, jato d'água, lâminas de folha, descarga elétrica. Feras do tipo Comum fazem algo mais simples, como uma investida veloz |
-| Comando 1 | Sequência direcional + botão (estilo Mortal Kombat) | Golpe assinatura da espécie |
+| Comando 1 | Sequência direcional + botão (estilo Mortal Kombat) | Golpe assinatura da espécie — nos tipos elementais, uma **rajada** do elemento (lança-chamas, rajada voltaica, rajada de bolhas) |
 | Comando 2 | Sequência direcional mais longa + botão | O golpe mais forte da espécie |
 
 **A regra de ouro da raridade**: quanto mais rara a fera, mais fortes os golpes de comando — e mais difícil a execução **(proposta de escala)**: comuns usam direção + botão; raras usam quarto de círculo (↓↘→ + botão); muito raras exigem sequências longas ou timing apertado. Poder exige maestria: uma fera muito rara nas mãos de um iniciante rende menos que uma comum bem pilotada — essa troca é intencional e central ao design.
