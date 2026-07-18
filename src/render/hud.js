@@ -74,6 +74,37 @@ export function criarHUD() {
       ctx.fillStyle = '#e05a41';
       ctx.beginPath(); ctx.arc(X(p.x), Z(p.z), 2.6, 0, Math.PI * 2); ctx.fill();
     },
+    // mapa-região estilo Pokémon: cada área é um nó ligado por linhas
+    mapaRegiao(dadosMapas, chaveAtual) {
+      const cv = $('regiao'), ctx = cv.getContext('2d');
+      ctx.clearRect(0, 0, cv.width, cv.height);
+      const nos = Object.entries(dadosMapas.mapas).filter(([, m]) => m.regiao);
+      if (!nos.length) return;
+      const xs = nos.map(([, m]) => m.regiao.x), ys = nos.map(([, m]) => m.regiao.y);
+      const minX = Math.min(...xs), maxX = Math.max(...xs);
+      const minY = Math.min(...ys), maxY = Math.max(...ys);
+      const passo = Math.min((cv.width - 28) / Math.max(1, maxX - minX),
+                             (cv.height - 28) / Math.max(1, maxY - minY), 34);
+      const PX = (m) => 14 + (m.regiao.x - minX) * passo + (cv.width - 28 - (maxX - minX) * passo) / 2;
+      const PY = (m) => 14 + (m.regiao.y - minY) * passo + (cv.height - 28 - (maxY - minY) * passo) / 2;
+      // ligações
+      ctx.strokeStyle = '#6b6483'; ctx.lineWidth = 2;
+      for (const [chave, m] of nos) {
+        for (const s of m.saidas || []) {
+          const d = dadosMapas.mapas[s.destino];
+          if (!d || !d.regiao) continue;
+          ctx.beginPath(); ctx.moveTo(PX(m), PY(m)); ctx.lineTo(PX(d), PY(d)); ctx.stroke();
+        }
+      }
+      // nós (o atual em amarelo, pulsando um pouco maior)
+      for (const [chave, m] of nos) {
+        const atual = chave === chaveAtual;
+        ctx.fillStyle = atual ? '#ffd23f' : (m.agua ? '#3f8fd4' : m.borda === 'montanha' ? '#8d939c' : '#63b04f');
+        const r = atual ? 6 : 4.5;
+        ctx.fillRect(PX(m) - r, PY(m) - r, r * 2, r * 2);
+        if (atual) { ctx.strokeStyle = '#fff6df'; ctx.lineWidth = 1.5; ctx.strokeRect(PX(m) - r, PY(m) - r, r * 2, r * 2); }
+      }
+    },
     atualizaHP(b) {
       const cor = (f) => { const r = f.hp / f.max;
         return r > .5 ? '#6fe06a' : r > .25 ? '#ffd23f' : '#ff5a4a'; };
@@ -83,8 +114,13 @@ export function criarHUD() {
       $('fillE').style.background = cor(b.e);
     },
     capDisponivel(v) { $('cap').style.display = v ? 'block' : 'none'; },
-    nomeInimigo(n) { $('nomeE').textContent = n; },
-    nomeJogador(n) { $('nomeP').textContent = '♦ ' + n; $('pAtiva').textContent = n; },
+    nomeInimigo(n, nivel) { $('nomeE').textContent = n + (nivel ? ` Lv.${nivel}` : ''); },
+    nomeJogador(n, nivel) {
+      $('nomeP').textContent = '♦ ' + n + (nivel ? ` Lv.${nivel}` : '');
+      $('pAtiva').textContent = n + (nivel ? ` · Lv.${nivel}` : '');
+    },
+    // barra de evolução (XP) sob a barra de vida do jogador
+    xp(fracao) { $('fillXp').style.width = Math.min(100, fracao * 100) + '%'; },
     dica(txt) { $('dica').textContent = txt; },
     // menu genérico (exploração e batalha): título + lista com seleção
     menu(v, titulo = '', itens = [], sel = 0) {

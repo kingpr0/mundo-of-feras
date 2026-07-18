@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { criarMundo, passoMundo, daImunidade, entradaDoMapa } from './sim/mundo.js';
 import { criarBatalha, passoBatalha, podeCapturar, fugirBatalha, trocaFera } from './sim/batalha.js';
 import { guardaDirecao, sequenciaCompleta } from './sim/comandos.js';
+import { ganhaXp, xpParaSubir, xpPorVitoria, nivelSelvagem, NIVEL_INICIAL } from './sim/progressao.js';
 import { criarCena, poof, passoParticulas, passoCamera, mostraArena, montaMapa } from './render/cena.js';
 import * as MD from './render/modelos.js';
 import { criarHUD } from './render/hud.js';
@@ -46,8 +47,10 @@ let mundo = novoMundo(chaveMapa);
 montaMapa(cena, mundo.mapa);
 hud.localAtual(mundo.mapa.nome);
 
-let equipe = [{ especie: 'brasinha' }];
+let equipe = [{ especie: 'brasinha', nivel: NIVEL_INICIAL, xp: 0 }];
 let ativa = 0; // índice da fera ativa na equipe
+hud.nomeJogador(especies.brasinha.nome, equipe[0].nivel);
+hud.mapaRegiao(dadosMapas, chaveMapa);
 let batalha = null;
 let playerM = null;   // modelo da fera do jogador em batalha
 let feraAtual = null; // modelo da fera selvagem em cena (encontro/batalha)
@@ -134,14 +137,30 @@ function aoEvento(evt) {
     case 'cristalSuga': poof(cena, evt.pos, 0x59e0d0, 14, 4); break;
     case 'cristalTreme': sfx.cristalTreme(); break;
     case 'capturado': sfx.capturado(); hitstop = 0.15;
-      hud.toast(`${batalha.e.esp.nome} foi capturado! Entrou para a sua equipe!`); break;
+      hud.toast(`${batalha.e.esp.nome} foi capturado! ${premiaXp()}`); break;
     case 'escapou': MD.mostra(cristal, false);
       hud.toast(`Ah, quase! O ${batalha.e.esp.nome} escapou do cristal!`); break;
     case 'vitoria': sfx.vitoria(); hitstop = 0.22;
-      hud.toast(`${batalha.e.esp.nome} selvagem desmaiou! Você venceu!`); break;
+      hud.toast(`${batalha.e.esp.nome} desmaiou! ${premiaXp()}`); break;
     case 'derrota': sfx.derrota(); hitstop = 0.22;
       hud.toast(`${batalha.p.esp.nome} desmaiou... Você correu de volta.`); break;
   }
+}
+
+/* ---------- XP e nível (regras em sim/progressao.js) ---------- */
+function premiaXp() {
+  const fera = equipe[ativa];
+  const ganho = xpPorVitoria(batalha.e.nivel);
+  const subiu = ganhaXp(fera, ganho);
+  hud.xp(fera.xp / xpParaSubir(fera.nivel));
+  hud.nomeJogador(especies[fera.especie].nome, fera.nivel);
+  if (subiu > 0) {
+    setTimeout(() => {
+      sfx.vitoria();
+      hud.toast(`⬆ ${especies[fera.especie].nome} subiu para o nível ${fera.nivel}!`, 2600);
+    }, 1500);
+  }
+  return `+${ganho} XP`;
 }
 
 /* ---------- menus (exploração e batalha) ---------- */
@@ -184,20 +203,21 @@ function navegaMenu() {
     else { fechaMenu(); fugirBatalha(batalha); }
   } else if (menu.tipo === 'equipeExp') {
     ativa = s;
-    hud.nomeJogador(especies[equipe[s].especie].nome);
+    hud.nomeJogador(especies[equipe[s].especie].nome, equipe[s].nivel);
     hud.toast(`${especies[equipe[s].especie].nome} agora é a fera ativa!`);
     abreMenu('exploracao');
   } else if (menu.tipo === 'equipeBat') {
     if (s === ativa) { hud.toast('Essa fera já está na arena!'); return; }
     ativa = s;
     const chave = equipe[s].especie;
-    trocaFera(batalha, chave, especies);
+    trocaFera(batalha, chave, equipe[s].nivel, especies);
     MD.mostra(playerM, false);
     playerM = modelosJog[chave];
     MD.setOpacidade(playerM, 1); MD.setEscala(playerM, 1);
     MD.setPos(playerM, batalha.p.pos); MD.mostra(playerM, true);
     poof(cena, { ...batalha.p.pos, y: 0.9 }, 0xffd23f, 14, 4);
-    hud.nomeJogador(especies[chave].nome);
+    hud.nomeJogador(especies[chave].nome, equipe[s].nivel);
+    hud.xp(equipe[s].xp / xpParaSubir(equipe[s].nivel));
     hud.atualizaHP(batalha);
     hud.toast(`Vai, ${especies[chave].nome}!`);
     fechaMenu();
@@ -218,7 +238,8 @@ function iniciaEncontro() {
   feraAtual.g.rotation.y = feraAtual.giro;
   MD.mostra(feraAtual, true);
   poof(cena, { ...RINGUE.fera, y: 0.9 }, 0xffffff, 14, 4);
-  hud.nomeInimigo(especies[mundo.selvagem.especie].nome.toUpperCase());
+  mundo.selvagem.nivel = nivelSelvagem(equipe[ativa].nivel);
+  hud.nomeInimigo(especies[mundo.selvagem.especie].nome.toUpperCase(), mundo.selvagem.nivel);
   hud.escolha(true, escolha);
   hud.dica('↑/↓ escolhe · Z confirma');
   hud.toast(`Um ${especies[mundo.selvagem.especie].nome} selvagem apareceu!`);
@@ -229,15 +250,20 @@ function confirmaEscolha() {
   else fugir();
 }
 function iniciaBatalha() {
-  const chaveJog = equipe[ativa].especie;
+  const fera = equipe[ativa];
+  const chaveJog = fera.especie;
   const chave = mundo.selvagem.especie;
-  batalha = criarBatalha(especies, chaveJog, chave, RINGUE.dom, RINGUE.fera);
+  batalha = criarBatalha(especies,
+    { chave: chaveJog, nivel: fera.nivel },
+    { chave, nivel: mundo.selvagem.nivel || NIVEL_INICIAL },
+    RINGUE.dom, RINGUE.fera);
   modo = 'batalha';
   playerM = modelosJog[chaveJog];
   MD.setOpacidade(playerM, 1); MD.setEscala(playerM, 1);
   MD.setPos(playerM, batalha.p.pos); MD.mostra(playerM, true);
   poof(cena, { ...batalha.p.pos, y: 0.9 }, 0xffd23f, 14, 4);
-  hud.nomeJogador(especies[chaveJog].nome);
+  hud.nomeJogador(especies[chaveJog].nome, fera.nivel);
+  hud.xp(fera.xp / xpParaSubir(fera.nivel));
   hud.batalhaVisivel(true); hud.atualizaHP(batalha);
   seqBuf = [];
   const c1 = batalha.p.esp.golpes.comando1;
@@ -268,7 +294,7 @@ function encerraBatalha() {
   MD.mostra(domador, true);
   hud.batalhaVisivel(false);
   if (batalha.resultado === 'captura') {
-    equipe.push({ especie: batalha.e.chave });
+    equipe.push({ especie: batalha.e.chave, nivel: batalha.e.nivel, xp: 0 });
     hud.equipe(equipe.length);
   }
   if (batalha.resultado === 'derrota')
@@ -293,6 +319,7 @@ function trocaMapa(destino, entrada) {
   cena.camPos.set(pp.x, pp.y + 17, pp.z + 12);
   cena.camAlvo.set(pp.x, 0.8, pp.z);
   hud.localAtual(mundo.mapa.nome);
+  if (mundo.mapa.regiao) hud.mapaRegiao(dadosMapas, destino);
   hud.toast(`— ${mundo.mapa.nome} —`, 1800);
 }
 
@@ -312,12 +339,14 @@ function sincronizaVisual(dt) {
     MD.setPos(playerM, batalha.p.pos);
     MD.encara(playerM, batalha.e.pos.x, batalha.e.pos.z);
     MD.passoGiro(playerM, dt);
+    MD.animaLuta(playerM, batalha.p);
     if (batalha.p.estado === 'ko') MD.setOpacidade(playerM, Math.max(0, 1 - batalha.p.t * 1.1));
     aplicaFlash(playerM, batalha.p);
 
     MD.setPos(feraAtual, batalha.e.pos);
     MD.encara(feraAtual, batalha.p.pos.x, batalha.p.pos.z);
     MD.passoGiro(feraAtual, dt);
+    MD.animaLuta(feraAtual, batalha.e);
     if (batalha.e.estado === 'ko') MD.setOpacidade(feraAtual, Math.max(0, 1 - batalha.e.t * 1.1));
     if (batalha.captura && batalha.captura.escalaFera !== undefined)
       MD.setEscala(feraAtual, batalha.captura.escalaFera);
@@ -379,6 +408,10 @@ function loop(agora) {
       if (evt === 'encontro') iniciaEncontro();
       else if (evt === 'caverna')
         hud.toast('Uma caverna sombria... escura demais para entrar agora. (em breve!)', 3000);
+      else if (evt === 'cura') {
+        sfx.capturado(); hud.flash();
+        hud.toast('❤ Enfermeira: suas feras estão renovadas! Volte sempre!', 2800);
+      }
       else if (evt && evt.tipo === 'porta') {
         if (evt.destino === 'retorno' && retornoPorta) {
           const r = retornoPorta; retornoPorta = null;

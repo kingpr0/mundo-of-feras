@@ -136,7 +136,33 @@ function criarVoltim(scene) {
   return M;
 }
 
-const FABRICAS = { brasinha: criarBrasinha, cascorro: criarCascorro, voltim: criarVoltim };
+function criarGotim(scene) {
+  const M = novoModelo(scene, 0.95);
+  const g = M.g;
+  const azul = 0x4da3ff, azulEscuro = 0x2f6fc9;
+  // corpo-gota: esfera com topinho cônico
+  const corpo = parte(M, g, new THREE.SphereGeometry(0.34, 16, 12), azul, 0, 0.42, 0);
+  corpo.scale.set(1, 1.08, 0.95);
+  const topo = parte(M, g, new THREE.ConeGeometry(0.16, 0.34, 10), azul, 0, 0.9, 0);
+  const barriga = parte(M, g, new THREE.SphereGeometry(0.2, 12, 10), COR.creme, 0, 0.32, 0.2);
+  barriga.scale.set(1.2, 1, 0.55);
+  parte(M, g, new THREE.SphereGeometry(0.05, 8, 6), COR.olho, -0.13, 0.55, 0.28);
+  parte(M, g, new THREE.SphereGeometry(0.05, 8, 6), COR.olho, 0.13, 0.55, 0.28);
+  // bochechas e nadadeiras
+  for (const lado of [-1, 1]) {
+    parte(M, g, new THREE.SphereGeometry(0.05, 8, 6), 0x7fc4ff, lado * 0.22, 0.46, 0.24);
+    const nad = parte(M, g, new THREE.SphereGeometry(0.14, 10, 8), azulEscuro, lado * 0.32, 0.4, -0.05);
+    nad.scale.set(0.35, 0.9, 0.9);
+  }
+  // cauda-nadadeira e patinhas
+  const cauda = parte(M, g, new THREE.ConeGeometry(0.12, 0.3, 8), azulEscuro, 0, 0.42, -0.4);
+  cauda.rotation.x = Math.PI / 2;
+  for (const lado of [-1, 1])
+    parte(M, g, new THREE.BoxGeometry(0.12, 0.06, 0.18), azulEscuro, lado * 0.12, 0.03, 0.03);
+  return M;
+}
+
+const FABRICAS = { brasinha: criarBrasinha, cascorro: criarCascorro, voltim: criarVoltim, gotim: criarGotim };
 export function criarFera(scene, chave) {
   const fabrica = FABRICAS[chave];
   return fabrica ? fabrica(scene) : criarCascorro(scene);
@@ -188,6 +214,24 @@ export function animaAndar(M, t, andando) {
   if (M.pernas.length === 2) { M.pernas[0].rotation.x = a; M.pernas[1].rotation.x = -a; }
   if (M.bracos.length === 2) { M.bracos[0].rotation.x = -a * 0.8; M.bracos[1].rotation.x = a * 0.8; }
   if (andando) M.g.position.y += Math.abs(Math.sin(t * 9)) * 0.05;
+}
+
+// pose de luta estilo fighting game: carrega inclinando para trás,
+// desfere lançando o corpo para a frente, recupera voltando ao neutro
+export function animaLuta(M, f) {
+  let rx = 0;
+  if (f.estado === 'atk' && f.golpe) {
+    const g = f.golpe;
+    if (f.t < g.prep) rx = -0.4 * (f.t / g.prep);
+    else if (f.t < g.prep + g.ativo) rx = 0.5;
+    else {
+      const r = Math.min(1, (f.t - g.prep - g.ativo) / g.recup);
+      rx = 0.5 * (1 - r);
+    }
+  } else if (f.estado === 'hurt') {
+    rx = -0.55 * (1 - Math.min(1, f.t / 0.26));
+  }
+  M.g.rotation.x = rx;
 }
 
 export function flashCor(M, hex) {

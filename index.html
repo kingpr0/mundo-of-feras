@@ -26,6 +26,8 @@
     margin-bottom:3px; }
   .hpbar { height:10px; background:#3a3350; border:2px solid #16121f; }
   .hpfill { height:100%; width:100%; background:#6fe06a; transition:width .12s; }
+  .xpbar { height:5px; background:#3a3350; border:2px solid #16121f; border-top:none; }
+  #fillXp { height:100%; width:0%; background:#59b8e0; transition:width .3s; }
   #toast { position:fixed; bottom:64px; left:50%; transform:translateX(-50%);
     background:rgba(13,11,20,.92); color:#fff6df; border:2px solid #ffd23f;
     padding:10px 18px; font-size:14px; display:none; max-width:80%; text-align:center; }
@@ -56,6 +58,8 @@
   #miniNome { color:#ffd23f; font-size:12px; font-weight:bold; letter-spacing:1px;
     text-shadow:2px 2px 0 #26202e; margin-bottom:4px; }
   #mini { display:block; background:rgba(13,11,20,.75); border:2px solid #ffd23f; }
+  #regiao { display:block; background:rgba(13,11,20,.75); border:2px solid #ffd23f;
+    border-top:none; }
   .dmg { position:fixed; color:#ffd23f; font-weight:bold; font-size:16px;
     text-shadow:2px 2px 0 #26202e; }
   .dmg.forte { color:#ff6b4a; font-size:20px; }
@@ -74,9 +78,11 @@
   <div id="miniWrap">
     <div id="miniNome">—</div>
     <canvas id="mini" width="120" height="120"></canvas>
+    <canvas id="regiao" width="120" height="86"></canvas>
   </div>
   <div class="hpwrap" id="hpP"><div class="hpname" id="nomeP">♦ BRASINHA</div>
-    <div class="hpbar"><div class="hpfill" id="fillP"></div></div></div>
+    <div class="hpbar"><div class="hpfill" id="fillP"></div></div>
+    <div class="xpbar"><div id="fillXp"></div></div></div>
   <div class="hpwrap" id="hpE"><div class="hpname" id="nomeE">CASCORRO</div>
     <div class="hpbar"><div class="hpfill" id="fillE"></div></div></div>
   <div id="cap">! FERA FRACA — pressione C para CAPTURAR !</div>

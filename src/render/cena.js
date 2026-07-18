@@ -43,15 +43,30 @@ export function criarCena(canvas) {
   return estado;
 }
 
-function montaChao(scene, tam = 70) {
+function montaChao(scene, tam = 70, tipo = 'grama') {
   const c = document.createElement('canvas'); c.width = c.height = 512;
   const x = c.getContext('2d');
+  const terra = tipo === 'terra';
   for (let ty = 0; ty < 16; ty++) for (let tx = 0; tx < 16; tx++) {
-    x.fillStyle = ((tx + ty) % 2 === 0) ? '#67b34f' : '#5fa848';
+    x.fillStyle = terra
+      ? (((tx + ty) % 2 === 0) ? '#b08a5a' : '#a67f50')
+      : (((tx + ty) % 2 === 0) ? '#67b34f' : '#5fa848');
     x.fillRect(tx * 32, ty * 32, 32, 32);
-    if ((tx * 7 + ty * 13) % 11 === 0) { x.fillStyle = '#8fd977'; x.fillRect(tx*32+12, ty*32+14, 6, 6); }
-    if ((tx * 5 + ty * 11) % 17 === 0) { x.fillStyle = '#ffd6e8'; x.fillRect(tx*32+20, ty*32+8, 5, 5);
-      x.fillStyle = '#ffe9b0'; x.fillRect(tx*32+21, ty*32+6, 3, 3); }
+    const px = tx * 32, py = ty * 32, k = tx * 7 + ty * 13;
+    if (terra) {
+      // pedrinhas e rachaduras no chão rochoso
+      if (k % 5 === 0) { x.fillStyle = '#8d939c'; x.fillRect(px + 10, py + 12, 7, 5); }
+      if (k % 7 === 0) { x.fillStyle = '#93744a'; x.fillRect(px + 20, py + 22, 9, 3); }
+      if (k % 11 === 0) { x.fillStyle = '#c49a68'; x.fillRect(px + 4, py + 4, 5, 5); }
+    } else {
+      // tufos, flores, pedrinhas e manchas de terra na campina
+      if (k % 11 === 0) { x.fillStyle = '#8fd977'; x.fillRect(px + 12, py + 14, 6, 6); }
+      if ((tx * 5 + ty * 11) % 17 === 0) { x.fillStyle = '#ffd6e8'; x.fillRect(px + 20, py + 8, 5, 5);
+        x.fillStyle = '#ffe9b0'; x.fillRect(px + 21, py + 6, 3, 3); }
+      if (k % 13 === 0) { x.fillStyle = '#f4e07a'; x.fillRect(px + 6, py + 22, 4, 4); }
+      if (k % 19 === 0) { x.fillStyle = '#9aa3ad'; x.fillRect(px + 24, py + 18, 6, 4); }
+      if (k % 23 === 0) { x.fillStyle = '#9c7a4e'; x.fillRect(px + 8, py + 6, 10, 7); }
+    }
   }
   const t = new THREE.CanvasTexture(c);
   t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(tam / 14, tam / 14);
@@ -78,6 +93,30 @@ function casa(g, x, z, corNome) {
     jan.position.set(lado * 1.1, 1.4, 1.62); grupo.add(jan);
   }
   grupo.position.set(x, 0, z);
+  g.add(grupo);
+}
+
+/* centro de curas: prédio branco de telhado vermelho com cruz na fachada */
+function centroCura(g, ct) {
+  const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
+  const grupo = new THREE.Group();
+  const corpo = new THREE.Mesh(new THREE.BoxGeometry(5.2, 2.6, 3.8), lamb(0xf7f3ea));
+  corpo.position.y = 1.3; corpo.castShadow = true; grupo.add(corpo);
+  const telhado = new THREE.Mesh(new THREE.ConeGeometry(4.0, 1.7, 4), lamb(0xd1462f));
+  telhado.position.y = 3.4; telhado.rotation.y = Math.PI / 4; telhado.castShadow = true;
+  grupo.add(telhado);
+  const porta = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.4, 0.1), lamb(0x9ad4e8));
+  porta.position.set(0, 0.7, 1.92); grupo.add(porta);
+  // cruz branca sobre a porta
+  const cr1 = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.22, 0.08), lamb(0xffffff));
+  cr1.position.set(0, 2.1, 1.94); grupo.add(cr1);
+  const cr2 = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.7, 0.08), lamb(0xffffff));
+  cr2.position.set(0, 2.1, 1.94); grupo.add(cr2);
+  for (const lado of [-1, 1]) {
+    const jan = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.7, 0.1), lamb(0xbfe3ff));
+    jan.position.set(lado * 1.7, 1.5, 1.92); grupo.add(jan);
+  }
+  grupo.position.set(ct.x, 0, ct.z);
   g.add(grupo);
 }
 
@@ -121,6 +160,18 @@ function montaBorda(g, mapa) {
     planta(-L.x - 1.5, z, i); planta(L.x + 1.5, z, i);
     planta(-L.x - 3.4, z + 1.2, i + 1); planta(L.x + 3.4, z + 1.2, i + 1);
   }
+  // cortina sólida atrás da muralha: nada do "mundo cru" aparece por trás
+  const corCortina = mapa.borda === 'montanha' ? 0x5a6068 : 0x24491f;
+  const matCortina = new THREE.MeshLambertMaterial({ color: corCortina });
+  const paredes = [
+    [2 * L.x + 22, 8, 2.5, 0, -L.z - 5.6], [2 * L.x + 22, 8, 2.5, 0, L.z + 5.6],
+    [2.5, 8, 2 * L.z + 22, -L.x - 5.6, 0], [2.5, 8, 2 * L.z + 22, L.x + 5.6, 0],
+  ];
+  for (const [w, h, d, x, z] of paredes) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), matCortina);
+    m.position.set(x, h / 2 - 0.5, z);
+    g.add(m);
+  }
 }
 
 function arvore(scene, x, z, pinheiro) {
@@ -145,32 +196,28 @@ function arvore(scene, x, z, pinheiro) {
   g.position.set(x, 0, z); scene.add(g);
 }
 
-/* grama alta 3D: moitas volumétricas low-poly (cones finos agrupados, no
-   mesmo estilo das árvores) — o domador some no meio do mato de verdade */
+/* grama alta: um mar CONTÍNUO de arbustos arredondados lado a lado (grade
+   com leve variação) — quem entra some da cintura para baixo, estilo
+   Pokémon/ClaudeCraft */
 function montaGrama(scene, G) {
-  const mats = [0x2f7a2c, 0x3f8f38, 0x4da043, 0x5fb54a]
+  const mats = [0x3d8a35, 0x46983c, 0x51a746]
     .map((c) => new THREE.MeshLambertMaterial({ color: c }));
-  // tapete escuro marcando a zona de encontro
   const base = new THREE.Mesh(
     new THREE.PlaneGeometry(G.x1 - G.x0 + 1, G.z1 - G.z0 + 1),
-    new THREE.MeshLambertMaterial({ color: 0x4e9a3f }));
+    new THREE.MeshLambertMaterial({ color: 0x357a2e }));
   base.rotation.x = -Math.PI / 2;
   base.position.set((G.x0 + G.x1) / 2, 0.012, (G.z0 + G.z1) / 2);
   base.receiveShadow = true; scene.add(base);
-  const geo = new THREE.ConeGeometry(0.3, 1.2, 5);
-  const n = Math.round((G.x1 - G.x0) * (G.z1 - G.z0) * 0.5);
-  for (let i = 0; i < n; i++) {
-    const px = G.x0 + 0.6 + Math.random() * (G.x1 - G.x0 - 1.2);
-    const pz = G.z0 + 0.6 + Math.random() * (G.z1 - G.z0 - 1.2);
-    // cada moita: 3 lâminas cônicas inclinadas para fora
-    for (let k = 0; k < 3; k++) {
-      const m = new THREE.Mesh(geo, mats[(i + k) % mats.length]);
-      const esc = 0.75 + Math.random() * 0.5;
-      m.scale.set(esc, esc, esc);
-      m.position.set(px + (Math.random() - 0.5) * 0.55, 0.6 * esc,
-                     pz + (Math.random() - 0.5) * 0.55);
-      m.rotation.set((Math.random() - 0.5) * 0.35, Math.random() * Math.PI,
-                     (Math.random() - 0.5) * 0.35);
+  const geo = new THREE.SphereGeometry(0.78, 10, 7);
+  const passo = 1.05;
+  let i = 0;
+  for (let px = G.x0 + 0.6; px <= G.x1 - 0.3; px += passo) {
+    for (let pz = G.z0 + 0.6; pz <= G.z1 - 0.3; pz += passo, i++) {
+      const m = new THREE.Mesh(geo, mats[(i * 7) % mats.length]);
+      const esc = 0.9 + ((i * 13) % 10) / 45;
+      m.scale.set(esc, 0.62 * esc, esc);
+      m.position.set(px + (((i * 31) % 7) - 3) * 0.06, 0.34,
+                     pz + (((i * 17) % 7) - 3) * 0.06);
       m.castShadow = true;
       scene.add(m);
     }
@@ -241,15 +288,27 @@ function montaInterior(g, mapa) {
   const seg = L.x - 1;                                  // frente com vão da porta
   parede(seg, 0.4, -(1 + seg / 2), L.z + 0.2);
   parede(seg, 0.4, 1 + seg / 2, L.z + 0.2);
-  // móveis: cama, travesseiro, mesa e tapete
-  const cama = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.5, 2.4), lamb(0xd9553f));
-  cama.position.set(-L.x + 1.2, 0.25, -L.z + 1.5); cama.castShadow = true; g.add(cama);
-  const trav = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.25, 0.7), lamb(0xfff3da));
-  trav.position.set(-L.x + 1.2, 0.62, -L.z + 0.7); g.add(trav);
-  const mesa = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.9, 1.1), lamb(0x8a6a50));
-  mesa.position.set(L.x - 1.4, 0.45, -L.z + 1.3); mesa.castShadow = true; g.add(mesa);
-  const tapete = new THREE.Mesh(new THREE.CircleGeometry(1.1, 16), lamb(0x5fa848));
-  tapete.rotation.x = -Math.PI / 2; tapete.position.y = 0.02; g.add(tapete);
+  if (mapa.estilo === 'centro') {
+    // balcão de atendimento, máquina de cura e tapete
+    const balcao = new THREE.Mesh(new THREE.BoxGeometry(L.x * 1.2, 1.0, 0.9), lamb(0xe0685a));
+    balcao.position.set(0, 0.5, -L.z + 1.3); balcao.castShadow = true; g.add(balcao);
+    const tampo = new THREE.Mesh(new THREE.BoxGeometry(L.x * 1.2 + 0.2, 0.12, 1.1), lamb(0xfff3da));
+    tampo.position.set(0, 1.06, -L.z + 1.3); g.add(tampo);
+    const maquina = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.5, 0.8), lamb(0x9ad4e8));
+    maquina.position.set(1.8, 1.35, -L.z + 1.3); g.add(maquina);
+    const tapete = new THREE.Mesh(new THREE.CircleGeometry(1.3, 16), lamb(0x9ad4e8));
+    tapete.rotation.x = -Math.PI / 2; tapete.position.y = 0.02; tapete.position.z = 0.8; g.add(tapete);
+  } else {
+    // móveis: cama, travesseiro, mesa e tapete
+    const cama = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.5, 2.4), lamb(0xd9553f));
+    cama.position.set(-L.x + 1.2, 0.25, -L.z + 1.5); cama.castShadow = true; g.add(cama);
+    const trav = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.25, 0.7), lamb(0xfff3da));
+    trav.position.set(-L.x + 1.2, 0.62, -L.z + 0.7); g.add(trav);
+    const mesa = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.9, 1.1), lamb(0x8a6a50));
+    mesa.position.set(L.x - 1.4, 0.45, -L.z + 1.3); mesa.castShadow = true; g.add(mesa);
+    const tapete = new THREE.Mesh(new THREE.CircleGeometry(1.1, 16), lamb(0x5fa848));
+    tapete.rotation.x = -Math.PI / 2; tapete.position.y = 0.02; g.add(tapete);
+  }
 }
 
 function descarta(obj) {
@@ -272,9 +331,10 @@ export function montaMapa(cena, mapa) {
   cena.scene.add(g);
   cena.mundoG = g;
   if (mapa.tipo === 'interior') { montaInterior(g, mapa); return; }
-  montaChao(g, Math.max(mapa.limite.x, mapa.limite.z) * 2 + 24);
+  montaChao(g, Math.max(mapa.limite.x, mapa.limite.z) * 2 + 24, mapa.chao || 'grama');
   (mapa.arvores || []).forEach(([x, z, p]) => arvore(g, x, z, p));
   (mapa.casas || []).forEach(([x, z, cor]) => casa(g, x, z, cor));
+  if (mapa.centro) centroCura(g, mapa.centro);
   (mapa.platos || []).forEach((p) => plato(g, p));
   if (mapa.grama) montaGrama(g, mapa.grama);
   if (mapa.agua) montaAgua(g, mapa.agua);
