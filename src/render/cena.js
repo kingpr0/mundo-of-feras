@@ -33,7 +33,10 @@ export function criarCena(canvas) {
     camAlvo: new THREE.Vector3(),
     shake: 0,
     parts: [],
+    oclusores: [],
+    oclusoresArena: [],
   };
+  arenaG.traverse((o) => { if (o.isMesh && o.userData.oclusor) estado.oclusoresArena.push(o); });
   const resize = () => {
     camera.aspect = innerWidth / innerHeight;
     camera.updateProjectionMatrix();
@@ -81,10 +84,11 @@ function casa(g, x, z, corNome) {
   const grupo = new THREE.Group();
   const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
   const corpo = new THREE.Mesh(new THREE.BoxGeometry(3.6, 2.2, 3.2), lamb(0xf2e2c4));
-  corpo.position.y = 1.1; corpo.castShadow = true; grupo.add(corpo);
+  corpo.position.y = 1.1; corpo.castShadow = true; corpo.userData.oclusor = true; grupo.add(corpo);
   const telhado = new THREE.Mesh(new THREE.ConeGeometry(2.9, 1.6, 4),
     lamb(COR_TELHADO[corNome] || COR_TELHADO.vermelho));
   telhado.position.y = 3.0; telhado.rotation.y = Math.PI / 4; telhado.castShadow = true;
+  telhado.userData.oclusor = true;
   grupo.add(telhado);
   const porta = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.2, 0.1), lamb(0x6b4a2f));
   porta.position.set(0, 0.6, 1.62); grupo.add(porta);
@@ -101,9 +105,10 @@ function centroCura(g, ct) {
   const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
   const grupo = new THREE.Group();
   const corpo = new THREE.Mesh(new THREE.BoxGeometry(5.2, 2.6, 3.8), lamb(0xf7f3ea));
-  corpo.position.y = 1.3; corpo.castShadow = true; grupo.add(corpo);
+  corpo.position.y = 1.3; corpo.castShadow = true; corpo.userData.oclusor = true; grupo.add(corpo);
   const telhado = new THREE.Mesh(new THREE.ConeGeometry(4.0, 1.7, 4), lamb(0xd1462f));
   telhado.position.y = 3.4; telhado.rotation.y = Math.PI / 4; telhado.castShadow = true;
+  telhado.userData.oclusor = true;
   grupo.add(telhado);
   const porta = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.4, 0.1), lamb(0x9ad4e8));
   porta.position.set(0, 0.7, 1.92); grupo.add(porta);
@@ -145,7 +150,7 @@ function montaBorda(g, mapa) {
       const pedra = new THREE.Mesh(new THREE.DodecahedronGeometry(r),
         new THREE.MeshLambertMaterial({ color: (i % 2) ? 0x7d838c : 0x6e7680 }));
       pedra.position.set(x + (Math.random() - 0.5), r * 0.7, z + (Math.random() - 0.5));
-      pedra.castShadow = true; g.add(pedra);
+      pedra.castShadow = true; pedra.userData.oclusor = true; g.add(pedra);
       return;
     }
     arvore(g, x + (Math.random() - 0.5), z + (Math.random() - 0.5), i % 2);
@@ -160,17 +165,65 @@ function montaBorda(g, mapa) {
     planta(-L.x - 1.5, z, i); planta(L.x + 1.5, z, i);
     planta(-L.x - 3.4, z + 1.2, i + 1); planta(L.x + 3.4, z + 1.2, i + 1);
   }
-  // cortina sólida atrás da muralha: nada do "mundo cru" aparece por trás
+  // cortina sólida atrás da muralha (nada do "mundo cru" aparece por trás),
+  // com VÃOS abertos exatamente nas passagens
   const corCortina = mapa.borda === 'montanha' ? 0x5a6068 : 0x24491f;
-  const matCortina = new THREE.MeshLambertMaterial({ color: corCortina });
-  const paredes = [
-    [2 * L.x + 22, 8, 2.5, 0, -L.z - 5.6], [2 * L.x + 22, 8, 2.5, 0, L.z + 5.6],
-    [2.5, 8, 2 * L.z + 22, -L.x - 5.6, 0], [2.5, 8, 2 * L.z + 22, L.x + 5.6, 0],
-  ];
-  for (const [w, h, d, x, z] of paredes) {
-    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), matCortina);
-    m.position.set(x, h / 2 - 0.5, z);
+  const segCortina = (horizontal, fixo, a0, a1) => {
+    if (a1 - a0 < 1) return;
+    const w = horizontal ? a1 - a0 : 2.5;
+    const d = horizontal ? 2.5 : a1 - a0;
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, 8, d),
+      new THREE.MeshLambertMaterial({ color: corCortina }));
+    m.position.set(horizontal ? (a0 + a1) / 2 : fixo, 3.5, horizontal ? fixo : (a0 + a1) / 2);
+    m.userData.oclusor = true;
     g.add(m);
+  };
+  const lados = [
+    { borda: 'norte', horizontal: true, fixo: -L.z - 5.6, ini: -L.x - 11, fim: L.x + 11 },
+    { borda: 'sul', horizontal: true, fixo: L.z + 5.6, ini: -L.x - 11, fim: L.x + 11 },
+    { borda: 'oeste', horizontal: false, fixo: -L.x - 5.6, ini: -L.z - 11, fim: L.z + 11 },
+    { borda: 'leste', horizontal: false, fixo: L.x + 5.6, ini: -L.z - 11, fim: L.z + 11 },
+  ];
+  for (const lado of lados) {
+    const vaos = saidas.filter((s) => s.borda === lado.borda)
+      .map((s) => [s.de - 2.5, s.ate + 2.5])
+      .sort((a, b) => a[0] - b[0]);
+    let cursor = lado.ini;
+    for (const [v0, v1] of vaos) { segCortina(lado.horizontal, lado.fixo, cursor, v0); cursor = v1; }
+    segCortina(lado.horizontal, lado.fixo, cursor, lado.fim);
+  }
+}
+
+/* oclusores: o que ficar entre a câmera e o personagem vira "vidro" —
+   ninguém some atrás de árvore, casa, platô ou muralha */
+const _ray = new THREE.Raycaster();
+const _dir = new THREE.Vector3();
+const _alvoV = new THREE.Vector3();
+const desvanecidos = new Set();
+export function passoOclusores(cena, alvos, lista) {
+  const agora = new Set();
+  for (const alvo of alvos) {
+    _alvoV.set(alvo.x, alvo.y + 0.9, alvo.z);
+    _dir.copy(_alvoV).sub(cena.camera.position);
+    const dist = _dir.length();
+    _ray.set(cena.camera.position, _dir.normalize());
+    _ray.far = dist - 0.4;
+    for (const h of _ray.intersectObjects(lista || [], false)) agora.add(h.object);
+  }
+  for (const m of agora) {
+    if (!desvanecidos.has(m)) {
+      m.userData._transparente = m.material.transparent;
+      m.material.transparent = true;
+      desvanecidos.add(m);
+    }
+    m.material.opacity = 0.3;
+  }
+  for (const m of [...desvanecidos]) {
+    if (!agora.has(m)) {
+      m.material.opacity = 1;
+      m.material.transparent = !!m.userData._transparente;
+      desvanecidos.delete(m);
+    }
   }
 }
 
@@ -178,19 +231,19 @@ function arvore(scene, x, z, pinheiro) {
   const g = new THREE.Group();
   const tr = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.22, 1.1, 6),
     new THREE.MeshLambertMaterial({ color: 0x7a5233 }));
-  tr.position.y = 0.55; tr.castShadow = true; g.add(tr);
+  tr.position.y = 0.55; tr.castShadow = true; tr.userData.oclusor = true; g.add(tr);
   if (pinheiro) {
     [[1.5, 1.2], [2.2, 0.9], [2.9, 0.6]].forEach(([y, r]) => {
       const cone = new THREE.Mesh(new THREE.ConeGeometry(r, 1.2, 7),
         new THREE.MeshLambertMaterial({ color: 0x2a6e3e }));
-      cone.position.y = y; cone.castShadow = true; g.add(cone);
+      cone.position.y = y; cone.castShadow = true; cone.userData.oclusor = true; g.add(cone);
     });
   } else {
     [[1.6, 0.9, 0, 0], [2.3, 1.05, 0, 0], [1.9, 0.7, 0.7, 0.2], [1.9, 0.7, -0.7, -0.2]]
       .forEach(([y, r, dx, dz]) => {
         const s = new THREE.Mesh(new THREE.SphereGeometry(r, 8, 6),
           new THREE.MeshLambertMaterial({ color: 0x2f7a33 }));
-        s.position.set(dx, y, dz); s.castShadow = true; g.add(s);
+        s.position.set(dx, y, dz); s.castShadow = true; s.userData.oclusor = true; g.add(s);
       });
   }
   g.position.set(x, 0, z); scene.add(g);
@@ -247,9 +300,11 @@ function plato(g, p) {
   const cx = (p.x0 + p.x1) / 2, cz = (p.z0 + p.z1) / 2;
   const baseM = new THREE.Mesh(new THREE.BoxGeometry(w + 2.4, p.h * 0.55, d + 2.4), lamb(0x9c7a4e));
   baseM.position.set(cx, p.h * 0.275, cz); baseM.castShadow = baseM.receiveShadow = true;
+  baseM.userData.oclusor = true;
   g.add(baseM);
   const topoM = new THREE.Mesh(new THREE.BoxGeometry(w, p.h, d), lamb(0xb08a5a));
   topoM.position.set(cx, p.h / 2, cz); topoM.castShadow = topoM.receiveShadow = true;
+  topoM.userData.oclusor = true;
   g.add(topoM);
   const gramaM = new THREE.Mesh(new THREE.BoxGeometry(w, 0.1, d), lamb(0x67b34f));
   gramaM.position.set(cx, p.h + 0.05, cz); gramaM.receiveShadow = true;
@@ -261,10 +316,11 @@ function bocaCaverna(g, c) {
   const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
   const rocha = new THREE.Mesh(new THREE.DodecahedronGeometry(3.2), lamb(0x6e7680));
   rocha.position.set(c.x, 1.6, c.z - 1.2); rocha.scale.set(1.4, 1, 1);
-  rocha.castShadow = true; g.add(rocha);
+  rocha.castShadow = true; rocha.userData.oclusor = true; g.add(rocha);
   for (const [dx, r] of [[-3.4, 1.4], [3.4, 1.6]]) {
     const p = new THREE.Mesh(new THREE.DodecahedronGeometry(r), lamb(0x7d838c));
-    p.position.set(c.x + dx, r * 0.7, c.z - 0.6); p.castShadow = true; g.add(p);
+    p.position.set(c.x + dx, r * 0.7, c.z - 0.6); p.castShadow = true;
+    p.userData.oclusor = true; g.add(p);
   }
   const buraco = new THREE.Mesh(new THREE.CircleGeometry(1.15, 16),
     new THREE.MeshBasicMaterial({ color: 0x0a0a12 }));
@@ -340,6 +396,9 @@ export function montaMapa(cena, mapa) {
   if (mapa.agua) montaAgua(g, mapa.agua);
   if (mapa.caverna) bocaCaverna(g, mapa.caverna);
   montaBorda(g, mapa);
+  // lista de oclusores para o efeito "vidro" quando algo tapa o personagem
+  cena.oclusores = [];
+  g.traverse((o) => { if (o.isMesh && o.userData.oclusor) cena.oclusores.push(o); });
 }
 
 /* arena de batalha — ringue de floresta centrado na origem (a sim luta em

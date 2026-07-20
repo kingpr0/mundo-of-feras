@@ -6,7 +6,7 @@ import { criarMundo, passoMundo, daImunidade, entradaDoMapa } from './sim/mundo.
 import { criarBatalha, passoBatalha, podeCapturar, fugirBatalha, trocaFera } from './sim/batalha.js';
 import { guardaDirecao, sequenciaCompleta } from './sim/comandos.js';
 import { ganhaXp, xpParaSubir, xpPorVitoria, nivelSelvagem, NIVEL_INICIAL } from './sim/progressao.js';
-import { criarCena, poof, passoParticulas, passoCamera, mostraArena, montaMapa } from './render/cena.js';
+import { criarCena, poof, passoParticulas, passoCamera, mostraArena, montaMapa, passoOclusores } from './render/cena.js';
 import * as MD from './render/modelos.js';
 import { criarHUD } from './render/hud.js';
 import { audioInit, sfx } from './render/audio.js';
@@ -232,7 +232,9 @@ function iniciaEncontro() {
   mostraArena(cena, true);
   MD.mostra(domador, false);
   feraAtual = modelosIni[mundo.selvagem.especie];
+  // zera qualquer resíduo da última luta (flash branco, pose, escala)
   MD.setOpacidade(feraAtual, 1); MD.setEscala(feraAtual, 1);
+  MD.flashCor(feraAtual, 0); feraAtual.g.rotation.x = 0;
   MD.setPos(feraAtual, RINGUE.fera);
   MD.encara(feraAtual, RINGUE.dom.x, RINGUE.dom.z);
   feraAtual.g.rotation.y = feraAtual.giro;
@@ -260,6 +262,7 @@ function iniciaBatalha() {
   modo = 'batalha';
   playerM = modelosJog[chaveJog];
   MD.setOpacidade(playerM, 1); MD.setEscala(playerM, 1);
+  MD.flashCor(playerM, 0); playerM.g.rotation.x = 0;
   MD.setPos(playerM, batalha.p.pos); MD.mostra(playerM, true);
   poof(cena, { ...batalha.p.pos, y: 0.9 }, 0xffd23f, 14, 4);
   hud.nomeJogador(especies[chaveJog].nome, fera.nivel);
@@ -350,7 +353,9 @@ function sincronizaVisual(dt) {
     if (batalha.e.estado === 'ko') MD.setOpacidade(feraAtual, Math.max(0, 1 - batalha.e.t * 1.1));
     if (batalha.captura && batalha.captura.escalaFera !== undefined)
       MD.setEscala(feraAtual, batalha.captura.escalaFera);
-    aplicaFlash(feraAtual, batalha.e);
+    // durante a captura a fera fica "congelada": sem flash de carga
+    if (batalha.captura) MD.flashCor(feraAtual, 0);
+    else aplicaFlash(feraAtual, batalha.e);
 
     if (batalha.captura) { MD.setPos(cristal, batalha.captura.pos); cristal.g.rotation.y += dt * 5; }
 
@@ -453,6 +458,13 @@ function loop(agora) {
   sincronizaVisual(dt);
   passoCamera(cena, modo === 'encontro' ? 'batalha' : modo, mundo,
               modo === 'encontro' ? camEncontro : batalha, dt);
+  // o que tapar o personagem (ou as feras na arena) vira "vidro"
+  if (modo === 'explorar' || modo === 'titulo')
+    passoOclusores(cena, [mundo.domador.pos], cena.oclusores);
+  else if (modo === 'encontro')
+    passoOclusores(cena, [RINGUE.fera], cena.oclusoresArena);
+  else if (modo === 'batalha' && batalha)
+    passoOclusores(cena, [batalha.p.pos, batalha.e.pos], cena.oclusoresArena);
   cena.renderer.render(cena.scene, cena.camera);
 }
 cv.focus(); setTimeout(() => cv.focus(), 300);
