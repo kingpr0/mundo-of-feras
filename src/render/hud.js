@@ -15,8 +15,21 @@ export function criarHUD() {
     batalhaVisivel(v) {
       $('hpP').style.display = v ? 'block' : 'none';
       $('hpE').style.display = v ? 'block' : 'none';
+      $('golpesHud').style.display = v ? 'block' : 'none';
       if (!v) $('cap').style.display = 'none';
     },
+    // painel de golpes da luta: tecla, nome e usos restantes (até 6 linhas)
+    golpesPainel(linhas) {
+      const box = $('golpesHud');
+      box.innerHTML = '';
+      for (const l of linhas.slice(0, 6)) {
+        const d = document.createElement('div');
+        d.className = 'glinha';
+        d.innerHTML = `<span class="gtecla">${l.tecla}</span> ${l.nome} <span class="gusos">${l.usos}</span>`;
+        box.appendChild(d);
+      }
+    },
+    painelVida(hp, max) { $('pVida').textContent = `${hp}/${max}`; },
     // painel e minimapa só fazem sentido na exploração
     exploracaoVisivel(v) {
       $('painel').style.display = v ? 'block' : 'none';

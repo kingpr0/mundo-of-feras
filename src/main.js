@@ -3,9 +3,10 @@
 // som, partículas e HUD. Nenhuma regra de jogo vive aqui.
 import * as THREE from 'three';
 import { criarMundo, passoMundo, daImunidade, entradaDoMapa } from './sim/mundo.js';
-import { criarBatalha, passoBatalha, podeCapturar, fugirBatalha, trocaFera } from './sim/batalha.js';
+import { criarBatalha, passoBatalha, podeCapturar, fugirBatalha, trocaFera, continuaComOutraFera } from './sim/batalha.js';
 import { guardaDirecao, sequenciaCompleta } from './sim/comandos.js';
-import { ganhaXp, xpParaSubir, xpPorVitoria, nivelSelvagem, NIVEL_INICIAL } from './sim/progressao.js';
+import { ganhaXp, xpParaSubir, xpPorVitoria, nivelSelvagem, vidaMaxima, NIVEL_INICIAL } from './sim/progressao.js';
+import { criarFera, aprendeGolpe, lembraGolpe, montaSlots, aprendizadosDoNivel, curaTotal, bonusNivel, paraBatalha } from './sim/equipe.js';
 import { criarCena, poof, passoParticulas, passoCamera, mostraArena, montaMapa, passoOclusores } from './render/cena.js';
 import * as MD from './render/modelos.js';
 import { criarHUD } from './render/hud.js';
@@ -13,13 +14,13 @@ import { audioInit, sfx } from './render/audio.js';
 
 const especies = await (await fetch('./src/dados/especies.json')).json();
 const dadosMapas = await (await fetch('./src/dados/mapas.json')).json();
+const golpesCat = await (await fetch('./src/dados/golpes.json')).json();
 
 const cv = document.getElementById('cv');
 const cena = criarCena(cv);
 const hud = criarHUD();
 
 // modelos 3D: um conjunto para a fera do jogador e outro para a selvagem
-// (assim a mesma espécie pode aparecer dos dois lados do ringue)
 const domador = MD.criarDomador(cena.scene);
 const modelosJog = {}, modelosIni = {};
 for (const k of Object.keys(especies)) {
@@ -28,12 +29,12 @@ for (const k of Object.keys(especies)) {
 }
 const cristal = MD.criarCristal(cena.scene); MD.mostra(cristal, false);
 
-// posições de largada no ringue (a arena visual é centrada na origem)
 const RINGUE = { dom: { x: -5, y: 0, z: 0 }, fera: { x: 3.5, y: 0, z: 0 } };
 const DICA_EXPLORAR = 'Setas: andar (2 toques = correr) · M abre o menu';
-// cor dos efeitos elementais por tipo de fera
 const CORES_TIPO = { fogo: 0xff8a3d, eletrico: 0xffe94d, agua: 0x4da3ff, planta: 0x5fd35a, comum: 0xcbd0d8 };
-const projMeshes = new Map(); // id do projétil (sim) -> modelo 3D
+const SIMBOLO = { baixo: '↓', frente: '→' };
+const TECLAS_GOLPE = ['Z', 'X', 'C', 'V'];
+const projMeshes = new Map();
 
 /* ---------- estado ---------- */
 let modo = 'titulo'; // titulo | explorar | encontro | batalha
@@ -46,22 +47,31 @@ function novoMundo(chave) {
 let mundo = novoMundo(chaveMapa);
 montaMapa(cena, mundo.mapa);
 hud.localAtual(mundo.mapa.nome);
-
-let equipe = [{ especie: 'brasinha', nivel: NIVEL_INICIAL, xp: 0 }];
-let ativa = 0; // índice da fera ativa na equipe
-hud.nomeJogador(especies.brasinha.nome, equipe[0].nivel);
 hud.mapaRegiao(dadosMapas, chaveMapa);
+
+let equipe = [criarFera(especies, golpesCat, 'brasinha', NIVEL_INICIAL)];
+let ativa = 0;
+const nomeDe = (f) => f.apelido || especies[f.especie].nome;
+function atualizaPainel() {
+  const f = equipe[ativa];
+  hud.nomeJogador(nomeDe(f), f.nivel);
+  hud.painelVida(f.hpAtual, vidaMaxima(especies[f.especie].vida, f.nivel));
+  hud.equipe(equipe.length);
+}
+atualizaPainel();
+
 let batalha = null;
-let playerM = null;   // modelo da fera do jogador em batalha
-let feraAtual = null; // modelo da fera selvagem em cena (encontro/batalha)
-let escolha = 0;      // menu do encontro: 0 = lutar, 1 = fugir
-let menu = null;      // menu aberto: { tipo, sel } | null
-let retornoPorta = null; // para onde voltar ao sair de um interior
+let playerM = null;
+let feraAtual = null;
+let escolha = 0;
+let menu = null; // { tipo, sel, fera }
+let retornoPorta = null;
 let hitstop = 0, tempo = 0;
 
-/* ---------- entrada (padrão: setas + Z/X/C; WASD e J/K seguem como extras) */
+/* ---------- entrada (setas + Z/X/C/V golpes, F captura, M/ESC menu) ---- */
 const keys = {};
-let jE = false, kE = false, cE = false, spE = false, pJ = false, pK = false, pC = false, pS = false;
+let jE = false, kE = false, cE = false, vE = false, fE = false, spE = false;
+let pJ = false, pK = false, pC = false, pV = false, pF = false, pS = false;
 let cimaE = false, baixoE = false, pCima = false, pBaixo = false;
 let mE = false, escE = false, pM = false, pEsc = false;
 addEventListener('keydown', (e) => {
@@ -69,17 +79,17 @@ addEventListener('keydown', (e) => {
   if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
   if (e.code === 'Enter' && modo === 'titulo') {
     hud.escondeTitulo(); modo = 'explorar'; cv.focus();
-    hud.toast('Explore a grama alta... dizem que feras selvagens vivem escondidas nela!');
+    hud.toast('Explore a grama alta... e cuide das suas feras: quem desmaia não volta!');
     hud.dica(DICA_EXPLORAR);
   }
 });
 addEventListener('keyup', (e) => keys[e.code] = false);
 cv.addEventListener('pointerdown', () => { audioInit(); cv.focus(); });
 function edges() {
-  const J = keys.KeyZ || keys.KeyJ, K = keys.KeyX || keys.KeyK,
-        C = keys.KeyC || keys.KeyL, S = keys.Space;
-  jE = J && !pJ; kE = K && !pK; cE = C && !pC; spE = S && !pS;
-  pJ = J; pK = K; pC = C; pS = S;
+  const Z = keys.KeyZ || keys.KeyJ, X = keys.KeyX || keys.KeyK,
+        C = keys.KeyC, V = keys.KeyV, F = keys.KeyF, S = keys.Space;
+  jE = Z && !pJ; kE = X && !pK; cE = C && !pC; vE = V && !pV; fE = F && !pF; spE = S && !pS;
+  pJ = Z; pK = X; pC = C; pV = V; pF = F; pS = S;
   const CIMA = keys.ArrowUp || keys.KeyW, BAIXO = keys.ArrowDown || keys.KeyS;
   cimaE = CIMA && !pCima; baixoE = BAIXO && !pBaixo;
   pCima = CIMA; pBaixo = BAIXO;
@@ -89,8 +99,7 @@ function edges() {
 }
 const eixo = (neg, pos) => (keys[pos[0]] || keys[pos[1]] ? 1 : 0) - (keys[neg[0]] || keys[neg[1]] ? 1 : 0);
 
-/* corrida: dois toques rápidos na mesma direção e segurar o segundo
-   (vale na exploração e dentro da arena) */
+/* corrida: dois toques rápidos na mesma direção, segurando o segundo */
 const TECLAS_DIR = ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD'];
 const ultToque = {}, prevDir = {};
 let correndo = false;
@@ -106,8 +115,7 @@ function detectaCorrida() {
   if (!TECLAS_DIR.some((k) => keys[k])) correndo = false;
 }
 
-/* ---------- golpes de comando: buffer de sequências direcionais ---------- */
-const SIMBOLO = { baixo: '↓', frente: '→' };
+/* combos: buffer de direções (matching puro em sim/comandos.js) */
 let seqBuf = [];
 function guardaDirecoes() {
   if (baixoE) guardaDirecao(seqBuf, 'baixo', tempo);
@@ -133,6 +141,8 @@ function aoEvento(evt) {
       hud.toast(`${evt.nome}!`, 900); break;
     case 'projetil': sfx.swing();
       poof(cena, evt.pos, CORES_TIPO[evt.elemento] || 0xffffff, 12, 3.2); break;
+    case 'semUsos': hud.toast(`Sem usos de ${evt.nome}! Descanse no Centro de Curas.`, 1600); break;
+    case 'golpeUsado': hud.golpesPainel(linhasGolpes()); break;
     case 'cristalVoa': sfx.cristalVoa(); MD.mostra(cristal, true); break;
     case 'cristalSuga': poof(cena, evt.pos, 0x59e0d0, 14, 4); break;
     case 'cristalTreme': sfx.cristalTreme(); break;
@@ -142,86 +152,188 @@ function aoEvento(evt) {
       hud.toast(`Ah, quase! O ${batalha.e.esp.nome} escapou do cristal!`); break;
     case 'vitoria': sfx.vitoria(); hitstop = 0.22;
       hud.toast(`${batalha.e.esp.nome} desmaiou! ${premiaXp()}`); break;
-    case 'derrota': sfx.derrota(); hitstop = 0.22;
-      hud.toast(`${batalha.p.esp.nome} desmaiou... Você correu de volta.`); break;
+    case 'derrota': sfx.derrota(); hitstop = 0.22; break;
   }
 }
 
-/* ---------- XP e nível (regras em sim/progressao.js) ---------- */
+/* ---------- golpes no HUD da luta ---------- */
+function linhasGolpes() {
+  if (!batalha) return [];
+  const f = batalha.p;
+  const simb = (especies[f.chave].sequencia || []).map((d) => SIMBOLO[d]).join('');
+  const usosTxt = (id, def) => def.usos == null ? '∞' : `${f.usos[id] || 0}/${def.usos}`;
+  const linhas = [];
+  f.slots.forEach((s, i) => {
+    linhas.push({ tecla: TECLAS_GOLPE[i], nome: s.def.nome, usos: usosTxt(s.id, s.def) });
+    if (s.forte)
+      linhas.push({ tecla: `${simb}${TECLAS_GOLPE[i]}`, nome: s.forte.def.nome, usos: usosTxt(s.forte.id, s.forte.def) });
+  });
+  return linhas;
+}
+
+/* ---------- XP, nível e aprendizado ---------- */
 function premiaXp() {
   const fera = equipe[ativa];
   const ganho = xpPorVitoria(batalha.e.nivel);
+  const antes = fera.nivel;
   const subiu = ganhaXp(fera, ganho);
   hud.xp(fera.xp / xpParaSubir(fera.nivel));
-  hud.nomeJogador(especies[fera.especie].nome, fera.nivel);
   if (subiu > 0) {
-    setTimeout(() => {
-      sfx.vitoria();
-      hud.toast(`⬆ ${especies[fera.especie].nome} subiu para o nível ${fera.nivel}!`, 2600);
-    }, 1500);
+    const avisos = [];
+    for (let nv = antes + 1; nv <= fera.nivel; nv++) {
+      bonusNivel(fera, especies, golpesCat);
+      for (const gid of aprendizadosDoNivel(especies[fera.especie], nv)) {
+        const res = aprendeGolpe(fera, golpesCat, gid);
+        if (res) avisos.push(res);
+      }
+    }
+    if (batalha) { batalha.p.slots = montaSlots(fera, golpesCat); hud.golpesPainel(linhasGolpes()); }
+    let atraso = 1500;
+    setTimeout(() => { sfx.vitoria(); hud.toast(`⬆ ${nomeDe(fera)} subiu para o nível ${fera.nivel}!`, 2100); }, atraso);
+    for (const av of avisos) {
+      atraso += 2200;
+      const nomeG = golpesCat[av.id].nome;
+      const msg = av.tipo === 'substituiu'
+        ? `${nomeDe(fera)} esqueceu ${golpesCat[av.trocado].nome} e aprendeu ${nomeG}!`
+        : `${nomeDe(fera)} aprendeu ${nomeG}!`;
+      setTimeout(() => { sfx.capturado(); hud.toast(`✨ ${msg}`, 2100); }, atraso);
+    }
   }
+  atualizaPainel();
   return `+${ganho} XP`;
 }
 
-/* ---------- menus (exploração e batalha) ---------- */
-const TITULO_MENU = { exploracao: 'MENU', batalha: 'BATALHA', equipeExp: 'EQUIPE', equipeBat: 'TROCAR FERA' };
-function itensMenu() {
-  if (menu.tipo === 'exploracao') return ['Equipe', 'Itens', 'Carteira', 'Insígnias', 'Fechar'];
-  if (menu.tipo === 'batalha') return ['Continuar', 'Trocar Fera', 'Itens', 'Fugir'];
-  return equipe.map((f, i) => especies[f.especie].nome + (i === ativa ? ' ◆' : ''));
+/* ---------- menus ---------- */
+function tituloMenu() {
+  const t = menu.tipo;
+  if (t === 'statusFera' || t === 'lembrar') {
+    const f = equipe[menu.fera];
+    return `${nomeDe(f).toUpperCase()} · Lv.${f.nivel}`;
+  }
+  return { exploracao: 'MENU', batalha: 'BATALHA', equipeExp: 'EQUIPE',
+           equipeBat: 'TROCAR FERA', statusLista: 'STATUS', catalogo: 'CATÁLOGO DE GOLPES' }[t] || 'MENU';
+}
+function itensDoMenu() {
+  const t = menu.tipo;
+  const nada = () => {};
+  if (t === 'exploracao') return [
+    { txt: 'Equipe', acao: () => abreMenu('equipeExp') },
+    { txt: 'Status', acao: () => abreMenu('statusLista') },
+    { txt: 'Catálogo', acao: () => abreMenu('catalogo') },
+    { txt: 'Itens', acao: () => hud.toast('Itens: em breve!') },
+    { txt: 'Carteira', acao: () => hud.toast('Carteira: 0 moedas (economia em breve)') },
+    { txt: 'Insígnias', acao: () => hud.toast('Insígnias: nenhuma ainda') },
+    { txt: 'Fechar', acao: fechaMenu },
+  ];
+  if (t === 'batalha') return [
+    { txt: 'Continuar', acao: fechaMenu },
+    { txt: 'Trocar Fera', acao: () => abreMenu('equipeBat') },
+    { txt: 'Itens', acao: () => hud.toast('Itens: em breve!') },
+    { txt: 'Fugir', acao: () => { fechaMenu(); fugirBatalha(batalha); } },
+  ];
+  if (t === 'equipeExp' || t === 'equipeBat') return equipe.map((f, i) => ({
+    txt: `${nomeDe(f)} Lv.${f.nivel}${i === ativa ? ' ◆' : ''}`,
+    acao: () => selecionaFera(i),
+  }));
+  if (t === 'statusLista') return [
+    ...equipe.map((f, i) => ({
+      txt: `${nomeDe(f)} Lv.${f.nivel}`,
+      acao: () => { menu.fera = i; abreMenu('statusFera'); },
+    })),
+    { txt: 'Voltar', acao: () => abreMenu('exploracao') },
+  ];
+  if (t === 'statusFera') {
+    const f = equipe[menu.fera];
+    const max = vidaMaxima(especies[f.especie].vida, f.nivel);
+    const usosTxt = (id) => golpesCat[id].usos == null ? '∞' : `${f.usos[id] || 0}/${golpesCat[id].usos}`;
+    const linhas = [{ txt: `HP ${f.hpAtual}/${max} · XP ${f.xp}/${xpParaSubir(f.nivel)}`, acao: nada }];
+    for (const id of f.golpes)
+      linhas.push({ txt: `• ${golpesCat[id].nome} (${usosTxt(id)})`, acao: nada });
+    for (const id of f.conhecidos)
+      if (golpesCat[id].base && f.golpes.includes(golpesCat[id].base))
+        linhas.push({ txt: `• combo: ${golpesCat[id].nome} (${usosTxt(id)})`, acao: nada });
+    linhas.push({ txt: 'Renomear', acao: () => {
+      const n = prompt('Novo nome da fera:', nomeDe(f));
+      if (n && n.trim()) { f.apelido = n.trim().slice(0, 12); atualizaPainel(); abreMenu('statusFera'); }
+    } });
+    linhas.push({ txt: 'Lembrar golpe', acao: () => abreMenu('lembrar') });
+    linhas.push({ txt: 'Voltar', acao: () => abreMenu('statusLista') });
+    return linhas;
+  }
+  if (t === 'lembrar') {
+    const f = equipe[menu.fera];
+    const cands = f.conhecidos.filter((id) => !golpesCat[id].base && !f.golpes.includes(id));
+    const itens = cands.length
+      ? cands.map((id) => ({ txt: golpesCat[id].nome, acao: () => {
+          lembraGolpe(f, golpesCat, id);
+          hud.toast(`${nomeDe(f)} relembrou ${golpesCat[id].nome}!`);
+          abreMenu('statusFera');
+        } }))
+      : [{ txt: '(nenhum golpe para lembrar)', acao: nada }];
+    itens.push({ txt: 'Voltar', acao: () => abreMenu('statusFera') });
+    return itens;
+  }
+  if (t === 'catalogo') return [
+    ...Object.values(golpesCat).map((g) => ({
+      txt: `${g.nome} · ${g.tipo}${g.base ? ' · combo' : ''} · ${g.usos == null ? '∞' : g.usos} usos`,
+      acao: nada,
+    })),
+    { txt: 'Voltar', acao: () => abreMenu('exploracao') },
+  ];
+  return [];
 }
 function abreMenu(tipo) {
-  menu = { tipo, sel: 0 };
-  hud.menu(true, TITULO_MENU[tipo], itensMenu(), 0);
+  menu = { tipo, sel: 0, fera: menu ? menu.fera : 0 };
+  hud.menu(true, tituloMenu(), itensDoMenu().map((i) => i.txt), 0);
 }
 function fechaMenu() { menu = null; hud.menu(false); }
+function voltaMenu() {
+  const t = menu.tipo;
+  if (t === 'equipeExp' || t === 'statusLista' || t === 'catalogo') abreMenu('exploracao');
+  else if (t === 'equipeBat') abreMenu('batalha');
+  else if (t === 'statusFera') abreMenu('statusLista');
+  else if (t === 'lembrar') abreMenu('statusFera');
+  else fechaMenu();
+}
 function navegaMenu() {
-  const itens = itensMenu();
+  const itens = itensDoMenu();
   if (baixoE || cimaE) {
     menu.sel = (menu.sel + (baixoE ? 1 : -1) + itens.length) % itens.length;
     sfx.swing();
-    hud.menu(true, TITULO_MENU[menu.tipo], itens, menu.sel);
+    hud.menu(true, tituloMenu(), itens.map((i) => i.txt), menu.sel);
   }
-  if (kE || escE) {
-    if (menu.tipo === 'equipeExp') abreMenu('exploracao');
-    else if (menu.tipo === 'equipeBat') abreMenu('batalha');
-    else fechaMenu();
+  if (kE || escE) { voltaMenu(); return; }
+  if (jE) itens[menu.sel].acao();
+}
+function selecionaFera(i) {
+  const f = equipe[i];
+  if (menu.tipo === 'equipeExp') {
+    ativa = i;
+    atualizaPainel();
+    hud.toast(`${nomeDe(f)} agora é a fera ativa!`);
+    abreMenu('exploracao');
     return;
   }
-  if (!jE) return;
-  const s = menu.sel;
-  if (menu.tipo === 'exploracao') {
-    if (s === 0) abreMenu('equipeExp');
-    else if (s === 1) hud.toast('Itens: em breve!');
-    else if (s === 2) hud.toast('Carteira: 0 moedas (economia em breve)');
-    else if (s === 3) hud.toast('Insígnias: nenhuma ainda');
-    else fechaMenu();
-  } else if (menu.tipo === 'batalha') {
-    if (s === 0) fechaMenu();
-    else if (s === 1) abreMenu('equipeBat');
-    else if (s === 2) hud.toast('Itens: em breve!');
-    else { fechaMenu(); fugirBatalha(batalha); }
-  } else if (menu.tipo === 'equipeExp') {
-    ativa = s;
-    hud.nomeJogador(especies[equipe[s].especie].nome, equipe[s].nivel);
-    hud.toast(`${especies[equipe[s].especie].nome} agora é a fera ativa!`);
-    abreMenu('exploracao');
-  } else if (menu.tipo === 'equipeBat') {
-    if (s === ativa) { hud.toast('Essa fera já está na arena!'); return; }
-    ativa = s;
-    const chave = equipe[s].especie;
-    trocaFera(batalha, chave, equipe[s].nivel, especies);
-    MD.mostra(playerM, false);
-    playerM = modelosJog[chave];
-    MD.setOpacidade(playerM, 1); MD.setEscala(playerM, 1);
-    MD.setPos(playerM, batalha.p.pos); MD.mostra(playerM, true);
-    poof(cena, { ...batalha.p.pos, y: 0.9 }, 0xffd23f, 14, 4);
-    hud.nomeJogador(especies[chave].nome, equipe[s].nivel);
-    hud.xp(equipe[s].xp / xpParaSubir(equipe[s].nivel));
-    hud.atualizaHP(batalha);
-    hud.toast(`Vai, ${especies[chave].nome}!`);
-    fechaMenu();
-  }
+  // troca em batalha
+  if (i === ativa) { hud.toast('Essa fera já está na arena!'); return; }
+  equipe[ativa].hpAtual = Math.max(1, batalha.p.hp); // guarda o estado da que sai
+  ativa = i;
+  trocaFera(batalha, paraBatalha(f, especies, golpesCat), especies);
+  trocaModeloJogador(f);
+  hud.toast(`Vai, ${nomeDe(f)}!`);
+  fechaMenu();
+}
+function trocaModeloJogador(f) {
+  if (playerM) MD.mostra(playerM, false);
+  playerM = modelosJog[f.especie];
+  MD.setOpacidade(playerM, 1); MD.setEscala(playerM, 1);
+  MD.flashCor(playerM, 0); playerM.g.rotation.x = 0;
+  MD.setPos(playerM, batalha.p.pos); MD.mostra(playerM, true);
+  poof(cena, { ...batalha.p.pos, y: 0.9 }, 0xffd23f, 14, 4);
+  hud.nomeJogador(nomeDe(f), f.nivel);
+  hud.xp(f.xp / xpParaSubir(f.nivel));
+  hud.golpesPainel(linhasGolpes());
+  hud.atualizaHP(batalha);
 }
 
 /* ---------- transições ---------- */
@@ -232,7 +344,6 @@ function iniciaEncontro() {
   mostraArena(cena, true);
   MD.mostra(domador, false);
   feraAtual = modelosIni[mundo.selvagem.especie];
-  // zera qualquer resíduo da última luta (flash branco, pose, escala)
   MD.setOpacidade(feraAtual, 1); MD.setEscala(feraAtual, 1);
   MD.flashCor(feraAtual, 0); feraAtual.g.rotation.x = 0;
   MD.setPos(feraAtual, RINGUE.fera);
@@ -253,27 +364,19 @@ function confirmaEscolha() {
 }
 function iniciaBatalha() {
   const fera = equipe[ativa];
-  const chaveJog = fera.especie;
-  const chave = mundo.selvagem.especie;
+  const inimigo = criarFera(especies, golpesCat, mundo.selvagem.especie, mundo.selvagem.nivel || NIVEL_INICIAL);
   batalha = criarBatalha(especies,
-    { chave: chaveJog, nivel: fera.nivel },
-    { chave, nivel: mundo.selvagem.nivel || NIVEL_INICIAL },
+    paraBatalha(fera, especies, golpesCat),
+    paraBatalha(inimigo, especies, golpesCat),
     RINGUE.dom, RINGUE.fera);
   modo = 'batalha';
-  playerM = modelosJog[chaveJog];
-  MD.setOpacidade(playerM, 1); MD.setEscala(playerM, 1);
-  MD.flashCor(playerM, 0); playerM.g.rotation.x = 0;
-  MD.setPos(playerM, batalha.p.pos); MD.mostra(playerM, true);
-  poof(cena, { ...batalha.p.pos, y: 0.9 }, 0xffd23f, 14, 4);
-  hud.nomeJogador(especies[chaveJog].nome, fera.nivel);
-  hud.xp(fera.xp / xpParaSubir(fera.nivel));
-  hud.batalhaVisivel(true); hud.atualizaHP(batalha);
+  trocaModeloJogador(fera);
   seqBuf = [];
-  const c1 = batalha.p.esp.golpes.comando1;
-  const seqTxt = c1 ? ` · ${c1.sequencia.map((d) => SIMBOLO[d]).join('')}+Z ${c1.nome}` : '';
-  const esp = batalha.p.esp.golpes.especial;
-  hud.dica(`Setas movem (2 toques corre) · ESPAÇO pula · Z golpe · X ${esp.nome || 'especial'}${seqTxt} · C captura · ESC menu`);
-  hud.toast(`${especies[chaveJog].nome}, eu escolho você!`);
+  const simb = (especies[fera.especie].sequencia || []).map((d) => SIMBOLO[d]).join('');
+  hud.batalhaVisivel(true); hud.atualizaHP(batalha);
+  hud.golpesPainel(linhasGolpes());
+  hud.dica(`Z/X/C/V golpes · ${simb}+botão = versão forte · ESPAÇO pula · F captura · ESC menu`);
+  hud.toast(`${nomeDe(fera)}, eu escolho você!`);
 }
 function fugir() {
   hud.flash();
@@ -287,6 +390,26 @@ function fugir() {
   hud.toast('Você fugiu em segurança!');
 }
 function encerraBatalha() {
+  const resultado = batalha.resultado;
+  const fera = equipe[ativa];
+  if (fera && resultado !== 'derrota') fera.hpAtual = Math.max(1, batalha.p.hp);
+
+  // PERMADEATH: fera que desmaia é perdida para sempre
+  if (resultado === 'derrota') {
+    const caida = equipe.splice(ativa, 1)[0];
+    hud.toast(`💀 ${nomeDe(caida)} caiu... e foi perdida para sempre.`, 3200);
+    if (equipe.length > 0) {
+      // a próxima da equipe entra e o duelo continua contra o mesmo inimigo
+      ativa = 0;
+      const prox = equipe[0];
+      continuaComOutraFera(batalha, paraBatalha(prox, especies, golpesCat), especies);
+      trocaModeloJogador(prox);
+      setTimeout(() => hud.toast(`Vai, ${nomeDe(prox)}! Cuidado!`, 1800), 1700);
+      atualizaPainel();
+      return; // a batalha segue!
+    }
+  }
+
   hud.flash();
   fechaMenu();
   mostraArena(cena, false);
@@ -296,17 +419,26 @@ function encerraBatalha() {
   if (feraAtual) { MD.mostra(feraAtual, false); feraAtual = null; }
   MD.mostra(domador, true);
   hud.batalhaVisivel(false);
-  if (batalha.resultado === 'captura') {
-    equipe.push({ especie: batalha.e.chave, nivel: batalha.e.nivel, xp: 0 });
-    hud.equipe(equipe.length);
+  if (resultado === 'captura') {
+    const nova = criarFera(especies, golpesCat, batalha.e.chave, batalha.e.nivel);
+    nova.hpAtual = Math.max(1, batalha.e.hp);
+    equipe.push(nova);
   }
-  if (batalha.resultado === 'derrota')
-    mundo.domador.pos = { x: mundo.mapa.spawn.x, y: 0, z: mundo.mapa.spawn.z };
-  if (batalha.resultado === 'fuga') hud.toast('Você recuou da batalha!');
+  if (resultado === 'fuga') hud.toast('Você recuou da batalha!');
   daImunidade(mundo);
   hud.exploracaoVisivel(true);
   hud.dica(DICA_EXPLORAR);
   batalha = null; modo = 'explorar';
+  if (resultado === 'derrota') {
+    // derrota total: acorda na vila inicial; sem feras, recebe uma nova inicial
+    trocaMapa(dadosMapas.inicial);
+    if (equipe.length === 0) {
+      equipe = [criarFera(especies, golpesCat, 'brasinha', NIVEL_INICIAL)];
+      ativa = 0;
+      setTimeout(() => hud.toast('Você recebeu uma nova Brasinha. Cuide bem dela desta vez...', 3500), 1700);
+    }
+  }
+  atualizaPainel();
 }
 // passagem entre mapas: recria a sim no destino e remonta o cenário
 function trocaMapa(destino, entrada) {
@@ -317,7 +449,6 @@ function trocaMapa(destino, entrada) {
   mundo.domador.pos = entrada || entradaDoMapa(mundo.mapa, origem);
   daImunidade(mundo, 1.2);
   montaMapa(cena, mundo.mapa);
-  // câmera corta seco para o novo mapa (sem voar pelo cenário antigo)
   const pp = mundo.domador.pos;
   cena.camPos.set(pp.x, pp.y + 17, pp.z + 12);
   cena.camAlvo.set(pp.x, 0.8, pp.z);
@@ -353,13 +484,11 @@ function sincronizaVisual(dt) {
     if (batalha.e.estado === 'ko') MD.setOpacidade(feraAtual, Math.max(0, 1 - batalha.e.t * 1.1));
     if (batalha.captura && batalha.captura.escalaFera !== undefined)
       MD.setEscala(feraAtual, batalha.captura.escalaFera);
-    // durante a captura a fera fica "congelada": sem flash de carga
     if (batalha.captura) MD.flashCor(feraAtual, 0);
     else aplicaFlash(feraAtual, batalha.e);
 
     if (batalha.captura) { MD.setPos(cristal, batalha.captura.pos); cristal.g.rotation.y += dt * 5; }
 
-    // projéteis: cria/move/remove os modelos conforme a sim
     const vivos = new Set();
     for (const pr of batalha.projeteis) {
       vivos.add(pr.id);
@@ -415,7 +544,9 @@ function loop(agora) {
         hud.toast('Uma caverna sombria... escura demais para entrar agora. (em breve!)', 3000);
       else if (evt === 'cura') {
         sfx.capturado(); hud.flash();
-        hud.toast('❤ Enfermeira: suas feras estão renovadas! Volte sempre!', 2800);
+        for (const f of equipe) curaTotal(f, especies, golpesCat);
+        atualizaPainel();
+        hud.toast('❤ Enfermeira: vida e golpes de todas as feras restaurados!', 3000);
       }
       else if (evt && evt.tipo === 'porta') {
         if (evt.destino === 'retorno' && retornoPorta) {
@@ -438,15 +569,16 @@ function loop(agora) {
     else {
       detectaCorrida();
       guardaDirecoes();
-      const seqC1 = batalha.p.esp.golpes.comando1 && batalha.p.esp.golpes.comando1.sequencia;
-      let c1 = false;
-      if (jE && sequenciaCompleta(seqBuf, seqC1, tempo)) {
-        c1 = true; seqBuf = [];
+      const idx = jE ? 0 : kE ? 1 : cE ? 2 : vE ? 3 : null;
+      let forte = false;
+      if (idx != null &&
+          sequenciaCompleta(seqBuf, especies[batalha.p.chave].sequencia, tempo)) {
+        forte = true; seqBuf = [];
       }
       const inpP = {
         mov: { x: eixo(['ArrowLeft','KeyA'], ['ArrowRight','KeyD']),
                z: eixo(['ArrowUp','KeyW'], ['ArrowDown','KeyS']) },
-        pulo: spE, a: jE && !c1, f: kE, c1, correr: correndo, capturar: cE,
+        pulo: spE, golpe: idx, forte, correr: correndo, capturar: fE,
       };
       const fim = passoBatalha(batalha, inpP, dt, aoEvento);
       hud.atualizaHP(batalha);
@@ -458,7 +590,6 @@ function loop(agora) {
   sincronizaVisual(dt);
   passoCamera(cena, modo === 'encontro' ? 'batalha' : modo, mundo,
               modo === 'encontro' ? camEncontro : batalha, dt);
-  // o que tapar o personagem (ou as feras na arena) vira "vidro"
   if (modo === 'explorar' || modo === 'titulo')
     passoOclusores(cena, [mundo.domador.pos], cena.oclusores);
   else if (modo === 'encontro')

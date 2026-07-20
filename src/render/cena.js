@@ -367,6 +367,47 @@ function montaInterior(g, mapa) {
   }
 }
 
+/* caminho de pedras arredondadas (referência: pisos do Brilliant Diamond) */
+let _texPedras = null;
+function texturaPedras() {
+  if (_texPedras) return _texPedras;
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const x = c.getContext('2d');
+  x.fillStyle = '#a8906a'; x.fillRect(0, 0, 128, 128);
+  const tons = ['#d8c49b', '#cdb890', '#c2ab82', '#dcc9a4'];
+  let i = 0;
+  for (let py = 12; py < 128; py += 30) {
+    for (let px = ((py / 30) % 2) * 16 + 12; px < 128; px += 32, i++) {
+      x.fillStyle = tons[i % tons.length];
+      x.beginPath();
+      x.ellipse(px, py, 13 + (i % 3) * 2, 10 + ((i * 7) % 3) * 2, (i % 5) * 0.3, 0, Math.PI * 2);
+      x.fill();
+      x.strokeStyle = '#96805c'; x.lineWidth = 2; x.stroke();
+    }
+  }
+  _texPedras = new THREE.CanvasTexture(c);
+  _texPedras.wrapS = _texPedras.wrapT = THREE.RepeatWrapping;
+  return _texPedras;
+}
+function caminhoPedra(g, mapa, s) {
+  const L = mapa.limite;
+  const larg = (s.ate - s.de) + 2.4, comp = 7;
+  const horizontal = s.borda === 'leste' || s.borda === 'oeste';
+  const tex = texturaPedras().clone();
+  tex.needsUpdate = true;
+  tex.repeat.set((horizontal ? comp : larg) / 4, (horizontal ? larg : comp) / 4);
+  const m = new THREE.Mesh(
+    new THREE.PlaneGeometry(horizontal ? comp : larg, horizontal ? larg : comp),
+    new THREE.MeshLambertMaterial({ map: tex }));
+  m.rotation.x = -Math.PI / 2; m.receiveShadow = true;
+  const meio = (s.de + s.ate) / 2;
+  if (s.borda === 'leste') m.position.set(L.x - comp / 2, 0.018, meio);
+  if (s.borda === 'oeste') m.position.set(-L.x + comp / 2, 0.018, meio);
+  if (s.borda === 'sul') m.position.set(meio, 0.018, L.z - comp / 2);
+  if (s.borda === 'norte') m.position.set(meio, 0.018, -L.z + comp / 2);
+  g.add(m);
+}
+
 function descarta(obj) {
   obj.traverse((o) => {
     if (o.geometry) o.geometry.dispose();
@@ -395,6 +436,7 @@ export function montaMapa(cena, mapa) {
   if (mapa.grama) montaGrama(g, mapa.grama);
   if (mapa.agua) montaAgua(g, mapa.agua);
   if (mapa.caverna) bocaCaverna(g, mapa.caverna);
+  (mapa.saidas || []).forEach((s) => caminhoPedra(g, mapa, s));
   montaBorda(g, mapa);
   // lista de oclusores para o efeito "vidro" quando algo tapa o personagem
   cena.oclusores = [];

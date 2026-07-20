@@ -28,6 +28,11 @@
   .hpfill { height:100%; width:100%; background:#6fe06a; transition:width .12s; }
   .xpbar { height:5px; background:#3a3350; border:2px solid #16121f; border-top:none; }
   #fillXp { height:100%; width:0%; background:#59b8e0; transition:width .3s; }
+  #golpesHud { position:fixed; top:88px; left:16px; width:250px; display:none;
+    background:rgba(13,11,20,.82); border:2px solid #3a3350; padding:6px 10px; }
+  .glinha { color:#e8e3ff; font-size:11px; margin:3px 0; }
+  .gtecla { color:#ffd23f; font-weight:bold; }
+  .gusos { float:right; color:#9ad4e8; }
   #toast { position:fixed; bottom:64px; left:50%; transform:translateX(-50%);
     background:rgba(13,11,20,.92); color:#fff6df; border:2px solid #ffd23f;
     padding:10px 18px; font-size:14px; display:none; max-width:80%; text-align:center; }
@@ -72,6 +77,7 @@
   <div id="painel">
     <div class="ptit">DOMADOR</div>
     <div class="plin">♦ <span id="pAtiva">Brasinha</span></div>
+    <div class="plin">HP <span id="pVida">—</span></div>
     <div class="plin">Feras: <span id="nCap">1</span></div>
     <div class="plin">Local: <span id="pMapa">—</span></div>
   </div>
@@ -83,9 +89,10 @@
   <div class="hpwrap" id="hpP"><div class="hpname" id="nomeP">♦ BRASINHA</div>
     <div class="hpbar"><div class="hpfill" id="fillP"></div></div>
     <div class="xpbar"><div id="fillXp"></div></div></div>
+  <div id="golpesHud"></div>
   <div class="hpwrap" id="hpE"><div class="hpname" id="nomeE">CASCORRO</div>
     <div class="hpbar"><div class="hpfill" id="fillE"></div></div></div>
-  <div id="cap">! FERA FRACA — pressione C para CAPTURAR !</div>
+  <div id="cap">! FERA FRACA — pressione F para CAPTURAR !</div>
   <div id="escolha">
     <div class="opt sel" id="optLutar">LUTAR</div>
     <div class="opt" id="optFugir">FUGIR</div>
@@ -103,9 +110,10 @@
     <p style="margin-top:14px">EXPLORAR: setas</p>
     <p>Feras selvagens vivem escondidas na grama alta — pise com cuidado!</p>
     <p>LUTA: ↑/↓ aproxima e afasta · ←/→ orbita · ESPAÇO pula<br>
-       Z golpe rápido · X especial · C capturar (fera fraca)</p>
-    <p>GOLPE DE COMANDO: sequência + Z, estilo jogo de luta<br>
+       Z / X / C / V golpes · F capturar (fera fraca)</p>
+    <p>COMBO: sequência de setas + botão = versão forte do golpe<br>
        (↓ = seta baixo · → = seta cima, avançar no oponente)</p>
+    <p style="color:#ff8a8a">⚠ Fera que desmaiar é perdida para sempre — cuide delas!</p>
     <p class="go">— clique no jogo e pressione ENTER —</p>
   </div>
 </div>
