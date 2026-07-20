@@ -28,6 +28,8 @@ for (const k of Object.keys(especies)) {
   modelosIni[k] = MD.criarFera(cena.scene, k); MD.mostra(modelosIni[k], false);
 }
 const cristal = MD.criarCristal(cena.scene); MD.mostra(cristal, false);
+const discoHolo = MD.criarDiscoHolo(cena.scene); MD.mostra(discoHolo, false);
+let holoM = null; // fera projetada no menu de status
 
 const RINGUE = { dom: { x: -5, y: 0, z: 0 }, fera: { x: 3.5, y: 0, z: 0 } };
 const DICA_EXPLORAR = 'Setas: andar (2 toques = correr) · M abre o menu';
@@ -304,11 +306,38 @@ function itensDoMenu() {
   ];
   return [];
 }
+/* holograma: a fera selecionada aparece girando na frente do domador */
+function mostraHolo(fera) {
+  escondeHolo();
+  holoM = modelosIni[fera.especie];
+  const base = { x: mundo.domador.pos.x, y: mundo.domador.pos.y + 0.1, z: mundo.domador.pos.z + 3.2 };
+  MD.setPos(holoM, base);
+  MD.setEscala(holoM, 1.5);
+  MD.setOpacidade(holoM, 0.85);
+  MD.flashCor(holoM, 0x0f4652);
+  holoM.g.rotation.x = 0;
+  MD.mostra(holoM, true);
+  MD.setPos(discoHolo, base);
+  MD.setEscala(discoHolo, 1.4);
+  MD.mostra(discoHolo, true);
+}
+function escondeHolo() {
+  if (!holoM) return;
+  MD.setOpacidade(holoM, 1);
+  MD.flashCor(holoM, 0);
+  MD.setEscala(holoM, 1);
+  MD.mostra(holoM, false);
+  MD.mostra(discoHolo, false);
+  holoM = null;
+}
+
 function abreMenu(tipo) {
   menu = { tipo, sel: 0, fera: menu ? menu.fera : 0 };
   hud.menu(true, tituloMenu(), itensDoMenu().map((i) => i.txt), 0);
+  if (tipo === 'statusFera' || tipo === 'lembrar') mostraHolo(equipe[menu.fera]);
+  else escondeHolo();
 }
-function fechaMenu() { menu = null; hud.menu(false); }
+function fechaMenu() { menu = null; hud.menu(false); escondeHolo(); }
 function voltaMenu() {
   const t = menu.tipo;
   if (t === 'equipeExp' || t === 'statusLista' || t === 'catalogo') abreMenu('exploracao');
@@ -560,7 +589,13 @@ function loop(agora) {
   hud.passoDanos(cena.camera, dt, THREE);
 
   if (modo === 'explorar') {
-    if (menu) navegaMenu();
+    if (menu) {
+      navegaMenu();
+      if (holoM) { // holograma gira e flutua
+        holoM.g.rotation.y += dt * 1.6;
+        holoM.g.position.y = mundo.domador.pos.y + 0.15 + Math.sin(tempo * 2) * 0.08;
+      }
+    }
     else if (mE || escE) abreMenu('exploracao');
     else {
       detectaCorrida();

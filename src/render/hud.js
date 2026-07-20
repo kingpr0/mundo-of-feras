@@ -48,11 +48,15 @@ export function criarHUD() {
       const X = (x) => W / 2 + x * esc, Z = (z) => H / 2 + z * esc;
       ctx.fillStyle = '#3c6b33';
       ctx.fillRect(X(-L.x), Z(-L.z), L.x * 2 * esc, L.z * 2 * esc);
-      const G = mapa.grama;
-      if (G) {
-        ctx.fillStyle = '#63b04f';
+      ctx.fillStyle = '#63b04f';
+      for (const G of mapa.gramas || (mapa.grama ? [mapa.grama] : []))
         ctx.fillRect(X(G.x0), Z(G.z0), (G.x1 - G.x0) * esc, (G.z1 - G.z0) * esc);
-      }
+      ctx.fillStyle = '#b08a5a';
+      for (const c of mapa.caminhos || [])
+        ctx.fillRect(X(c.x0), Z(c.z0), (c.x1 - c.x0) * esc, (c.z1 - c.z0) * esc);
+      ctx.fillStyle = '#8d939c';
+      for (const [px2, pz2] of mapa.pedras || [])
+        ctx.fillRect(X(px2) - 2, Z(pz2) - 2, 4, 4);
       if (mapa.agua) {
         const a = mapa.agua;
         ctx.fillStyle = '#3f8fd4';

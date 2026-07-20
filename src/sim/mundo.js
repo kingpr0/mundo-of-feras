@@ -52,10 +52,20 @@ export function daImunidade(m, segundos = 2) {
 export const CASA_MEIA = { x: 2.0, z: 1.8 };
 export const CENTRO_MEIA = { x: 2.8, z: 2.1 };
 
+// zonas de grama alta (aceita "grama" única ou lista "gramas")
+export function zonasGrama(mapa) {
+  return mapa.gramas || (mapa.grama ? [mapa.grama] : []);
+}
+
 function colide(mapa, pos) {
   for (const a of mapa.arvores) {
     const dx = pos.x - a[0], dz = pos.z - a[1];
     if (dx * dx + dz * dz < RAIO_ARVORE * RAIO_ARVORE) return true;
+  }
+  for (const pd of mapa.pedras || []) {
+    const r = 0.9 * (pd[2] || 1);
+    const dx = pos.x - pd[0], dz = pos.z - pd[1];
+    if (dx * dx + dz * dz < r * r) return true;
   }
   for (const c of mapa.casas || []) {
     if (Math.abs(pos.x - c[0]) < CASA_MEIA.x && Math.abs(pos.z - c[1]) < CASA_MEIA.z) return true;
@@ -153,9 +163,8 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
     }
 
     // encontro à moda clássica: chance por tempo andado dentro da grama alta
-    const G = m.mapa.grama;
-    const naGrama = G && d.pos.x > G.x0 && d.pos.x < G.x1 &&
-                    d.pos.z > G.z0 && d.pos.z < G.z1;
+    const naGrama = zonasGrama(m.mapa).some((G) =>
+      d.pos.x > G.x0 && d.pos.x < G.x1 && d.pos.z > G.z0 && d.pos.z < G.z1);
     if (naGrama && m.imunidade <= 0 && rnd() < dt * CHANCE_ENCONTRO) {
       m.selvagem.especie = sorteiaEspecie(m.selvagens, rnd);
       return 'encontro';

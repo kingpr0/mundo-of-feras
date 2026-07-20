@@ -69,7 +69,33 @@
       "selvagens": ["cascorro", "voltim"],
       "saidas": [
         { "borda": "sul", "de": -2, "ate": 2, "destino": "clareira" },
-        { "borda": "norte", "de": -2, "ate": 2, "destino": "colinas" }
+        { "borda": "norte", "de": -2, "ate": 2, "destino": "colinas" },
+        { "borda": "oeste", "de": 8, "ate": 12, "destino": "rota" }
+      ]
+    },
+    "rota": {
+      "nome": "Rota das Lajes",
+      "regiao": { "x": -1, "y": -1 },
+      "limite": { "x": 20, "z": 16 },
+      "arvores": [
+        [-14, -13, 1], [-6, -14, 0], [2, -13, 1], [10, -14, 1], [16, -12, 0],
+        [-16, 12, 1], [6, 13, 0], [14, 10, 1]
+      ],
+      "caminhos": [
+        { "x0": -20, "z0": -2, "x1": 20, "z1": 3 },
+        { "x0": -6, "z0": -16, "x1": 0, "z1": -2 }
+      ],
+      "pedras": [
+        [4, -5, 1.5], [-11, 6, 1.2], [12, 7, 1.7], [-16, -7, 1.0]
+      ],
+      "gramas": [
+        { "x0": 5, "z0": -12, "x1": 16, "z1": -5 },
+        { "x0": -16, "z0": 6, "x1": -5, "z1": 13 }
+      ],
+      "spawn": { "x": 18, "z": 0 },
+      "selvagens": ["cascorro", "voltim", "salamandro"],
+      "saidas": [
+        { "borda": "leste", "de": 8, "ate": 12, "destino": "campo" }
       ]
     },
     "colinas": {
@@ -86,6 +112,7 @@
         { "x0": 4, "z0": 2, "x1": 14, "z1": 10, "h": 0.8 }
       ],
       "caverna": { "x": 0, "z": -14 },
+      "centro": { "x": 14, "z": -13 },
       "grama": { "x0": -14, "z0": 4, "x1": -4, "z1": 12 },
       "spawn": { "x": 0, "z": 13 },
       "selvagens": ["voltim", "salamandro"],

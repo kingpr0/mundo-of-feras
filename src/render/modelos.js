@@ -163,29 +163,73 @@ function criarGotim(scene) {
 }
 
 function criarSalamandro(scene) {
-  const M = novoModelo(scene, 1.15);
+  // lagartinho de fogo bípede, fiel ao arquétipo clássico: corpo pêra
+  // laranja, barrigão creme, cabeça grande de focinho largo, olhos vivos,
+  // pés com garras e a cauda erguida com a chama sempre acesa
+  const M = novoModelo(scene, 1.2);
   const g = M.g;
-  const laranja = 0xff9a4d, escuro = 0xe07030;
-  // lagarto ereto: corpo, cabeça e barriga clara
-  const corpo = parte(M, g, new THREE.SphereGeometry(0.3, 16, 12), laranja, 0, 0.5, 0);
-  corpo.scale.set(0.95, 1.2, 0.85);
-  parte(M, g, new THREE.SphereGeometry(0.26, 16, 12), laranja, 0, 1.02, 0.06);
-  const focinho = parte(M, g, new THREE.SphereGeometry(0.13, 10, 8), laranja, 0, 0.96, 0.26);
-  focinho.scale.set(1, 0.75, 1);
-  const barriga = parte(M, g, new THREE.SphereGeometry(0.2, 12, 10), COR.creme, 0, 0.46, 0.17);
-  barriga.scale.set(1.1, 1.25, 0.5);
-  parte(M, g, new THREE.SphereGeometry(0.05, 8, 6), COR.olho, -0.11, 1.08, 0.21);
-  parte(M, g, new THREE.SphereGeometry(0.05, 8, 6), COR.olho, 0.11, 1.08, 0.21);
-  // bracinhos e pernas
+  const laranja = 0xf08030, creme = 0xffe9c4;
+  // corpo em pêra + barrigão
+  const corpo = parte(M, g, new THREE.SphereGeometry(0.32, 18, 14), laranja, 0, 0.52, 0);
+  corpo.scale.set(1, 1.18, 0.95);
+  const barriga = parte(M, g, new THREE.SphereGeometry(0.25, 14, 12), creme, 0, 0.48, 0.15);
+  barriga.scale.set(1.0, 1.25, 0.55);
+  // cabeça grande com focinho largo e arredondado
+  parte(M, g, new THREE.SphereGeometry(0.29, 18, 14), laranja, 0, 1.12, 0.03);
+  const focinho = parte(M, g, new THREE.SphereGeometry(0.18, 14, 10), laranja, 0, 1.02, 0.26);
+  focinho.scale.set(1.15, 0.72, 1.1);
+  // narinas
+  parte(M, g, new THREE.SphereGeometry(0.022, 6, 6), COR.olho, -0.06, 1.09, 0.42);
+  parte(M, g, new THREE.SphereGeometry(0.022, 6, 6), COR.olho, 0.06, 1.09, 0.42);
+  // olhos grandes: branco + pupila
   for (const lado of [-1, 1]) {
-    parte(M, g, new THREE.SphereGeometry(0.09, 8, 8), laranja, lado * 0.3, 0.6, 0.12);
-    parte(M, g, new THREE.CylinderGeometry(0.09, 0.11, 0.24, 8), escuro, lado * 0.15, 0.12, 0);
+    parte(M, g, new THREE.SphereGeometry(0.08, 10, 8), 0xffffff, lado * 0.13, 1.22, 0.2);
+    parte(M, g, new THREE.SphereGeometry(0.042, 8, 6), COR.olho, lado * 0.13, 1.22, 0.27);
   }
-  // cauda com chama na ponta (a marca registrada)
-  const cauda = parte(M, g, new THREE.ConeGeometry(0.13, 0.55, 8), laranja, 0, 0.5, -0.42);
-  cauda.rotation.x = -2.1;
-  const chama = parte(M, g, new THREE.ConeGeometry(0.12, 0.3, 8), COR.laranja, 0, 0.82, -0.6);
-  parte(M, g, new THREE.ConeGeometry(0.06, 0.18, 8), COR.amarelo, 0, 0.88, -0.6);
+  // bracinhos curtos com "mãozinha"
+  for (const lado of [-1, 1]) {
+    const braco = parte(M, g, new THREE.CylinderGeometry(0.06, 0.055, 0.26, 8), laranja, lado * 0.3, 0.64, 0.1);
+    braco.rotation.z = lado * 0.7; braco.rotation.x = -0.4;
+    parte(M, g, new THREE.SphereGeometry(0.065, 8, 8), laranja, lado * 0.4, 0.55, 0.18);
+  }
+  // coxas fortes + pés com garras brancas
+  for (const lado of [-1, 1]) {
+    parte(M, g, new THREE.SphereGeometry(0.14, 10, 8), laranja, lado * 0.17, 0.2, 0);
+    parte(M, g, new THREE.BoxGeometry(0.2, 0.1, 0.3), laranja, lado * 0.17, 0.05, 0.08);
+    for (const dg of [-0.06, 0, 0.06]) {
+      const garra = parte(M, g, new THREE.ConeGeometry(0.028, 0.09, 6), 0xfff6df, lado * 0.17 + dg, 0.05, 0.25);
+      garra.rotation.x = Math.PI / 2;
+    }
+  }
+  // cauda grossa erguida em dois segmentos...
+  const cauda1 = parte(M, g, new THREE.ConeGeometry(0.15, 0.5, 10), laranja, 0, 0.44, -0.4);
+  cauda1.rotation.x = -2.3;
+  parte(M, g, new THREE.SphereGeometry(0.1, 10, 8), laranja, 0, 0.68, -0.62);
+  const cauda2 = parte(M, g, new THREE.CylinderGeometry(0.07, 0.1, 0.3, 8), laranja, 0, 0.85, -0.66);
+  cauda2.rotation.x = 0.3;
+  // ...com a CHAMA em três camadas na ponta
+  const chamaExt = parte(M, g, new THREE.ConeGeometry(0.16, 0.42, 10), 0xff5a2a, 0, 1.2, -0.7);
+  const chamaMeio = parte(M, g, new THREE.ConeGeometry(0.11, 0.3, 8), 0xff9a3d, 0, 1.24, -0.7);
+  const chamaMiolo = parte(M, g, new THREE.ConeGeometry(0.055, 0.18, 8), 0xffe066, 0, 1.28, -0.7);
+  chamaExt.material.emissive.setHex(0x882200);
+  chamaMeio.material.emissive.setHex(0x883300);
+  chamaMiolo.material.emissive.setHex(0x886600);
+  // a chama brilha por conta própria: fora da lista de flash/dano
+  M.materiais.splice(-3, 3);
+  return M;
+}
+
+// disco de projeção para o "holograma" da fera no menu de status
+export function criarDiscoHolo(scene) {
+  const M = novoModelo(scene, 0.1);
+  const disco = new THREE.Mesh(new THREE.CircleGeometry(1.1, 24),
+    new THREE.MeshBasicMaterial({ color: 0x59e0d0, transparent: true, opacity: 0.3 }));
+  disco.rotation.x = -Math.PI / 2; disco.position.y = 0.03;
+  M.g.add(disco);
+  const anel = new THREE.Mesh(new THREE.TorusGeometry(1.1, 0.04, 8, 24),
+    new THREE.MeshBasicMaterial({ color: 0x7fe3ff, transparent: true, opacity: 0.7 }));
+  anel.rotation.x = -Math.PI / 2; anel.position.y = 0.04;
+  M.g.add(anel);
   return M;
 }
 

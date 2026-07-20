@@ -367,6 +367,57 @@ function montaInterior(g, mapa) {
   }
 }
 
+/* lajes de pedra estilo Brilliant Diamond: placas irregulares marrons com
+   frestas escuras — usadas nos CAMINHOS desenhados no próprio mapa */
+let _texLajes = null;
+function texturaLajes() {
+  if (_texLajes) return _texLajes;
+  const c = document.createElement('canvas'); c.width = c.height = 160;
+  const x = c.getContext('2d');
+  x.fillStyle = '#6b4a33'; x.fillRect(0, 0, 160, 160);
+  const tons = ['#b08a5a', '#a67f50', '#bc9668', '#96744e', '#c9a06a'];
+  let i = 0;
+  for (let py = 0; py < 160; py += 26) {
+    for (let px = ((py / 26) % 2) * 14; px < 160; px += 30, i++) {
+      x.fillStyle = tons[i % tons.length];
+      x.beginPath();
+      x.ellipse(px + 14, py + 12, 15 + (i % 3) * 2, 11 + ((i * 7) % 3) * 2,
+        ((i * 13) % 6) * 0.25, 0, Math.PI * 2);
+      x.fill();
+    }
+  }
+  _texLajes = new THREE.CanvasTexture(c);
+  _texLajes.wrapS = _texLajes.wrapT = THREE.RepeatWrapping;
+  return _texLajes;
+}
+function montaCaminhos(g, mapa) {
+  for (const c of mapa.caminhos || []) {
+    const w = c.x1 - c.x0, d = c.z1 - c.z0;
+    const tex = texturaLajes().clone();
+    tex.needsUpdate = true;
+    tex.repeat.set(w / 4.5, d / 4.5);
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d),
+      new THREE.MeshLambertMaterial({ map: tex }));
+    m.rotation.x = -Math.PI / 2;
+    m.position.set((c.x0 + c.x1) / 2, 0.016, (c.z0 + c.z1) / 2);
+    m.receiveShadow = true;
+    g.add(m);
+  }
+}
+
+/* pedrões marrons decorativos (com colisão na sim) */
+function montaPedras(g, mapa) {
+  for (const [x, z, esc = 1] of mapa.pedras || []) {
+    const pedra = new THREE.Mesh(new THREE.DodecahedronGeometry(0.7 * esc),
+      new THREE.MeshLambertMaterial({ color: 0x9c7a4e }));
+    pedra.position.set(x, 0.5 * esc, z);
+    pedra.scale.set(1.35, 0.95, 1.05);
+    pedra.rotation.y = (x * 7 + z * 3) % 3;
+    pedra.castShadow = true; pedra.userData.oclusor = true;
+    g.add(pedra);
+  }
+}
+
 function descarta(obj) {
   obj.traverse((o) => {
     if (o.geometry) o.geometry.dispose();
@@ -388,11 +439,13 @@ export function montaMapa(cena, mapa) {
   cena.mundoG = g;
   if (mapa.tipo === 'interior') { montaInterior(g, mapa); return; }
   montaChao(g, Math.max(mapa.limite.x, mapa.limite.z) * 2 + 24, mapa.chao || 'grama');
+  montaCaminhos(g, mapa);
+  montaPedras(g, mapa);
   (mapa.arvores || []).forEach(([x, z, p]) => arvore(g, x, z, p));
   (mapa.casas || []).forEach(([x, z, cor]) => casa(g, x, z, cor));
   if (mapa.centro) centroCura(g, mapa.centro);
   (mapa.platos || []).forEach((p) => plato(g, p));
-  if (mapa.grama) montaGrama(g, mapa.grama);
+  for (const G of mapa.gramas || (mapa.grama ? [mapa.grama] : [])) montaGrama(g, G);
   if (mapa.agua) montaAgua(g, mapa.agua);
   if (mapa.caverna) bocaCaverna(g, mapa.caverna);
   montaBorda(g, mapa);
