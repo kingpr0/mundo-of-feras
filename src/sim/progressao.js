@@ -34,3 +34,8 @@ export function nivelSelvagem(nivelJogador, rnd = Math.random) {
 export function fatorNivel(nivel) {
   return 1 + (nivel - NIVEL_INICIAL) * 0.05;
 }
+
+// vida máxima de uma fera no nível dado
+export function vidaMaxima(vidaBase, nivel) {
+  return Math.round(vidaBase * fatorNivel(nivel));
+}

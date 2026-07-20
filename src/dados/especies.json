@@ -7,14 +7,13 @@
     "velocidade": 4.6,
     "ataque": 1.1,
     "impulso": 7.5,
-    "golpes": {
-      "normal":   { "dano": 7,  "alcance": 1.7, "empurrao": 3.2, "prep": 0.08, "ativo": 0.12, "recup": 0.18, "forte": false },
-      "especial": { "nome": "Bola de Fogo", "dano": 14, "alcance": 2.7, "empurrao": 6.0, "prep": 0.28, "ativo": 0.20, "recup": 0.40, "forte": true,
-                    "projetil": { "vel": 11, "raio": 0.85 } },
-      "comando1": { "nome": "Lança-Chamas", "sequencia": ["baixo", "frente"],
-                    "dano": 8, "alcance": 2.9, "empurrao": 3.5, "prep": 0.30, "ativo": 0.50, "recup": 0.45, "forte": true,
-                    "rajada": { "tiros": 4, "intervalo": 0.11, "vel": 12, "raio": 0.7 } }
-    }
+    "sequencia": ["baixo", "frente"],
+    "aprendizado": [
+      { "nivel": 1, "golpe": "investida" },
+      { "nivel": 5, "golpe": "bola_fogo" },
+      { "nivel": 8, "golpe": "investida_feroz" },
+      { "nivel": 10, "golpe": "lanca_chamas" }
+    ]
   },
   "cascorro": {
     "nome": "Cascorro",
@@ -25,12 +24,11 @@
     "velocidade": 2.9,
     "ataque": 1.3,
     "impulso": 6.2,
-    "golpes": {
-      "normal":   { "dano": 8,  "alcance": 1.7, "empurrao": 3.4, "prep": 0.10, "ativo": 0.12, "recup": 0.22, "forte": false },
-      "especial": { "nome": "Investida Rochosa", "dano": 15, "alcance": 2.2, "empurrao": 6.5, "prep": 0.32, "ativo": 0.18, "recup": 0.45, "forte": true },
-      "comando1": { "nome": "Rolamento Demolidor", "sequencia": ["baixo"],
-                    "dano": 18, "alcance": 2.0, "empurrao": 7.5, "prep": 0.40, "ativo": 0.20, "recup": 0.55, "forte": true }
-    }
+    "sequencia": ["baixo"],
+    "aprendizado": [
+      { "nivel": 1, "golpe": "investida" },
+      { "nivel": 6, "golpe": "rolamento_demolidor" }
+    ]
   },
   "voltim": {
     "nome": "Voltim",
@@ -41,14 +39,13 @@
     "velocidade": 5.6,
     "ataque": 0.95,
     "impulso": 8.5,
-    "golpes": {
-      "normal":   { "dano": 6,  "alcance": 1.5, "empurrao": 2.6, "prep": 0.06, "ativo": 0.10, "recup": 0.14, "forte": false },
-      "especial": { "nome": "Esfera Voltaica", "dano": 13, "alcance": 2.6, "empurrao": 5.0, "prep": 0.24, "ativo": 0.16, "recup": 0.38, "forte": true,
-                    "projetil": { "vel": 13, "raio": 0.8 } },
-      "comando1": { "nome": "Rajada Voltaica", "sequencia": ["frente"],
-                    "dano": 7, "alcance": 3.0, "empurrao": 3.0, "prep": 0.24, "ativo": 0.40, "recup": 0.40, "forte": true,
-                    "rajada": { "tiros": 3, "intervalo": 0.12, "vel": 14, "raio": 0.65 } }
-    }
+    "sequencia": ["frente"],
+    "aprendizado": [
+      { "nivel": 1, "golpe": "investida" },
+      { "nivel": 5, "golpe": "esfera_voltaica" },
+      { "nivel": 9, "golpe": "investida_feroz" },
+      { "nivel": 10, "golpe": "rajada_voltaica" }
+    ]
   },
   "gotim": {
     "nome": "Gotim",
@@ -59,13 +56,11 @@
     "velocidade": 4.0,
     "ataque": 1.0,
     "impulso": 7.0,
-    "golpes": {
-      "normal":   { "dano": 7,  "alcance": 1.6, "empurrao": 3.0, "prep": 0.08, "ativo": 0.11, "recup": 0.18, "forte": false },
-      "especial": { "nome": "Jato d'Água", "dano": 13, "alcance": 2.6, "empurrao": 6.0, "prep": 0.26, "ativo": 0.18, "recup": 0.40, "forte": true,
-                    "projetil": { "vel": 12, "raio": 0.8 } },
-      "comando1": { "nome": "Rajada de Bolhas", "sequencia": ["baixo"],
-                    "dano": 7, "alcance": 2.6, "empurrao": 2.8, "prep": 0.26, "ativo": 0.44, "recup": 0.42, "forte": true,
-                    "rajada": { "tiros": 3, "intervalo": 0.13, "vel": 11, "raio": 0.75 } }
-    }
+    "sequencia": ["baixo"],
+    "aprendizado": [
+      { "nivel": 1, "golpe": "investida" },
+      { "nivel": 5, "golpe": "jato_agua" },
+      { "nivel": 10, "golpe": "rajada_bolhas" }
+    ]
   }
 }
