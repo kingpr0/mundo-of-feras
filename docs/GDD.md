@@ -78,6 +78,10 @@ Duelo **1v1 em tempo real** numa **arena dedicada** — um ringue cercado, separ
 
 ### 9.2 Controles e golpes
 
+**Catálogo de golpes data-driven** (`golpes.json`): todos os golpes do jogo, com dano, frames e **usos limitados** para golpes não-físicos (ex.: Bola de Fogo 70, Lança-Chamas 30); golpes físicos são infinitos. Feras **aprendem golpes por nível** (tabela de aprendizado por espécie), preenchendo até **4 slots** acionados por **Z / X / C / V** (slot 1 = golpe físico inicial, intocável). Ao aprender com os slots cheios, o novo substitui um antigo; golpes esquecidos podem ser **relembrados** no menu de status (fora de batalha). **Combos** (sequência de direções + o botão do slot) disparam a **versão forte** daquele golpe (Investida→Investida Feroz, Bola de Fogo→Lança-Chamas, com ~2x de dano total). **F** lança o Cristal de Captura. Golpes se restauram no Centro de Curas (tudo), ao subir de nível (20%) ou com itens (futuro).
+
+Modelo anterior de slots fixos, mantido como referência histórica:
+
 Toda fera tem exatamente **4 golpes**, em 4 slots de função fixa:
 
 | Slot | Acionamento | Descrição |
@@ -100,6 +104,10 @@ Cada golpe carrega dados de RPG e de fighting game ao mesmo tempo: **poder** (es
 ### 9.4 Game feel (inegociáveis validados no protótipo)
 
 **Hit-stop** (congelamento de ~0,05–0,1s no impacto), knockback proporcional, breve invulnerabilidade pós-acerto (anti-stunlock), tremor de tela, números de dano, faíscas de impacto e sons distintos por peso de golpe. Esses detalhes são o que separa "funcionar" de "ser gostoso" — tratados como requisito, não como polimento.
+
+### 9.4b Permadeath (decidido — pilar de jogabilidade)
+
+**Uma fera que desmaia é perdida para sempre.** O jogador precisa cuidar da equipe: trocar de fera a tempo, fugir, curar no Centro. Quando a fera ativa cai, a próxima da equipe entra no mesmo duelo (o inimigo mantém o HP). Se **todas** caírem, o jogador acorda na vila inicial e — apenas se estiver sem nenhuma fera — recebe uma nova inicial (no futuro: escolha entre 3 iniciais de tipos diferentes, parte da abertura da história). O **HP das feras persiste entre batalhas**; cura pelo Centro de Curas (tudo), por subir de nível (+20%) ou por itens (futuro).
 
 ### 9.5 Captura
 
