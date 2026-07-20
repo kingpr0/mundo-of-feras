@@ -60,7 +60,7 @@ Três raridades, com três efeitos definidos: **probabilidade de encontro**, **p
 
 A conta fecha com elegância se cada tipo tiver: **1 linha comum (2 espécies) + 1 linha rara (3 espécies) + 1 fera muito rara (1 espécie) = 6 espécies por tipo × 5 tipos = 30**. Isso dá a cada tipo um "bicho de entrada", uma "linha estrela" e uma "lenda".
 
-As feras já criadas no protótipo se encaixam assim **(proposta)**: **Brasinha** = Fogo, linha rara (a inicial do jogador, 3 estágios); **Cascorro** = tipo Comum, linha comum; **Voltim** = Elétrico; **Folhito** = Planta; **Gotim** = Água, linha comum (o pinguinzinho-gota, frágil e equilibrado). Faltam as demais espécies.
+As feras já criadas no protótipo se encaixam assim **(proposta)**: **Brasinha** = Fogo, linha rara (a inicial do jogador, 3 estágios); **Cascorro** = tipo Comum, linha comum; **Voltim** = Elétrico; **Folhito** = Planta; **Gotim** = Água, linha comum (o pinguinzinho-gota, frágil e equilibrado); **Salamandro** = Fogo, linha comum (lagartinho ereto com chama na cauda, das Colinas Rochosas). Faltam as demais espécies.
 
 ### 7.4 Atributos (stats)
 
@@ -93,7 +93,7 @@ Toda fera tem exatamente **4 golpes**, em 4 slots de função fixa:
 
 **A regra de ouro da raridade**: quanto mais rara a fera, mais fortes os golpes de comando — e mais difícil a execução **(proposta de escala)**: comuns usam direção + botão; raras usam quarto de círculo (↓↘→ + botão); muito raras exigem sequências longas ou timing apertado. Poder exige maestria: uma fera muito rara nas mãos de um iniciante rende menos que uma comum bem pilotada — essa troca é intencional e central ao design.
 
-Movimentação: aproximar/afastar/orbitar (relativa ao adversário) + **pulo**. Versões aéreas de golpes: a definir.
+Movimentação: aproximar/afastar/orbitar (relativa ao adversário) + **pulo** + **cambalhota** (dois toques rápidos numa direção): salto-esquiva veloz com invulnerabilidade breve, em qualquer direção. Especiais de projétil podem ser disparados no ar (com mira vertical); golpes físicos exigem o chão.
 
 **Controles padrão (teclado, decidido)**: setas movem; **Z** = golpe normal, **X** = especial de tipo, **C** = contextual (capturar/confirmar). Sequências de comando em notação de luta: ↓ = seta baixo, → = seta cima (avançar no oponente). Tela de remapeamento de botões: no backlog.
 
@@ -107,7 +107,7 @@ Cada golpe carrega dados de RPG e de fighting game ao mesmo tempo: **poder** (es
 
 ### 9.4b Permadeath (decidido — pilar de jogabilidade)
 
-**Uma fera que desmaia é perdida para sempre.** O jogador precisa cuidar da equipe: trocar de fera a tempo, fugir, curar no Centro. Quando a fera ativa cai, a próxima da equipe entra no mesmo duelo (o inimigo mantém o HP). Se **todas** caírem, o jogador acorda na vila inicial e — apenas se estiver sem nenhuma fera — recebe uma nova inicial (no futuro: escolha entre 3 iniciais de tipos diferentes, parte da abertura da história). O **HP das feras persiste entre batalhas**; cura pelo Centro de Curas (tudo), por subir de nível (+20%) ou por itens (futuro).
+**As feras só são perdidas se a equipe INTEIRA cair.** Uma fera que desmaia fica fora de combate (HP 0) até ser curada no Centro — mas continua sua. Quando a ativa cai, a próxima viva entra no mesmo duelo (o inimigo mantém o HP). Se **todas** caírem, o jogador perde **todas** as feras, acorda na vila inicial e — apenas se estiver sem nenhuma — recebe uma nova inicial (no futuro: escolha entre 3 iniciais de tipos diferentes, parte da abertura da história). O **HP das feras persiste entre batalhas**; cura pelo Centro de Curas (tudo), por subir de nível (+20%) ou por itens (futuro).
 
 ### 9.5 Captura
 

@@ -88,7 +88,7 @@
       "caverna": { "x": 0, "z": -14 },
       "grama": { "x0": -14, "z0": 4, "x1": -4, "z1": 12 },
       "spawn": { "x": 0, "z": 13 },
-      "selvagens": ["voltim"],
+      "selvagens": ["voltim", "salamandro"],
       "saidas": [
         { "borda": "sul", "de": -2, "ate": 2, "destino": "campo" },
         { "borda": "leste", "de": 2, "ate": 6, "destino": "encosta" }

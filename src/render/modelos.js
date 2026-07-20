@@ -162,7 +162,34 @@ function criarGotim(scene) {
   return M;
 }
 
-const FABRICAS = { brasinha: criarBrasinha, cascorro: criarCascorro, voltim: criarVoltim, gotim: criarGotim };
+function criarSalamandro(scene) {
+  const M = novoModelo(scene, 1.15);
+  const g = M.g;
+  const laranja = 0xff9a4d, escuro = 0xe07030;
+  // lagarto ereto: corpo, cabeça e barriga clara
+  const corpo = parte(M, g, new THREE.SphereGeometry(0.3, 16, 12), laranja, 0, 0.5, 0);
+  corpo.scale.set(0.95, 1.2, 0.85);
+  parte(M, g, new THREE.SphereGeometry(0.26, 16, 12), laranja, 0, 1.02, 0.06);
+  const focinho = parte(M, g, new THREE.SphereGeometry(0.13, 10, 8), laranja, 0, 0.96, 0.26);
+  focinho.scale.set(1, 0.75, 1);
+  const barriga = parte(M, g, new THREE.SphereGeometry(0.2, 12, 10), COR.creme, 0, 0.46, 0.17);
+  barriga.scale.set(1.1, 1.25, 0.5);
+  parte(M, g, new THREE.SphereGeometry(0.05, 8, 6), COR.olho, -0.11, 1.08, 0.21);
+  parte(M, g, new THREE.SphereGeometry(0.05, 8, 6), COR.olho, 0.11, 1.08, 0.21);
+  // bracinhos e pernas
+  for (const lado of [-1, 1]) {
+    parte(M, g, new THREE.SphereGeometry(0.09, 8, 8), laranja, lado * 0.3, 0.6, 0.12);
+    parte(M, g, new THREE.CylinderGeometry(0.09, 0.11, 0.24, 8), escuro, lado * 0.15, 0.12, 0);
+  }
+  // cauda com chama na ponta (a marca registrada)
+  const cauda = parte(M, g, new THREE.ConeGeometry(0.13, 0.55, 8), laranja, 0, 0.5, -0.42);
+  cauda.rotation.x = -2.1;
+  const chama = parte(M, g, new THREE.ConeGeometry(0.12, 0.3, 8), COR.laranja, 0, 0.82, -0.6);
+  parte(M, g, new THREE.ConeGeometry(0.06, 0.18, 8), COR.amarelo, 0, 0.88, -0.6);
+  return M;
+}
+
+const FABRICAS = { brasinha: criarBrasinha, cascorro: criarCascorro, voltim: criarVoltim, gotim: criarGotim, salamandro: criarSalamandro };
 export function criarFera(scene, chave) {
   const fabrica = FABRICAS[chave];
   return fabrica ? fabrica(scene) : criarCascorro(scene);
@@ -216,17 +243,34 @@ export function animaAndar(M, t, andando) {
   if (andando) M.g.position.y += Math.abs(Math.sin(t * 9)) * 0.05;
 }
 
-// pose de luta estilo fighting game: carrega inclinando para trás,
-// desfere lançando o corpo para a frente, recupera voltando ao neutro
+// balanço de corpo para feras se movendo (elas não têm pernas articuladas):
+// chamar DEPOIS de setPos e ANTES de animaLuta
+export function animaAndarFera(M, t, movendo) {
+  if (movendo) {
+    M.g.position.y += Math.abs(Math.sin(t * 10)) * 0.08;
+    M.g.rotation.z = Math.sin(t * 10) * 0.09;
+  } else M.g.rotation.z = 0;
+}
+
+// pose de luta estilo fighting game, com uma animação por categoria de golpe:
+// físico = carrega e se lança; projétil = recua e chicoteia; rajada = treme
+// cuspindo a sequência; dash = cambalhota completa; dano = recuo do corpo
 export function animaLuta(M, f) {
   let rx = 0;
-  if (f.estado === 'atk' && f.golpe) {
+  if (f.estado === 'dash') {
+    rx = Math.min(1, f.t / 0.28) * Math.PI * 2; // cambalhota
+  } else if (f.estado === 'atk' && f.golpe) {
     const g = f.golpe;
-    if (f.t < g.prep) rx = -0.4 * (f.t / g.prep);
-    else if (f.t < g.prep + g.ativo) rx = 0.5;
-    else {
-      const r = Math.min(1, (f.t - g.prep - g.ativo) / g.recup);
-      rx = 0.5 * (1 - r);
+    if (g.rajada) {
+      if (f.t < g.prep) rx = -0.45 * (f.t / g.prep);
+      else { rx = -0.22; M.g.rotation.z = Math.sin(f.t * 45) * 0.12; }
+    } else if (g.projetil) {
+      if (f.t < g.prep) rx = -0.5 * (f.t / g.prep);
+      else if (f.t < g.prep + g.ativo + 0.12) rx = 0.35;
+    } else {
+      if (f.t < g.prep) rx = -0.4 * (f.t / g.prep);
+      else if (f.t < g.prep + g.ativo) rx = g.forte ? 0.7 : 0.5;
+      else rx = 0.5 * (1 - Math.min(1, (f.t - g.prep - g.ativo) / g.recup));
     }
   } else if (f.estado === 'hurt') {
     rx = -0.55 * (1 - Math.min(1, f.t / 0.26));

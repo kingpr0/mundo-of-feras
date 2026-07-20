@@ -47,6 +47,23 @@
       { "nivel": 10, "golpe": "rajada_voltaica" }
     ]
   },
+  "salamandro": {
+    "nome": "Salamandro",
+    "tipo": "fogo",
+    "raridade": "comum",
+    "selvagem": true,
+    "vida": 62,
+    "velocidade": 4.3,
+    "ataque": 1.05,
+    "impulso": 7.2,
+    "sequencia": ["baixo", "frente"],
+    "aprendizado": [
+      { "nivel": 1, "golpe": "investida" },
+      { "nivel": 5, "golpe": "bola_fogo" },
+      { "nivel": 8, "golpe": "investida_feroz" },
+      { "nivel": 12, "golpe": "lanca_chamas" }
+    ]
+  },
   "gotim": {
     "nome": "Gotim",
     "tipo": "agua",

@@ -62,10 +62,10 @@ export function podeCapturar(b) {
   return !b.fim && !b.captura && b.e.estado !== 'ko' && b.e.hp / b.e.max <= 0.35;
 }
 
-function aplicaDano(b, vitima, dano, dirKb, empurrao, forte, emitir) {
+function aplicaDano(b, vitima, dano, dirKb, empurrao, forte, emitir, invulnT = 0.5) {
   vitima.hp = Math.max(0, vitima.hp - dano);
   vitima.estado = 'hurt'; vitima.t = 0;
-  vitima.invuln = 0.5; vitima.flash = 1;
+  vitima.invuln = invulnT; vitima.flash = 1;
   vitima.kb = escala(dirKb, empurrao);
   emitir({ tipo: forte ? 'hitForte' : 'hit', pos: copia(vitima.pos), dano, forte });
   if (vitima.hp <= 0) {
@@ -92,6 +92,8 @@ function disparaProjetil(b, f, outro, g, cfg, emitir) {
     id: b.projId++, dono: f, alvo: outro,
     pos, vel,
     dano: g.dano, empurrao: g.empurrao, raio: cfg.raio,
+    // tiros de rajada dão invulnerabilidade curtinha: a sequência inteira conecta
+    rajada: !!g.rajada,
     vida: 1.8, tipo: g.tipo || f.esp.tipo,
   });
   emitir({ tipo: 'projetil', pos: copia(pos), elemento: g.tipo || f.esp.tipo });
@@ -106,7 +108,7 @@ function passoProjeteis(b, dt, emitir) {
     if (alvo.estado !== 'ko' && alvo.invuln <= 0 &&
         distXZ(pr.pos, alvo.pos) < pr.raio && Math.abs(pr.pos.y - centroY) < 0.8) {
       aplicaDano(b, alvo, Math.round(pr.dano * pr.dono.forca),
-        normXZ(pr.vel), pr.empurrao, true, emitir);
+        normXZ(pr.vel), pr.empurrao, true, emitir, pr.rajada ? 0.08 : 0.5);
       b.projeteis.splice(i, 1);
     } else if (pr.vida <= 0 || Math.hypot(pr.pos.x, pr.pos.z) > ARENA.raio + 4) {
       b.projeteis.splice(i, 1);
@@ -142,6 +144,11 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
     f.pos = soma(p, escala(f.kb, dt));
     f.kb = escala(f.kb, 1 - 3 * dt);
     if (f.t > 0.26) f.estado = 'idle';
+  } else if (f.estado === 'dash') {
+    // salto-esquiva (dois toques na direção): rápido, com invulnerabilidade
+    f.t += dt;
+    f.pos = soma(p, escala(f.dashDir, f.esp.velocidade * 2.6 * dt));
+    if (f.t > 0.28) f.estado = 'idle';
   } else if (f.estado === 'atk') {
     f.t += dt;
     const g = f.golpe;
@@ -167,13 +174,20 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
     }
     if (f.t >= g.prep + g.ativo + g.recup) { f.estado = 'idle'; f.golpe = null; }
   } else {
-    if (inp.mov.x !== 0 || inp.mov.z !== 0) {
+    f.movendo = inp.mov.x !== 0 || inp.mov.z !== 0;
+    if (f.movendo) {
       const mag = Math.min(1, Math.hypot(inp.mov.x, inp.mov.z));
-      const vel = f.esp.velocidade * mag * (inp.correr ? 1.5 : 1);
-      f.pos = soma(p, escala(normXZ(vec(inp.mov.x, 0, inp.mov.z)), vel * dt));
+      f.pos = soma(p, escala(normXZ(vec(inp.mov.x, 0, inp.mov.z)), f.esp.velocidade * mag * dt));
     }
-    if (inp.pulo && f.pos.y <= 0.01) { f.vy = f.esp.impulso; emitir({ tipo: 'pulo' }); }
-    if (inp.golpe != null) tentaGolpe(f, inp, emitir);
+    if (inp.dash && f.pos.y <= 0.01) {
+      f.estado = 'dash'; f.t = 0;
+      f.dashDir = normXZ(vec(inp.dash.x, 0, inp.dash.z));
+      f.invuln = Math.max(f.invuln, 0.3);
+      f.vy = 3.5; // pulinho da cambalhota
+      emitir({ tipo: 'dash' });
+    }
+    else if (inp.pulo && f.pos.y <= 0.01) { f.vy = f.esp.impulso; emitir({ tipo: 'pulo' }); }
+    else if (inp.golpe != null) tentaGolpe(f, inp, emitir);
   }
   f.vy -= GRAVIDADE * dt;
   f.pos.y = Math.max(0, f.pos.y + f.vy * dt);
@@ -186,7 +200,7 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
 
 function iaSelvagem(b, dt, rnd) {
   const e = b.e, p = b.p;
-  const inp = { mov: vec(), pulo: false, golpe: null, forte: false };
+  const inp = { mov: vec(), pulo: false, golpe: null, forte: false, dash: null };
   if (e.estado !== 'idle') return inp;
   b.aiT -= dt;
   const dist = distXZ(e.pos, p.pos);
@@ -260,7 +274,7 @@ function passoCaptura(b, dt, emitir, rnd) {
   }
 }
 
-const INPUT_NEUTRO = { mov: { x: 0, z: 0 }, pulo: false, golpe: null, forte: false };
+const INPUT_NEUTRO = { mov: { x: 0, z: 0 }, pulo: false, golpe: null, forte: false, dash: null };
 
 // inpP = { mov:{x,z} relativo ao lock-on, pulo, golpe: 0-3|null, forte,
 //          correr, capturar }
@@ -280,7 +294,10 @@ export function passoBatalha(b, inpP, dt, emitir, rnd = Math.random) {
   const fw = normXZ(sub(b.e.pos, b.p.pos));
   const rt = perpXZ(fw);
   const mov = soma(escala(fw, -inpP.mov.z), escala(rt, inpP.mov.x)); // ↑ = aproximar
-  passoLutador(b, b.p, { mov, pulo: inpP.pulo, golpe: inpP.golpe, forte: inpP.forte, correr: inpP.correr }, b.e, dt, emitir);
+  const dash = inpP.dash
+    ? soma(escala(fw, -inpP.dash.z), escala(rt, inpP.dash.x))
+    : null;
+  passoLutador(b, b.p, { mov, pulo: inpP.pulo, golpe: inpP.golpe, forte: inpP.forte, dash }, b.e, dt, emitir);
   passoLutador(b, b.e, iaSelvagem(b, dt, rnd), b.p, dt, emitir);
   if (inpP.capturar && podeCapturar(b)) lancaCristal(b, emitir);
   return null;

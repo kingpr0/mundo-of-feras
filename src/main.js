@@ -115,6 +115,26 @@ function detectaCorrida() {
   if (!TECLAS_DIR.some((k) => keys[k])) correndo = false;
 }
 
+/* na LUTA, dois toques rápidos numa direção = cambalhota (salto-esquiva) */
+const DIR_REL = {
+  ArrowUp: { x: 0, z: -1 }, KeyW: { x: 0, z: -1 },
+  ArrowDown: { x: 0, z: 1 }, KeyS: { x: 0, z: 1 },
+  ArrowLeft: { x: -1, z: 0 }, KeyA: { x: -1, z: 0 },
+  ArrowRight: { x: 1, z: 0 }, KeyD: { x: 1, z: 0 },
+};
+function detectaDashLuta() {
+  let dash = null;
+  for (const k of TECLAS_DIR) {
+    const seg = !!keys[k];
+    if (seg && !prevDir[k]) {
+      if (tempo - (ultToque[k] || -9) < 0.3) { dash = DIR_REL[k]; ultToque[k] = -9; }
+      else ultToque[k] = tempo;
+    }
+    prevDir[k] = seg;
+  }
+  return dash;
+}
+
 /* combos: buffer de direções (matching puro em sim/comandos.js) */
 let seqBuf = [];
 function guardaDirecoes() {
@@ -134,6 +154,8 @@ function aoEvento(evt) {
     case 'rastroFogo': if (Math.random() < 0.5)
       poof(cena, evt.pos, Math.random() < 0.5 ? 0xff8a3d : 0xffd93b, 2, 2.5); break;
     case 'pulo': sfx.pulo(); break;
+    case 'dash': sfx.pulo();
+      if (batalha) poof(cena, { ...batalha.p.pos, y: 0.3 }, 0xcbd0d8, 6, 2.5); break;
     case 'swing': sfx.swing(); break;
     case 'especial': sfx.especial(); break;
     case 'comando': sfx.especial(); cena.shake = 0.22;
@@ -232,12 +254,12 @@ function itensDoMenu() {
     { txt: 'Fugir', acao: () => { fechaMenu(); fugirBatalha(batalha); } },
   ];
   if (t === 'equipeExp' || t === 'equipeBat') return equipe.map((f, i) => ({
-    txt: `${nomeDe(f)} Lv.${f.nivel}${i === ativa ? ' ◆' : ''}`,
+    txt: `${nomeDe(f)} Lv.${f.nivel}${i === ativa ? ' ◆' : ''}${f.hpAtual <= 0 ? ' ✖' : ''}`,
     acao: () => selecionaFera(i),
   }));
   if (t === 'statusLista') return [
     ...equipe.map((f, i) => ({
-      txt: `${nomeDe(f)} Lv.${f.nivel}`,
+      txt: `${nomeDe(f)} Lv.${f.nivel}${f.hpAtual <= 0 ? ' ✖' : ''}`,
       acao: () => { menu.fera = i; abreMenu('statusFera'); },
     })),
     { txt: 'Voltar', acao: () => abreMenu('exploracao') },
@@ -307,6 +329,10 @@ function navegaMenu() {
 }
 function selecionaFera(i) {
   const f = equipe[i];
+  if (f.hpAtual <= 0) {
+    hud.toast(`${nomeDe(f)} está desmaiada! Cure no Centro de Curas.`);
+    return;
+  }
   if (menu.tipo === 'equipeExp') {
     ativa = i;
     atualizaPainel();
@@ -375,7 +401,7 @@ function iniciaBatalha() {
   const simb = (especies[fera.especie].sequencia || []).map((d) => SIMBOLO[d]).join('');
   hud.batalhaVisivel(true); hud.atualizaHP(batalha);
   hud.golpesPainel(linhasGolpes());
-  hud.dica(`Z/X/C/V golpes · ${simb}+botão = versão forte · ESPAÇO pula · F captura · ESC menu`);
+  hud.dica(`Z/X/C/V golpes · ${simb}+botão = forte · 2 toques na direção = cambalhota · ESPAÇO pula · F captura · ESC menu`);
   hud.toast(`${nomeDe(fera)}, eu escolho você!`);
 }
 function fugir() {
@@ -394,20 +420,24 @@ function encerraBatalha() {
   const fera = equipe[ativa];
   if (fera && resultado !== 'derrota') fera.hpAtual = Math.max(1, batalha.p.hp);
 
-  // PERMADEATH: fera que desmaia é perdida para sempre
+  // PERMADEATH (regra: só se TODAS caírem). Fera que desmaia fica fora de
+  // combate (HP 0) até ser curada; se a equipe inteira cair, perde-se tudo.
   if (resultado === 'derrota') {
-    const caida = equipe.splice(ativa, 1)[0];
-    hud.toast(`💀 ${nomeDe(caida)} caiu... e foi perdida para sempre.`, 3200);
-    if (equipe.length > 0) {
-      // a próxima da equipe entra e o duelo continua contra o mesmo inimigo
-      ativa = 0;
-      const prox = equipe[0];
+    const caida = equipe[ativa];
+    caida.hpAtual = 0;
+    const proxIdx = equipe.findIndex((f) => f.hpAtual > 0);
+    if (proxIdx >= 0) {
+      hud.toast(`${nomeDe(caida)} desmaiou! Não deixe as outras caírem!`, 2400);
+      ativa = proxIdx;
+      const prox = equipe[proxIdx];
       continuaComOutraFera(batalha, paraBatalha(prox, especies, golpesCat), especies);
       trocaModeloJogador(prox);
       setTimeout(() => hud.toast(`Vai, ${nomeDe(prox)}! Cuidado!`, 1800), 1700);
       atualizaPainel();
       return; // a batalha segue!
     }
+    hud.toast('💀 Todas as suas feras desmaiaram... e foram perdidas.', 3400);
+    equipe = [];
   }
 
   hud.flash();
@@ -473,6 +503,7 @@ function sincronizaVisual(dt) {
     MD.setPos(playerM, batalha.p.pos);
     MD.encara(playerM, batalha.e.pos.x, batalha.e.pos.z);
     MD.passoGiro(playerM, dt);
+    MD.animaAndarFera(playerM, tempo, batalha.p.movendo && batalha.p.estado === 'idle');
     MD.animaLuta(playerM, batalha.p);
     if (batalha.p.estado === 'ko') MD.setOpacidade(playerM, Math.max(0, 1 - batalha.p.t * 1.1));
     aplicaFlash(playerM, batalha.p);
@@ -480,6 +511,7 @@ function sincronizaVisual(dt) {
     MD.setPos(feraAtual, batalha.e.pos);
     MD.encara(feraAtual, batalha.p.pos.x, batalha.p.pos.z);
     MD.passoGiro(feraAtual, dt);
+    MD.animaAndarFera(feraAtual, tempo, batalha.e.movendo && batalha.e.estado === 'idle');
     MD.animaLuta(feraAtual, batalha.e);
     if (batalha.e.estado === 'ko') MD.setOpacidade(feraAtual, Math.max(0, 1 - batalha.e.t * 1.1));
     if (batalha.captura && batalha.captura.escalaFera !== undefined)
@@ -567,7 +599,7 @@ function loop(agora) {
     if (menu) navegaMenu();
     else if (escE || mE) abreMenu('batalha');
     else {
-      detectaCorrida();
+      const dash = detectaDashLuta();
       guardaDirecoes();
       const idx = jE ? 0 : kE ? 1 : cE ? 2 : vE ? 3 : null;
       let forte = false;
@@ -578,7 +610,7 @@ function loop(agora) {
       const inpP = {
         mov: { x: eixo(['ArrowLeft','KeyA'], ['ArrowRight','KeyD']),
                z: eixo(['ArrowUp','KeyW'], ['ArrowDown','KeyS']) },
-        pulo: spE, golpe: idx, forte, correr: correndo, capturar: fE,
+        pulo: spE, golpe: idx, forte, dash, capturar: fE,
       };
       const fim = passoBatalha(batalha, inpP, dt, aoEvento);
       hud.atualizaHP(batalha);
