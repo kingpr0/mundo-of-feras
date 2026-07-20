@@ -182,6 +182,7 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
     if (inp.dash && f.pos.y <= 0.01) {
       f.estado = 'dash'; f.t = 0;
       f.dashDir = normXZ(vec(inp.dash.x, 0, inp.dash.z));
+      f.dashRel = inp.dashRel || null; // direção relativa (para a animação)
       f.invuln = Math.max(f.invuln, 0.3);
       f.vy = 3.5; // pulinho da cambalhota
       emitir({ tipo: 'dash' });
@@ -297,7 +298,7 @@ export function passoBatalha(b, inpP, dt, emitir, rnd = Math.random) {
   const dash = inpP.dash
     ? soma(escala(fw, -inpP.dash.z), escala(rt, inpP.dash.x))
     : null;
-  passoLutador(b, b.p, { mov, pulo: inpP.pulo, golpe: inpP.golpe, forte: inpP.forte, dash }, b.e, dt, emitir);
+  passoLutador(b, b.p, { mov, pulo: inpP.pulo, golpe: inpP.golpe, forte: inpP.forte, dash, dashRel: inpP.dash }, b.e, dt, emitir);
   passoLutador(b, b.e, iaSelvagem(b, dt, rnd), b.p, dt, emitir);
   if (inpP.capturar && podeCapturar(b)) lancaCristal(b, emitir);
   return null;

@@ -50,29 +50,40 @@ function montaChao(scene, tam = 70, tipo = 'grama') {
   const c = document.createElement('canvas'); c.width = c.height = 512;
   const x = c.getContext('2d');
   const terra = tipo === 'terra';
-  for (let ty = 0; ty < 16; ty++) for (let tx = 0; tx < 16; tx++) {
-    x.fillStyle = terra
-      ? (((tx + ty) % 2 === 0) ? '#b08a5a' : '#a67f50')
-      : (((tx + ty) % 2 === 0) ? '#67b34f' : '#5fa848');
-    x.fillRect(tx * 32, ty * 32, 32, 32);
-    const px = tx * 32, py = ty * 32, k = tx * 7 + ty * 13;
+  // gerador determinístico (a textura repete sem costura)
+  let semente = terra ? 77 : 31;
+  const rnd = () => (semente = (semente * 1103515245 + 12345) % 2147483648) / 2147483648;
+  // base orgânica: manchas suaves em vez de xadrez
+  x.fillStyle = terra ? '#a67f50' : '#5fa848';
+  x.fillRect(0, 0, 512, 512);
+  const tons = terra
+    ? ['#b08a5a', '#9c7449', '#ad8355', '#a17a4d']
+    : ['#67b34f', '#58a041', '#6fbd58', '#61ad4a'];
+  for (let i = 0; i < 170; i++) {
+    x.fillStyle = tons[i % tons.length];
+    const px = rnd() * 512, py = rnd() * 512, r = 12 + rnd() * 26;
+    x.beginPath(); x.ellipse(px, py, r, r * (0.6 + rnd() * 0.5), rnd() * 3, 0, Math.PI * 2); x.fill();
+    // repete nas bordas para a textura emendar
+    if (px < 40) { x.beginPath(); x.ellipse(px + 512, py, r, r * 0.8, 0, 0, Math.PI * 2); x.fill(); }
+    if (py < 40) { x.beginPath(); x.ellipse(px, py + 512, r, r * 0.8, 0, 0, Math.PI * 2); x.fill(); }
+  }
+  // detalhes finos (pequenos!): tufos, flores, pedrinhas
+  for (let i = 0; i < 110; i++) {
+    const px = 8 + rnd() * 496, py = 8 + rnd() * 496;
     if (terra) {
-      // pedrinhas e rachaduras no chão rochoso
-      if (k % 5 === 0) { x.fillStyle = '#8d939c'; x.fillRect(px + 10, py + 12, 7, 5); }
-      if (k % 7 === 0) { x.fillStyle = '#93744a'; x.fillRect(px + 20, py + 22, 9, 3); }
-      if (k % 11 === 0) { x.fillStyle = '#c49a68'; x.fillRect(px + 4, py + 4, 5, 5); }
+      x.fillStyle = i % 3 ? '#8d939c' : '#c49a68';
+      x.fillRect(px, py, 3 + rnd() * 3, 2 + rnd() * 2);
     } else {
-      // tufos, flores, pedrinhas e manchas de terra na campina
-      if (k % 11 === 0) { x.fillStyle = '#8fd977'; x.fillRect(px + 12, py + 14, 6, 6); }
-      if ((tx * 5 + ty * 11) % 17 === 0) { x.fillStyle = '#ffd6e8'; x.fillRect(px + 20, py + 8, 5, 5);
-        x.fillStyle = '#ffe9b0'; x.fillRect(px + 21, py + 6, 3, 3); }
-      if (k % 13 === 0) { x.fillStyle = '#f4e07a'; x.fillRect(px + 6, py + 22, 4, 4); }
-      if (k % 19 === 0) { x.fillStyle = '#9aa3ad'; x.fillRect(px + 24, py + 18, 6, 4); }
-      if (k % 23 === 0) { x.fillStyle = '#9c7a4e'; x.fillRect(px + 8, py + 6, 10, 7); }
+      const k = i % 7;
+      if (k < 3) { x.fillStyle = '#8fd977'; x.fillRect(px, py, 2, 4); x.fillRect(px + 2, py + 1, 2, 3); }
+      else if (k === 3) { x.fillStyle = '#ffd6e8'; x.fillRect(px, py, 3, 3); x.fillStyle = '#ffe9b0'; x.fillRect(px + 1, py - 1, 1.5, 1.5); }
+      else if (k === 4) { x.fillStyle = '#f4e07a'; x.fillRect(px, py, 2.5, 2.5); }
+      else if (k === 5) { x.fillStyle = '#9aa3ad'; x.fillRect(px, py, 3, 2); }
+      else { x.fillStyle = '#4e9a3f'; x.fillRect(px, py, 4, 3); }
     }
   }
   const t = new THREE.CanvasTexture(c);
-  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(tam / 14, tam / 14);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(tam / 22, tam / 22);
   const ch = new THREE.Mesh(new THREE.PlaneGeometry(tam, tam),
     new THREE.MeshLambertMaterial({ map: t }));
   ch.rotation.x = -Math.PI / 2; ch.receiveShadow = true; scene.add(ch);
@@ -372,18 +383,28 @@ function montaInterior(g, mapa) {
 let _texLajes = null;
 function texturaLajes() {
   if (_texLajes) return _texLajes;
-  const c = document.createElement('canvas'); c.width = c.height = 160;
+  // lajes ENCAIXADAS: malha de células com cantos deslocados — cada pedra é
+  // um polígono que emenda perfeitamente na vizinha (e a textura repete)
+  const T = 192, N = 5, S = T / N;
+  const c = document.createElement('canvas'); c.width = c.height = T;
   const x = c.getContext('2d');
-  x.fillStyle = '#6b4a33'; x.fillRect(0, 0, 160, 160);
-  const tons = ['#b08a5a', '#a67f50', '#bc9668', '#96744e', '#c9a06a'];
-  let i = 0;
-  for (let py = 0; py < 160; py += 26) {
-    for (let px = ((py / 26) % 2) * 14; px < 160; px += 30, i++) {
-      x.fillStyle = tons[i % tons.length];
+  x.fillStyle = '#5f4530'; x.fillRect(0, 0, T, T);
+  const jit = (i, j, salt) => {
+    const h = Math.abs(Math.sin((i % N) * 127.1 + (j % N) * 311.7 + salt) * 43758.5453) % 1;
+    return (h - 0.5) * S * 0.55;
+  };
+  const canto = (i, j) => ({ x: i * S + jit(i, j, 1.3), y: j * S + jit(i, j, 7.7) });
+  const tons = ['#b08a5a', '#a67f50', '#bc9668', '#96744e', '#c9a06a', '#a8825a'];
+  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
+    const p = [canto(i, j), canto(i + 1, j), canto(i + 1, j + 1), canto(i, j + 1)];
+    x.fillStyle = tons[(i * 3 + j * 5) % tons.length];
+    x.strokeStyle = '#5f4530'; x.lineWidth = 3; x.lineJoin = 'round';
+    // desenha em 9 posições (com wrap) para a emenda ficar perfeita
+    for (const dx of [-T, 0, T]) for (const dy of [-T, 0, T]) {
       x.beginPath();
-      x.ellipse(px + 14, py + 12, 15 + (i % 3) * 2, 11 + ((i * 7) % 3) * 2,
-        ((i * 13) % 6) * 0.25, 0, Math.PI * 2);
-      x.fill();
+      x.moveTo(p[0].x + dx, p[0].y + dy);
+      for (let k = 1; k < 4; k++) x.lineTo(p[k].x + dx, p[k].y + dy);
+      x.closePath(); x.fill(); x.stroke();
     }
   }
   _texLajes = new THREE.CanvasTexture(c);
@@ -494,12 +515,14 @@ export function mostraArena(cena, ligar) {
   cena.mundoG.visible = !ligar;
 }
 
-/* partículas */
-const geoP = new THREE.PlaneGeometry(0.14, 0.14);
+/* partículas (pequenas, com variação de tamanho) */
+const geoP = new THREE.PlaneGeometry(0.085, 0.085);
 export function poof(cena, pos, cor, n = 10, vel = 3) {
   for (let i = 0; i < n; i++) {
     const m = new THREE.Mesh(geoP, new THREE.MeshBasicMaterial({ color: cor, transparent: true }));
-    m.position.set(pos.x, pos.y, pos.z); cena.scene.add(m);
+    m.position.set(pos.x, pos.y, pos.z);
+    m.scale.setScalar(0.5 + Math.random() * 0.9);
+    cena.scene.add(m);
     cena.parts.push({ m, vx: (Math.random()-.5)*vel, vy: Math.random()*vel,
       vz: (Math.random()-.5)*vel, vida: 0.5 + Math.random() * 0.3 });
   }
@@ -523,9 +546,9 @@ export function passoCamera(cena, modo, mundo, batalha, dt) {
     const pp = batalha.p.pos, ee = batalha.e.pos;
     const d = Math.hypot(ee.x - pp.x, ee.z - pp.z) || 1;
     const fx = (ee.x - pp.x) / d, fz = (ee.z - pp.z) / d;
-    // mais alta e mais afastada: leitura da arena inteira
-    desejo = new THREE.Vector3(pp.x - fx * 7.4, pp.y + 4.8, pp.z - fz * 7.4);
-    olhar = new THREE.Vector3(pp.x + (ee.x - pp.x) * .45, 1.0, pp.z + (ee.z - pp.z) * .45);
+    // bem alta e afastada, como a câmera de exploração: arena inteira em quadro
+    desejo = new THREE.Vector3(pp.x - fx * 11, pp.y + 8.5, pp.z - fz * 11);
+    olhar = new THREE.Vector3(pp.x + (ee.x - pp.x) * .48, 0.9, pp.z + (ee.z - pp.z) * .48);
   } else {
     const pp = mundo.domador.pos;
     desejo = new THREE.Vector3(pp.x, pp.y + 17, pp.z + 12);

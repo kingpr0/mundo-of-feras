@@ -10,7 +10,7 @@ import { criarFera, aprendeGolpe, lembraGolpe, montaSlots, aprendizadosDoNivel, 
 import { criarCena, poof, passoParticulas, passoCamera, mostraArena, montaMapa, passoOclusores } from './render/cena.js';
 import * as MD from './render/modelos.js';
 import { criarHUD } from './render/hud.js';
-import { audioInit, sfx } from './render/audio.js';
+import { audioInit, sfx, musica } from './render/audio.js';
 
 const especies = await (await fetch('./src/dados/especies.json')).json();
 const dadosMapas = await (await fetch('./src/dados/mapas.json')).json();
@@ -81,6 +81,7 @@ addEventListener('keydown', (e) => {
   if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
   if (e.code === 'Enter' && modo === 'titulo') {
     hud.escondeTitulo(); modo = 'explorar'; cv.focus();
+    musica('explorar');
     hud.toast('Explore a grama alta... e cuide das suas feras: quem desmaia não volta!');
     hud.dica(DICA_EXPLORAR);
   }
@@ -310,7 +311,9 @@ function itensDoMenu() {
 function mostraHolo(fera) {
   escondeHolo();
   holoM = modelosIni[fera.especie];
-  const base = { x: mundo.domador.pos.x, y: mundo.domador.pos.y + 0.1, z: mundo.domador.pos.z + 3.2 };
+  // o domador dá lugar à projeção — o holograma fica no centro da tela
+  MD.mostra(domador, false);
+  const base = { x: mundo.domador.pos.x, y: mundo.domador.pos.y + 0.1, z: mundo.domador.pos.z };
   MD.setPos(holoM, base);
   MD.setEscala(holoM, 1.5);
   MD.setOpacidade(holoM, 0.85);
@@ -328,6 +331,7 @@ function escondeHolo() {
   MD.setEscala(holoM, 1);
   MD.mostra(holoM, false);
   MD.mostra(discoHolo, false);
+  MD.mostra(domador, true);
   holoM = null;
 }
 
@@ -394,6 +398,7 @@ function trocaModeloJogador(f) {
 /* ---------- transições ---------- */
 function iniciaEncontro() {
   sfx.encontro(); hud.flash();
+  musica('batalha');
   modo = 'encontro'; escolha = 0;
   hud.exploracaoVisivel(false);
   mostraArena(cena, true);
@@ -435,6 +440,7 @@ function iniciaBatalha() {
 }
 function fugir() {
   hud.flash();
+  musica('explorar');
   mostraArena(cena, false);
   MD.mostra(feraAtual, false); feraAtual = null;
   MD.mostra(domador, true);
@@ -470,6 +476,7 @@ function encerraBatalha() {
   }
 
   hud.flash();
+  musica('explorar');
   fechaMenu();
   mostraArena(cena, false);
   limpaProjeteis();

@@ -293,17 +293,47 @@ export function animaAndarFera(M, t, movendo) {
   if (movendo) {
     M.g.position.y += Math.abs(Math.sin(t * 10)) * 0.08;
     M.g.rotation.z = Math.sin(t * 10) * 0.09;
-  } else M.g.rotation.z = 0;
+    M.g.userData._leanAndar = 0.12; // inclina para a frente ao correr
+  } else { M.g.rotation.z = 0; M.g.userData._leanAndar = 0; }
 }
 
 // pose de luta estilo fighting game, com uma animação por categoria de golpe:
 // físico = carrega e se lança; projétil = recua e chicoteia; rajada = treme
-// cuspindo a sequência; dash = cambalhota completa; dano = recuo do corpo
+// cuspindo a sequência; dano = recuo do corpo. A cambalhota tem 3 fases:
+// AGACHA (pernas fazendo força) -> vira BOLA girando (cada direção gira num
+// eixo diferente) -> DESCOMPRIME de volta ao normal.
 export function animaLuta(M, f) {
-  let rx = 0;
+  if (f.estado !== 'dash' && M.g.userData._emDash) {
+    M.g.scale.setScalar(1);
+    M.g.userData._emDash = false;
+  }
+  let rx = M.g.userData._leanAndar || 0;
   if (f.estado === 'dash') {
-    rx = Math.min(1, f.t / 0.28) * Math.PI * 2; // cambalhota
-  } else if (f.estado === 'atk' && f.golpe) {
+    M.g.userData._emDash = true;
+    const t = Math.min(1, f.t / 0.28);
+    const rel = f.dashRel || { x: 0, z: -1 };
+    let rz = 0;
+    rx = 0;
+    if (t < 0.2) {
+      // impulso: agacha, alarga e força as pernas
+      const k = t / 0.2;
+      M.g.scale.set(1 + 0.18 * k, 1 - 0.38 * k, 1 + 0.18 * k);
+    } else if (t < 0.85) {
+      // corpo contraído em bola, girando conforme a direção
+      M.g.scale.setScalar(0.72);
+      const giro = ((t - 0.2) / 0.65) * Math.PI * 2;
+      if (Math.abs(rel.x) > Math.abs(rel.z)) rz = rel.x > 0 ? -giro : giro; // pirueta lateral
+      else rx = rel.z > 0 ? -giro : giro; // rolamento à frente / backflip
+    } else {
+      // descompressão
+      const k = (t - 0.85) / 0.15;
+      M.g.scale.setScalar(0.72 + 0.28 * k);
+    }
+    M.g.rotation.x = rx;
+    M.g.rotation.z = rz;
+    return;
+  }
+  if (f.estado === 'atk' && f.golpe) {
     const g = f.golpe;
     if (g.rajada) {
       if (f.t < g.prep) rx = -0.45 * (f.t / g.prep);
