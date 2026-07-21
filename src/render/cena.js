@@ -1,6 +1,8 @@
 // CENA — Three.js: luz, cenário dos mapas (montados a partir de mapas.json),
 // arena de batalha, partículas e as duas câmeras (exploração e lock-on).
 import * as THREE from 'three';
+import { alturaTerreno } from '../sim/mundo.js';
+import { criarNPC } from './modelos.js';
 
 export function criarCena(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -51,14 +53,19 @@ function montaChao(scene, tam = 70, tipo = 'grama') {
   const x = c.getContext('2d');
   const terra = tipo === 'terra';
   // gerador determinístico (a textura repete sem costura)
-  let semente = terra ? 77 : 31;
+  let semente = { grama: 31, terra: 77, vila: 51, penhasco: 93 }[tipo] || 31;
   const rnd = () => (semente = (semente * 1103515245 + 12345) % 2147483648) / 2147483648;
   // base orgânica: manchas suaves em vez de xadrez
-  x.fillStyle = terra ? '#a67f50' : '#5fa848';
+  const PALETAS = {
+    grama:    { base: '#5fa848', tons: ['#67b34f', '#58a041', '#6fbd58', '#61ad4a'] },
+    terra:    { base: '#a67f50', tons: ['#b08a5a', '#9c7449', '#ad8355', '#a17a4d'] },
+    vila:     { base: '#b39064', tons: ['#a67f50', '#bc9668', '#8faf5f', '#ab8558'] },
+    penhasco: { base: '#9c5242', tons: ['#a85a4a', '#8f4a3c', '#b06552', '#96503f'] },
+  };
+  const pal = PALETAS[tipo] || PALETAS.grama;
+  x.fillStyle = pal.base;
   x.fillRect(0, 0, 512, 512);
-  const tons = terra
-    ? ['#b08a5a', '#9c7449', '#ad8355', '#a17a4d']
-    : ['#67b34f', '#58a041', '#6fbd58', '#61ad4a'];
+  const tons = pal.tons;
   for (let i = 0; i < 170; i++) {
     x.fillStyle = tons[i % tons.length];
     const px = rnd() * 512, py = rnd() * 512, r = 12 + rnd() * 26;
@@ -70,9 +77,12 @@ function montaChao(scene, tam = 70, tipo = 'grama') {
   // detalhes finos (pequenos!): tufos, flores, pedrinhas
   for (let i = 0; i < 110; i++) {
     const px = 8 + rnd() * 496, py = 8 + rnd() * 496;
-    if (terra) {
-      x.fillStyle = i % 3 ? '#8d939c' : '#c49a68';
+    if (terra || tipo === 'penhasco') {
+      x.fillStyle = i % 3 ? '#8d939c' : (tipo === 'penhasco' ? '#7a4438' : '#c49a68');
       x.fillRect(px, py, 3 + rnd() * 3, 2 + rnd() * 2);
+    } else if (tipo === 'vila') {
+      x.fillStyle = i % 4 === 0 ? '#8faf5f' : i % 4 === 1 ? '#96744e' : '#c9a06a';
+      x.fillRect(px, py, 3 + rnd() * 2, 2 + rnd() * 2);
     } else {
       const k = i % 7;
       if (k < 3) { x.fillStyle = '#8fd977'; x.fillRect(px, py, 2, 4); x.fillRect(px + 2, py + 1, 2, 3); }
@@ -134,6 +144,80 @@ function centroCura(g, ct) {
   }
   grupo.position.set(ct.x, 0, ct.z);
   g.add(grupo);
+}
+
+/* decorações de vila (fogueira, poço, banca de feira) e escadas */
+function fogueira(g, x, z, y = 0) {
+  const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
+  for (let i = 0; i < 7; i++) {
+    const a = (i / 7) * Math.PI * 2;
+    const pedra = new THREE.Mesh(new THREE.DodecahedronGeometry(0.14), lamb(0x8d939c));
+    pedra.position.set(x + Math.cos(a) * 0.5, y + 0.1, z + Math.sin(a) * 0.5);
+    pedra.castShadow = true; g.add(pedra);
+  }
+  for (const rot of [0.5, 2.1]) {
+    const tronco = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.7, 6), lamb(0x6b4a2f));
+    tronco.rotation.z = Math.PI / 2; tronco.rotation.y = rot;
+    tronco.position.set(x, y + 0.1, z); g.add(tronco);
+  }
+  const ch1 = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.5, 8),
+    new THREE.MeshLambertMaterial({ color: 0xff8a3d, emissive: 0x993300 }));
+  ch1.position.set(x, y + 0.4, z); g.add(ch1);
+  const ch2 = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.3, 8),
+    new THREE.MeshLambertMaterial({ color: 0xffe066, emissive: 0x996600 }));
+  ch2.position.set(x, y + 0.5, z); g.add(ch2);
+}
+function poco(g, x, z, y = 0) {
+  const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.7, 0.6, 10), lamb(0x7d838c));
+  base.position.set(x, y + 0.3, z); base.castShadow = true; base.userData.oclusor = true; g.add(base);
+  for (const lado of [-1, 1]) {
+    const poste = new THREE.Mesh(new THREE.BoxGeometry(0.09, 1.0, 0.09), lamb(0x6b4a2f));
+    poste.position.set(x + lado * 0.55, y + 1.0, z); poste.castShadow = true; g.add(poste);
+  }
+  const telhado = new THREE.Mesh(new THREE.ConeGeometry(0.85, 0.5, 4), lamb(0xd1462f));
+  telhado.position.set(x, y + 1.7, z); telhado.rotation.y = Math.PI / 4;
+  telhado.castShadow = true; telhado.userData.oclusor = true; g.add(telhado);
+  const eixo = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.2, 6), lamb(0x8a6a50));
+  eixo.rotation.z = Math.PI / 2; eixo.position.set(x, y + 1.15, z); g.add(eixo);
+}
+function banca(g, x, z, y = 0) {
+  const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
+  const balcao = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.8, 0.9), lamb(0x8a6a50));
+  balcao.position.set(x, y + 0.4, z); balcao.castShadow = true; balcao.userData.oclusor = true; g.add(balcao);
+  for (const lado of [-1, 1]) {
+    const poste = new THREE.Mesh(new THREE.BoxGeometry(0.09, 1.9, 0.09), lamb(0x6b4a2f));
+    poste.position.set(x + lado * 1.0, y + 0.95, z - 0.3); poste.castShadow = true; g.add(poste);
+  }
+  // toldo listrado
+  const c = document.createElement('canvas'); c.width = 64; c.height = 16;
+  const cx2 = c.getContext('2d');
+  for (let i = 0; i < 8; i++) { cx2.fillStyle = i % 2 ? '#fff6df' : '#d1462f'; cx2.fillRect(i * 8, 0, 8, 16); }
+  const tex = new THREE.CanvasTexture(c);
+  const toldo = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.08, 1.4),
+    new THREE.MeshLambertMaterial({ map: tex }));
+  toldo.position.set(x, y + 1.95, z - 0.1); toldo.rotation.x = -0.22;
+  toldo.castShadow = true; toldo.userData.oclusor = true; g.add(toldo);
+}
+const DECOR = { fogueira, poco, banca };
+
+/* escada de degraus subindo a um platô (o "dir" é a direção da subida) */
+function escada(g, e, mapa) {
+  const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
+  const cor = mapa.chao === 'penhasco' ? 0xa25e4e : 0xb08a5a;
+  const n = Math.max(3, Math.ceil(e.h / 0.2));
+  const L = 1.7, passo = L / n;
+  const dv = { norte: [0, -1], sul: [0, 1], leste: [1, 0], oeste: [-1, 0] }[e.dir];
+  for (let k = 0; k < n; k++) {
+    const alt = e.h * (k + 1) / n;
+    const cx3 = e.x - dv[0] * (L - passo * (k + 0.5));
+    const cz3 = e.z - dv[1] * (L - passo * (k + 0.5));
+    const m = new THREE.Mesh(new THREE.BoxGeometry(
+      dv[0] !== 0 ? passo : e.w, alt, dv[0] !== 0 ? e.w : passo), lamb(cor));
+    m.position.set(cx3, alt / 2, cz3);
+    m.castShadow = m.receiveShadow = true;
+    g.add(m);
+  }
 }
 
 /* muralha natural: floresta densa fechando as bordas do mapa, com clareiras
@@ -258,6 +342,7 @@ function arvore(scene, x, z, pinheiro) {
       });
   }
   g.position.set(x, 0, z); scene.add(g);
+  return g;
 }
 
 /* grama alta: um mar CONTÍNUO de arbustos arredondados lado a lado (grade
@@ -305,15 +390,19 @@ function montaAgua(g, ag) {
 
 /* platô elevado: dois degraus (base larga + topo), combinando com a rampa
    suave da sim; o topo é gramado */
-function plato(g, p) {
+function plato(g, p, mapa = {}) {
   const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
+  // penhasco: paredões avermelhados com topo verde, como no TUNIC
+  const pen = mapa.chao === 'penhasco';
+  const corBase = pen ? 0x8a4a3e : 0x9c7a4e;
+  const corLado = pen ? 0x9c5242 : 0xb08a5a;
   const w = p.x1 - p.x0, d = p.z1 - p.z0;
   const cx = (p.x0 + p.x1) / 2, cz = (p.z0 + p.z1) / 2;
-  const baseM = new THREE.Mesh(new THREE.BoxGeometry(w + 2.4, p.h * 0.55, d + 2.4), lamb(0x9c7a4e));
+  const baseM = new THREE.Mesh(new THREE.BoxGeometry(w + 2.4, p.h * 0.55, d + 2.4), lamb(corBase));
   baseM.position.set(cx, p.h * 0.275, cz); baseM.castShadow = baseM.receiveShadow = true;
   baseM.userData.oclusor = true;
   g.add(baseM);
-  const topoM = new THREE.Mesh(new THREE.BoxGeometry(w, p.h, d), lamb(0xb08a5a));
+  const topoM = new THREE.Mesh(new THREE.BoxGeometry(w, p.h, d), lamb(corLado));
   topoM.position.set(cx, p.h / 2, cz); topoM.castShadow = topoM.receiveShadow = true;
   topoM.userData.oclusor = true;
   g.add(topoM);
@@ -462,10 +551,22 @@ export function montaMapa(cena, mapa) {
   montaChao(g, Math.max(mapa.limite.x, mapa.limite.z) * 2 + 24, mapa.chao || 'grama');
   montaCaminhos(g, mapa);
   montaPedras(g, mapa);
-  (mapa.arvores || []).forEach(([x, z, p]) => arvore(g, x, z, p));
+  (mapa.arvores || []).forEach(([x, z, p]) => {
+    const grupoArv = arvore(g, x, z, p);
+    if (grupoArv) grupoArv.position.y = alturaTerreno(mapa, { x, z });
+  });
   (mapa.casas || []).forEach(([x, z, cor]) => casa(g, x, z, cor));
   if (mapa.centro) centroCura(g, mapa.centro);
-  (mapa.platos || []).forEach((p) => plato(g, p));
+  (mapa.platos || []).forEach((p) => plato(g, p, mapa));
+  (mapa.escadas || []).forEach((e) => escada(g, e, mapa));
+  (mapa.decor || []).forEach(([tipo, x, z]) => {
+    if (DECOR[tipo]) DECOR[tipo](g, x, z, alturaTerreno(mapa, { x, z }));
+  });
+  (mapa.npcs || []).forEach(([x, z, tipo, rot]) => {
+    const npc = criarNPC(g, tipo);
+    npc.g.position.set(x, alturaTerreno(mapa, { x, z }), z);
+    npc.g.rotation.y = rot || 0;
+  });
   for (const G of mapa.gramas || (mapa.grama ? [mapa.grama] : [])) montaGrama(g, G);
   if (mapa.agua) montaAgua(g, mapa.agua);
   if (mapa.caverna) bocaCaverna(g, mapa.caverna);
@@ -513,6 +614,21 @@ function montaArena(scene) {
 export function mostraArena(cena, ligar) {
   cena.arenaG.visible = ligar;
   cena.mundoG.visible = !ligar;
+}
+
+/* jato direcionado: fagulhas que voam da boca da fera até o alvo (sopros) */
+export function jato(cena, pos, dir, cor, n = 4, vel = 8) {
+  for (let i = 0; i < n; i++) {
+    const m = new THREE.Mesh(geoP, new THREE.MeshBasicMaterial({ color: cor, transparent: true }));
+    m.position.set(pos.x, pos.y, pos.z);
+    m.scale.setScalar(0.6 + Math.random() * 0.9);
+    cena.scene.add(m);
+    cena.parts.push({ m,
+      vx: dir.x * vel + (Math.random() - 0.5) * 2.4,
+      vy: dir.y * vel + (Math.random() - 0.5) * 1.8 + 0.6,
+      vz: dir.z * vel + (Math.random() - 0.5) * 2.4,
+      vida: 0.16 + Math.random() * 0.16 });
+  }
 }
 
 /* partículas (pequenas, com variação de tamanho) */

@@ -39,6 +39,19 @@ export function alturaTerreno(mapa, pos) {
   return h;
 }
 
+function colideDecor(mapa, pos) {
+  for (const d of mapa.decor || []) {
+    const r = d[0] === 'banca' ? 1.3 : 0.95;
+    const dx = pos.x - d[1], dz = pos.z - d[2];
+    if (dx * dx + dz * dz < r * r) return true;
+  }
+  for (const n of mapa.npcs || []) {
+    const dx = pos.x - n[0], dz = pos.z - n[1];
+    if (dx * dx + dz * dz < 0.45 * 0.45) return true;
+  }
+  return false;
+}
+
 function sorteiaEspecie(lista, rnd) {
   return lista[Math.floor(rnd() * lista.length)];
 }
@@ -74,6 +87,7 @@ function colide(mapa, pos) {
   if (ct && Math.abs(pos.x - ct.x) < CENTRO_MEIA.x && Math.abs(pos.z - ct.z) < CENTRO_MEIA.z) return true;
   const ag = mapa.agua;
   if (ag && pos.x > ag.x0 && pos.x < ag.x1 && pos.z > ag.z0 && pos.z < ag.z1) return true;
+  if (colideDecor(mapa, pos)) return true;
   return false;
 }
 

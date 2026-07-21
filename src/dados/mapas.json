@@ -4,6 +4,14 @@
     "clareira": {
       "nome": "Vila Clareira",
       "regiao": { "x": 0, "y": 0 },
+      "chao": "vila",
+      "decor": [
+        ["fogueira", -11, 12.5], ["poco", -13.5, 18], ["banca", -4, 15]
+      ],
+      "npcs": [
+        [-12.5, 11, "maga", 2.6], [-9, 17, "aldeao", 3.4],
+        [-3.2, 13.4, "mercador", 0.4], [-16.5, 9.5, "aldea", 1.4]
+      ],
       "limite": { "x": 24, "z": 24 },
       "arvores": [
         [-4, -8, 0], [3, -14, 1], [14, 2, 0], [-8, -16, 1], [0, 6, 0], [-18, -4, 1],
@@ -64,6 +72,9 @@
       "platos": [
         { "x0": -14, "z0": -8, "x1": -2, "z1": 4, "h": 0.9 }
       ],
+      "escadas": [
+        { "x": -8, "z": 4, "w": 2.6, "dir": "norte", "h": 0.9 }
+      ],
       "grama": { "x0": 4, "z0": -18, "x1": 18, "z1": -6 },
       "spawn": { "x": 0, "z": 18 },
       "selvagens": ["cascorro", "voltim"],
@@ -111,6 +122,10 @@
         { "x0": -16, "z0": -12, "x1": -4, "z1": -2, "h": 1.1 },
         { "x0": 4, "z0": 2, "x1": 14, "z1": 10, "h": 0.8 }
       ],
+      "escadas": [
+        { "x": -10, "z": -2, "w": 2.4, "dir": "norte", "h": 1.1 },
+        { "x": 9, "z": 2, "w": 2.4, "dir": "sul", "h": 0.8 }
+      ],
       "caverna": { "x": 0, "z": -14 },
       "centro": { "x": 14, "z": -13 },
       "grama": { "x0": -14, "z0": 4, "x1": -4, "z1": 12 },
@@ -131,12 +146,47 @@
       "platos": [
         { "x0": -10, "z0": -10, "x1": -2, "z1": -4, "h": 0.7 }
       ],
+      "escadas": [
+        { "x": -6, "z": -4, "w": 2.2, "dir": "norte", "h": 0.7 }
+      ],
       "grama": { "x0": 0, "z0": 2, "x1": 10, "z1": 10 },
       "spawn": { "x": -12, "z": 8 },
       "selvagens": ["voltim", "gotim"],
       "saidas": [
         { "borda": "oeste", "de": 2, "ate": 6, "destino": "colinas" },
-        { "borda": "sul", "de": -6, "ate": -2, "destino": "lago" }
+        { "borda": "sul", "de": -6, "ate": -2, "destino": "lago" },
+        { "borda": "leste", "de": -2, "ate": 2, "destino": "penhasco" }
+      ]
+    },
+    "penhasco": {
+      "nome": "Penhasco do Vento",
+      "regiao": { "x": 2, "y": -2 },
+      "limite": { "x": 18, "z": 16 },
+      "borda": "montanha",
+      "chao": "penhasco",
+      "arvores": [
+        [-10, -10, 1], [-4, -11, 1], [7, -10, 1], [12, -8, 1], [-12, 7, 1], [11, 12, 1]
+      ],
+      "platos": [
+        { "x0": -14, "z0": -12, "x1": 0, "z1": -4, "h": 1.0 },
+        { "x0": 4, "z0": -12, "x1": 14, "z1": -2, "h": 2.0 },
+        { "x0": -14, "z0": 4, "x1": -4, "z1": 12, "h": 1.0 }
+      ],
+      "escadas": [
+        { "x": -7, "z": -4, "w": 2.4, "dir": "norte", "h": 1.0 },
+        { "x": 9, "z": -2, "w": 2.4, "dir": "norte", "h": 2.0 },
+        { "x": -9, "z": 4, "w": 2.4, "dir": "sul", "h": 1.0 }
+      ],
+      "pedras": [
+        [2, 8, 1.4], [14, 6, 1.1], [-2, 0, 1.0]
+      ],
+      "gramas": [
+        { "x0": 4, "z0": 8, "x1": 14, "z1": 13 }
+      ],
+      "spawn": { "x": -16, "z": 0 },
+      "selvagens": ["salamandro", "cascorro"],
+      "saidas": [
+        { "borda": "oeste", "de": -2, "ate": 2, "destino": "encosta" }
       ]
     },
     "interior_casa": {

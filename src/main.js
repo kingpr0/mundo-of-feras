@@ -7,7 +7,7 @@ import { criarBatalha, passoBatalha, podeCapturar, fugirBatalha, trocaFera, cont
 import { guardaDirecao, sequenciaCompleta } from './sim/comandos.js';
 import { ganhaXp, xpParaSubir, xpPorVitoria, nivelSelvagem, vidaMaxima, NIVEL_INICIAL } from './sim/progressao.js';
 import { criarFera, aprendeGolpe, lembraGolpe, montaSlots, aprendizadosDoNivel, curaTotal, bonusNivel, paraBatalha } from './sim/equipe.js';
-import { criarCena, poof, passoParticulas, passoCamera, mostraArena, montaMapa, passoOclusores } from './render/cena.js';
+import { criarCena, poof, jato, passoParticulas, passoCamera, mostraArena, montaMapa, passoOclusores } from './render/cena.js';
 import * as MD from './render/modelos.js';
 import { criarHUD } from './render/hud.js';
 import { audioInit, sfx, musica } from './render/audio.js';
@@ -534,21 +534,27 @@ function sincronizaVisual(dt) {
   if (modo === 'encontro' && feraAtual) {
     MD.setPos(feraAtual, RINGUE.fera);
     feraAtual.g.position.y = Math.abs(Math.sin(tempo * 3)) * 0.05;
+    MD.animaIdle(feraAtual, tempo);
   }
+  if (holoM) MD.animaIdle(holoM, tempo);
   if (modo === 'batalha' && batalha && playerM) {
     MD.setPos(playerM, batalha.p.pos);
     MD.encara(playerM, batalha.e.pos.x, batalha.e.pos.z);
     MD.passoGiro(playerM, dt);
+    MD.animaIdle(playerM, tempo);
     MD.animaAndarFera(playerM, tempo, batalha.p.movendo && batalha.p.estado === 'idle');
     MD.animaLuta(playerM, batalha.p);
+    efeitoSopro(playerM, batalha.p, batalha.e.pos);
     if (batalha.p.estado === 'ko') MD.setOpacidade(playerM, Math.max(0, 1 - batalha.p.t * 1.1));
     aplicaFlash(playerM, batalha.p);
 
     MD.setPos(feraAtual, batalha.e.pos);
     MD.encara(feraAtual, batalha.p.pos.x, batalha.p.pos.z);
     MD.passoGiro(feraAtual, dt);
+    MD.animaIdle(feraAtual, tempo);
     MD.animaAndarFera(feraAtual, tempo, batalha.e.movendo && batalha.e.estado === 'idle');
     MD.animaLuta(feraAtual, batalha.e);
+    efeitoSopro(feraAtual, batalha.e, batalha.p.pos);
     if (batalha.e.estado === 'ko') MD.setOpacidade(feraAtual, Math.max(0, 1 - batalha.e.t * 1.1));
     if (batalha.captura && batalha.captura.escalaFera !== undefined)
       MD.setEscala(feraAtual, batalha.captura.escalaFera);
@@ -573,6 +579,23 @@ function sincronizaVisual(dt) {
 function limpaProjeteis() {
   for (const [, M] of projMeshes) cena.scene.remove(M.g);
   projMeshes.clear();
+}
+// SOPRO elemental (estilo Pokkén): enquanto carrega, fagulhas convergem na
+// boca; na rajada, um jato contínuo sai da boca até o alvo
+function efeitoSopro(M, f, alvoPos) {
+  if (f.estado !== 'atk' || !f.golpe) return;
+  const g = f.golpe;
+  if (!g.rajada && !g.projetil) return;
+  const cor = CORES_TIPO[g.tipo || f.esp.tipo] || 0xffffff;
+  const boca = MD.posBoca(M);
+  if (f.t < g.prep) {
+    if (Math.random() < 0.85)
+      poof(cena, { x: boca.x, y: boca.y, z: boca.z }, cor, 2, 0.9);
+  } else if (g.rajada) {
+    const dx = alvoPos.x - boca.x, dy = (alvoPos.y + 0.6) - boca.y, dz = alvoPos.z - boca.z;
+    const L = Math.hypot(dx, dy, dz) || 1;
+    jato(cena, boca, { x: dx / L, y: dy / L, z: dz / L }, cor, 4, 9.5);
+  }
 }
 function aplicaFlash(M, f) {
   if (f.flash > 0) MD.flashCor(M, f.flash > 0.5 ? 0xffffff : 0xff5533);
