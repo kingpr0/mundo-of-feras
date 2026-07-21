@@ -386,19 +386,38 @@ function texturaCapim() {
   return _texCapim;
 }
 function montaGrama(scene, G) {
+  // o MIOLO segue como sempre foi: mar contínuo de arbustos arredondados
+  const mats = [0x3d8a35, 0x46983c, 0x51a746]
+    .map((c) => new THREE.MeshLambertMaterial({ color: c }));
   const base = new THREE.Mesh(
     new THREE.PlaneGeometry(G.x1 - G.x0 + 1, G.z1 - G.z0 + 1),
     new THREE.MeshLambertMaterial({ color: 0x357a2e }));
   base.rotation.x = -Math.PI / 2;
   base.position.set((G.x0 + G.x1) / 2, 0.012, (G.z0 + G.z1) / 2);
   base.receiveShadow = true; scene.add(base);
+  const geoArb = new THREE.SphereGeometry(0.78, 10, 7);
+  const passo = 1.05;
+  let i = 0;
+  for (let px = G.x0 + 0.6; px <= G.x1 - 0.3; px += passo) {
+    for (let pz = G.z0 + 0.6; pz <= G.z1 - 0.3; pz += passo, i++) {
+      const m = new THREE.Mesh(geoArb, mats[(i * 7) % mats.length]);
+      const esc = 0.9 + ((i * 13) % 10) / 45;
+      m.scale.set(esc, 0.62 * esc, esc);
+      m.position.set(px + (((i * 31) % 7) - 3) * 0.06, 0.34,
+                     pz + (((i * 17) % 7) - 3) * 0.06);
+      m.castShadow = true;
+      scene.add(m);
+    }
+  }
 
+  // EM VOLTA dos arbustos, uma franja de tufos de capim 2.5D faz a
+  // transição para o campo (geometria única = barato)
   let sem = Math.abs((G.x0 * 73 + G.z0 * 31) | 0) + 5;
   const rnd = () => (sem = (sem * 1103515245 + 12345) % 2147483648) / 2147483648;
   const pos = [], nrm = [], uv = [], cor = [], idx = [];
   let vi = 0;
   const tufo = (cx, cz) => {
-    const esc = 0.85 + rnd() * 0.45, rot = rnd() * Math.PI;
+    const esc = 0.55 + rnd() * 0.35, rot = rnd() * Math.PI;
     const tinta = 0.82 + rnd() * 0.3; // varia o tom por tufo
     for (const a of [rot, rot + Math.PI / 2]) { // dois planos em X
       const dx = Math.cos(a) * 0.72 * esc, dz = Math.sin(a) * 0.72 * esc;
@@ -411,9 +430,12 @@ function montaGrama(scene, G) {
       vi += 4;
     }
   };
-  for (let px = G.x0 + 0.55; px <= G.x1 - 0.3; px += 0.95)
-    for (let pz = G.z0 + 0.55; pz <= G.z1 - 0.3; pz += 0.95)
-      tufo(px + (rnd() - 0.5) * 0.4, pz + (rnd() - 0.5) * 0.4);
+  const dentro = (x, z) => x > G.x0 - 0.4 && x < G.x1 + 0.4 && z > G.z0 - 0.4 && z < G.z1 + 0.4;
+  for (let px = G.x0 - 1.5; px <= G.x1 + 1.5; px += 0.8)
+    for (let pz = G.z0 - 1.5; pz <= G.z1 + 1.5; pz += 0.8) {
+      const jx = px + (rnd() - 0.5) * 0.5, jz = pz + (rnd() - 0.5) * 0.5;
+      if (!dentro(jx, jz)) tufo(jx, jz);
+    }
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   geo.setAttribute('normal', new THREE.Float32BufferAttribute(nrm, 3));
