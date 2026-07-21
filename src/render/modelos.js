@@ -523,12 +523,20 @@ export function criarFeraGltf(scene, url, alturaAlvo = 1.1, giroGraus = 0) {
     }, undefined, reject);
   });
 }
-// troca de animação com transição suave
-export function tocaClip(M, nome, fade = 0.2) {
-  if (!M.mixer || M.clipAtual === nome) return;
+// troca de animação com transição suave; "once" toca o clipe uma única vez
+// e congela no último quadro (golpes, dano, KO) — "restart" força recomeço
+// mesmo se já for o clipe atual (dois golpes seguidos)
+export function tocaClip(M, nome, fade = 0.2, opts = {}) {
+  if (!M.mixer) return;
+  if (M.clipAtual === nome && !opts.restart) return;
   const acao = M.clips[nome];
   if (!acao) return;
-  if (M.clipAtual && M.clips[M.clipAtual]) M.clips[M.clipAtual].fadeOut(fade);
+  if (M.clipAtual && M.clips[M.clipAtual] && M.clipAtual !== nome)
+    M.clips[M.clipAtual].fadeOut(fade);
+  if (opts.once) {
+    acao.setLoop(THREE.LoopOnce, 1);
+    acao.clampWhenFinished = true;
+  } else acao.setLoop(THREE.LoopRepeat, Infinity);
   acao.reset().fadeIn(fade).play();
   M.clipAtual = nome;
 }
@@ -538,7 +546,8 @@ export function passoMixer(M, dt) { if (M && M.mixer) M.mixer.update(dt); }
 // Sempre devolve uma Promise (o chamador usa await).
 export function criarFera(scene, chave, esp) {
   if (esp && esp.modelo3d)
-    return criarFeraGltf(scene, esp.modelo3d, esp.altura3d || 1.1, esp.giro3d || 0);
+    return criarFeraGltf(scene, esp.modelo3d, esp.altura3d || 1.1, esp.giro3d || 0)
+      .then((M) => { M.clipes = esp.clipes || {}; return M; });
   const fabrica = FABRICAS[chave];
   return Promise.resolve((fabrica || criarCascorro)(scene));
 }

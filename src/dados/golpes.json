@@ -38,6 +38,18 @@
     "prep": 0.24, "ativo": 0.40, "recup": 0.40, "forte": true, "usos": 30,
     "rajada": { "tiros": 3, "intervalo": 0.12, "vel": 14, "raio": 0.65 }
   },
+  "folha_navalha": {
+    "nome": "Folha Navalha", "tipo": "planta",
+    "dano": 13, "alcance": 2.6, "empurrao": 5.5,
+    "prep": 0.26, "ativo": 0.18, "recup": 0.38, "forte": true, "usos": 70,
+    "projetil": { "vel": 12, "raio": 0.8 }
+  },
+  "tempestade_folhas": {
+    "nome": "Tempestade de Folhas", "tipo": "planta", "base": "folha_navalha",
+    "dano": 7, "alcance": 2.8, "empurrao": 3.0,
+    "prep": 0.26, "ativo": 0.44, "recup": 0.42, "forte": true, "usos": 30,
+    "rajada": { "tiros": 4, "intervalo": 0.12, "vel": 12, "raio": 0.7 }
+  },
   "jato_agua": {
     "nome": "Jato d'Água", "tipo": "agua",
     "dano": 13, "alcance": 2.6, "empurrao": 6.0,

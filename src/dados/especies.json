@@ -68,32 +68,60 @@
     "nome": "Folhito",
     "tipo": "planta",
     "raridade": "rara",
+    "selvagem": true,
     "vida": 68,
     "velocidade": 4.2,
     "ataque": 1.05,
     "impulso": 7.0,
     "sequencia": ["baixo", "frente"],
+    "modelo3d": "./assets/feras/folhito.glb",
+    "altura3d": 1.05,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "CharacterArmature|Idle",
+      "andar": "CharacterArmature|Walk",
+      "ataque": "CharacterArmature|Bite_Front",
+      "dano": "CharacterArmature|HitRecieve",
+      "ko": "CharacterArmature|Death"
+    },
     "aprendizado": [
-      { "nivel": 1, "golpe": "investida" }
+      { "nivel": 1, "golpe": "investida" },
+      { "nivel": 5, "golpe": "folha_navalha" },
+      { "nivel": 8, "golpe": "investida_feroz" },
+      { "nivel": 10, "golpe": "tempestade_folhas" }
     ]
   },
   "assombrim": {
     "nome": "Assombrim",
     "tipo": "comum",
     "raridade": "muito_rara",
+    "selvagem": true,
     "vida": 60,
     "velocidade": 5.0,
     "ataque": 1.15,
     "impulso": 8.0,
     "sequencia": ["baixo", "frente"],
+    "modelo3d": "./assets/feras/assombrim.glb",
+    "altura3d": 1.2,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "CharacterArmature|Flying_Idle",
+      "andar": "CharacterArmature|Fast_Flying",
+      "ataque": "CharacterArmature|Headbutt",
+      "forte": "CharacterArmature|Punch",
+      "dano": "CharacterArmature|HitReact",
+      "ko": "CharacterArmature|Death"
+    },
     "aprendizado": [
-      { "nivel": 1, "golpe": "investida" }
+      { "nivel": 1, "golpe": "investida" },
+      { "nivel": 7, "golpe": "investida_feroz" }
     ]
   },
   "raiozim": {
     "nome": "Raiozim",
     "tipo": "eletrico",
     "raridade": "rara",
+    "selvagem": true,
     "vida": 58,
     "velocidade": 5.4,
     "ataque": 1.0,
@@ -101,7 +129,37 @@
     "sequencia": ["frente"],
     "aprendizado": [
       { "nivel": 1, "golpe": "investida" },
-      { "nivel": 5, "golpe": "esfera_voltaica" }
+      { "nivel": 5, "golpe": "esfera_voltaica" },
+      { "nivel": 8, "golpe": "investida_feroz" },
+      { "nivel": 10, "golpe": "rajada_voltaica" }
+    ]
+  },
+  "draguim": {
+    "nome": "Draguim",
+    "tipo": "fogo",
+    "raridade": "muito_rara",
+    "selvagem": true,
+    "vida": 80,
+    "velocidade": 4.4,
+    "ataque": 1.2,
+    "impulso": 7.4,
+    "sequencia": ["baixo", "frente"],
+    "modelo3d": "./assets/feras/draguim.glb",
+    "altura3d": 1.35,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "CharacterArmature|Flying_Idle",
+      "andar": "CharacterArmature|Fast_Flying",
+      "ataque": "CharacterArmature|Headbutt",
+      "forte": "CharacterArmature|Punch",
+      "dano": "CharacterArmature|HitReact",
+      "ko": "CharacterArmature|Death"
+    },
+    "aprendizado": [
+      { "nivel": 1, "golpe": "investida" },
+      { "nivel": 5, "golpe": "bola_fogo" },
+      { "nivel": 8, "golpe": "investida_feroz" },
+      { "nivel": 9, "golpe": "lanca_chamas" }
     ]
   },
   "raposa": {
@@ -117,6 +175,7 @@
     "modelo3d": "./assets/feras/raposa.glb",
     "altura3d": 1.15,
     "giro3d": 0,
+    "clipes": { "parado": "Survey", "andar": "Walk", "correr": "Run" },
     "aprendizado": [
       { "nivel": 1, "golpe": "investida" },
       { "nivel": 5, "golpe": "investida_feroz" }

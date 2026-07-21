@@ -77,6 +77,29 @@ function pintaAgua(ctx, k, s) {
   }
 }
 
+function pintaPlanta(ctx, k, s) {
+  // redemoinho de folhas: elipses verdes girando em volta de um brilho suave
+  ctx.globalCompositeOperation = 'lighter';
+  const cx = s / 2, cy = s / 2;
+  const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, s * 0.3);
+  g.addColorStop(0, 'rgba(210,255,190,0.75)');
+  g.addColorStop(0.6, 'rgba(110,220,90,0.35)');
+  g.addColorStop(1, 'rgba(40,140,40,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, s, s);
+  const cores = ['rgba(120,220,80,0.95)', 'rgba(80,180,60,0.9)', 'rgba(170,240,120,0.9)'];
+  for (let i = 0; i < 7; i++) {
+    const a = i * 0.9 + k * 6.284;               // órbita gira com o quadro
+    const rr = s * (0.1 + 0.22 * ((k + i * 0.14) % 1));
+    const x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr;
+    ctx.fillStyle = cores[i % cores.length];
+    ctx.save(); ctx.translate(x, y); ctx.rotate(a + k * 9 + i);
+    ctx.beginPath(); // folha = elipse com ponta
+    ctx.ellipse(0, 0, s * 0.075, s * 0.03, 0, 0, 6.284);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
 function pintaImpacto(ctx, k, s) {
   // estouro estilo jogo de luta: clarão, anel que expande e lascas em estrela
   // (aqui k é a LINHA DO TEMPO do efeito: quadro 0 = nasce, último = some)
@@ -123,7 +146,7 @@ function fazTex(cv) {
   return t;
 }
 
-const FOLHA_DO_TIPO = { fogo: 'fogo', eletrico: 'eletrico', agua: 'agua' };
+const FOLHA_DO_TIPO = { fogo: 'fogo', eletrico: 'eletrico', agua: 'agua', planta: 'planta' };
 
 // folha de chamas para uso do cenário (fogueira da vila, tochas...)
 export function texturaChamaAnimada() {
@@ -135,6 +158,7 @@ export function criarEfeitos(scene) {
     fogo: desenhaSheet(pintaFogo),
     eletrico: desenhaSheet(pintaEletrico),
     agua: desenhaSheet(pintaAgua),
+    planta: desenhaSheet(pintaPlanta),
     impacto: desenhaSheet(pintaImpacto),
   };
   // cada sprite ativo precisa da SUA textura (quadro independente); um pool

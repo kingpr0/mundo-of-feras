@@ -689,12 +689,25 @@ function efeitoSopro(M, f, alvoPos) {
     if (Math.random() < 0.35) jato(cena, boca, dir, cor, 2, 11);
   }
 }
-// modelos glTF: escolhe o clipe do esqueleto conforme a situação e avança o mixer
+// modelos glTF: escolhe o clipe do esqueleto conforme a situação e avança o
+// mixer. O mapa de clipes vem dos DADOS da espécie ("clipes" no JSON):
+// parado / andar / correr / ataque / forte / dano / ko — com fallbacks para
+// modelos que não têm todos (a raposa só tem parado/andar/correr).
 function atualizaClips(M, f, dt) {
   if (!M || !M.gltf) return;
-  if (f && (f.estado === 'atk' || f.estado === 'dash')) MD.tocaClip(M, 'Run', 0.1);
-  else if (f && f.movendo && f.estado === 'idle') MD.tocaClip(M, 'Walk');
-  else MD.tocaClip(M, 'Survey');
+  const c = M.clipes || {};
+  const parado = c.parado || 'Survey', andar = c.andar || 'Walk',
+        correr = c.correr || andar;
+  if (f && f.estado === 'atk') {
+    // recomeça o golpe a cada ataque novo (f.t zera quando o golpe inicia)
+    const nome = (f.golpe && f.golpe.forte && c.forte) ? c.forte : (c.ataque || correr);
+    MD.tocaClip(M, nome, 0.08, { once: !!(c.ataque || c.forte), restart: f.t < dt * 2 });
+  }
+  else if (f && f.estado === 'dash') MD.tocaClip(M, correr, 0.1);
+  else if (f && f.estado === 'hurt') MD.tocaClip(M, c.dano || parado, 0.08, { once: !!c.dano });
+  else if (f && f.estado === 'ko') MD.tocaClip(M, c.ko || c.dano || parado, 0.15, { once: !!(c.ko || c.dano) });
+  else if (f && f.movendo && f.estado === 'idle') MD.tocaClip(M, andar);
+  else MD.tocaClip(M, parado);
   MD.passoMixer(M, dt);
 }
 function aplicaFlash(M, f) {

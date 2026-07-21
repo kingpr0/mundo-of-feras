@@ -1,5 +1,15 @@
 # Créditos dos modelos 3D
 
+## folhito.glb — "Mushnub" · assombrim.glb — "Ghost" · draguim.glb — "Dragon Evolved"
+
+- Autor: **Quaternius** (via [poly.pizza](https://poly.pizza))
+- Licença: **CC0 1.0 (domínio público)** — uso livre, inclusive comercial,
+  sem exigência de atribuição (creditamos por cortesia)
+- Fontes: poly.pizza/m/LWKmS30Xxl (Mushnub), /m/Iip30bDHmu (Ghost),
+  /m/LlwD0QNUPj (Dragon Evolved)
+- Clipes de esqueleto usados: Idle/Walk/Bite_Front/HitRecieve/Death (Mushnub)
+  e Flying_Idle/Fast_Flying/Headbutt/Punch/HitReact/Death (Ghost e Dragon)
+
 ## raposa.glb — "Fox" (demonstração de pipeline glTF)
 
 - Fonte: [glTF Sample Models (Khronos Group)](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/Fox)

@@ -79,7 +79,7 @@
       ],
       "grama": { "x0": 4, "z0": -18, "x1": 18, "z1": -6 },
       "spawn": { "x": 0, "z": 18 },
-      "selvagens": ["cascorro", "voltim"],
+      "selvagens": ["cascorro", "voltim", "folhito"],
       "saidas": [
         { "borda": "sul", "de": -2, "ate": 2, "destino": "clareira" },
         { "borda": "norte", "de": -2, "ate": 2, "destino": "colinas" },
@@ -134,7 +134,7 @@
       "centro": { "x": 14, "z": -13 },
       "grama": { "x0": -14, "z0": 4, "x1": -4, "z1": 12 },
       "spawn": { "x": 0, "z": 13 },
-      "selvagens": ["voltim", "salamandro"],
+      "selvagens": ["voltim", "salamandro", "folhito", "draguim"],
       "saidas": [
         { "borda": "sul", "de": -2, "ate": 2, "destino": "campo" },
         { "borda": "leste", "de": 2, "ate": 6, "destino": "encosta" }
@@ -156,7 +156,7 @@
       ],
       "grama": { "x0": 0, "z0": 2, "x1": 10, "z1": 10 },
       "spawn": { "x": -12, "z": 8 },
-      "selvagens": ["voltim", "gotim"],
+      "selvagens": ["voltim", "gotim", "raiozim"],
       "saidas": [
         { "borda": "oeste", "de": 2, "ate": 6, "destino": "colinas" },
         { "borda": "sul", "de": -6, "ate": -2, "destino": "lago" },
@@ -192,7 +192,7 @@
         { "x0": 4, "z0": 8, "x1": 14, "z1": 13 }
       ],
       "spawn": { "x": -16, "z": 0 },
-      "selvagens": ["salamandro", "cascorro"],
+      "selvagens": ["salamandro", "cascorro", "raiozim", "assombrim", "draguim"],
       "saidas": [
         { "borda": "oeste", "de": -2, "ate": 2, "destino": "encosta" }
       ]
