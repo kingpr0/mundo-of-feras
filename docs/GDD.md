@@ -24,6 +24,8 @@ O estilo visual é **3D estilizado em diorama** (decidido, substituindo o pixel 
 
 **Feras**: modelos 3D low-poly originais, 100% autorais (exigência legal e de identidade). Cada espécie precisa de silhueta reconhecível a distância e paleta que comunique seu tipo.
 
+**Pipeline de modelos (proposta em avaliação):** além dos modelos construídos por código, o motor carrega **arquivos glTF (.glb) com esqueleto e animações profissionais** — a espécie declara `modelo3d`, `altura3d` e `giro3d` nos dados e o jogo troca os clipes (parado/andar/correr) conforme a luta. A espécie **"Raposa (demo 3D)"** (modelo Fox da Khronos, créditos em `assets/feras/CREDITOS.md`) existe SÓ como demonstração técnica desse caminho, encontrável na Rota das Lajes; a decisão de rumo (autorar as feras no Blockbench, usar packs CC0 como base, ou híbrido) está aberta.
+
 ## 4. Câmeras
 
 **Exploração — câmera estilo League of Legends:** ângulo fixo olhando de cima em diagonal (pitch na faixa de 50–60°, a calibrar), **bem afastada do personagem** (enquadramento amplo, como no LoL), sem rotação pelo jogador, seguindo o personagem com suavização (camera lag). O jogador nunca controla a câmera no mundo; ela é parte da identidade visual, como no LoL e nos HD-2D.

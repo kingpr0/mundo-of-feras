@@ -106,7 +106,7 @@
         { "x0": -16, "z0": 6, "x1": -5, "z1": 13 }
       ],
       "spawn": { "x": 18, "z": 0 },
-      "selvagens": ["cascorro", "voltim", "salamandro"],
+      "selvagens": ["cascorro", "voltim", "salamandro", "raposa"],
       "saidas": [
         { "borda": "leste", "de": 8, "ate": 12, "destino": "campo" }
       ]

@@ -104,6 +104,24 @@
       { "nivel": 5, "golpe": "esfera_voltaica" }
     ]
   },
+  "raposa": {
+    "nome": "Raposa (demo 3D)",
+    "tipo": "comum",
+    "raridade": "rara",
+    "selvagem": true,
+    "vida": 72,
+    "velocidade": 5.2,
+    "ataque": 1.1,
+    "impulso": 7.8,
+    "sequencia": ["frente"],
+    "modelo3d": "./assets/feras/raposa.glb",
+    "altura3d": 1.15,
+    "giro3d": 0,
+    "aprendizado": [
+      { "nivel": 1, "golpe": "investida" },
+      { "nivel": 5, "golpe": "investida_feroz" }
+    ]
+  },
   "gotim": {
     "nome": "Gotim",
     "tipo": "agua",

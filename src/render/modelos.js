@@ -1,7 +1,8 @@
-// MODELOS — personagens e feras em 3D low-poly chibi, construídos por código.
-// Feras 2.0: cada modelo tem CABEÇA e CAUDA articuladas (grupos próprios) e um
-// marcador de BOCA — de onde saem os sopros elementais. Render puro.
+// MODELOS — personagens e feras em 3D low-poly chibi, construídos por código,
+// OU carregados de arquivos glTF com esqueleto e animações profissionais
+// (espécies com "modelo3d" nos dados). Render puro.
 import * as THREE from 'three';
+import { GLTFLoader } from '../vendor/GLTFLoader.js';
 
 const COR = {
   pele: 0xffd9b0, bone: 0x3fc5ba, boneEscuro: 0x2a8f88, olho: 0x26202e,
@@ -485,9 +486,61 @@ function criarRaiozim(scene) {
 }
 
 const FABRICAS = { brasinha: criarBrasinha, cascorro: criarCascorro, voltim: criarVoltim, gotim: criarGotim, salamandro: criarSalamandro, folhito: criarFolhito, assombrim: criarAssombrim, raiozim: criarRaiozim };
-export function criarFera(scene, chave) {
+
+/* pipeline glTF: carrega modelo com esqueleto/animações, normaliza a escala
+   pela altura desejada e apoia os pés no chão. Clipes viram ações nomeadas. */
+let _loader = null;
+export function criarFeraGltf(scene, url, alturaAlvo = 1.1, giroGraus = 0) {
+  if (!_loader) _loader = new GLTFLoader();
+  return new Promise((resolve, reject) => {
+    _loader.load(url, (gltf) => {
+      const M = novoModelo(scene, alturaAlvo);
+      M.gltf = true;
+      const interno = new THREE.Group();
+      interno.add(gltf.scene);
+      M.g.add(interno);
+      // giro3d dos dados corrige modelos que "olham" para outro eixo
+      // (nossa convenção: fera parada encara +z)
+      if (giroGraus) interno.rotation.y = giroGraus * Math.PI / 180;
+      const box = new THREE.Box3().setFromObject(gltf.scene);
+      const alt = box.max.y - box.min.y || 1;
+      interno.scale.setScalar(alturaAlvo / alt);
+      const box2 = new THREE.Box3().setFromObject(interno);
+      interno.position.y = -box2.min.y;
+      marcaBoca(M, M.g, 0, alturaAlvo * 0.72, alturaAlvo * 0.55);
+      gltf.scene.traverse((o) => {
+        if (o.isMesh) {
+          o.castShadow = true;
+          const mats = Array.isArray(o.material) ? o.material : [o.material];
+          for (const mt of mats) M.materiais.push(mt);
+        }
+      });
+      M.mixer = new THREE.AnimationMixer(gltf.scene);
+      M.clips = {};
+      for (const clip of gltf.animations) M.clips[clip.name] = M.mixer.clipAction(clip);
+      M.clipAtual = null;
+      resolve(M);
+    }, undefined, reject);
+  });
+}
+// troca de animação com transição suave
+export function tocaClip(M, nome, fade = 0.2) {
+  if (!M.mixer || M.clipAtual === nome) return;
+  const acao = M.clips[nome];
+  if (!acao) return;
+  if (M.clipAtual && M.clips[M.clipAtual]) M.clips[M.clipAtual].fadeOut(fade);
+  acao.reset().fadeIn(fade).play();
+  M.clipAtual = nome;
+}
+export function passoMixer(M, dt) { if (M && M.mixer) M.mixer.update(dt); }
+
+// espécies com "modelo3d" nos dados usam glTF; as demais, as fábricas.
+// Sempre devolve uma Promise (o chamador usa await).
+export function criarFera(scene, chave, esp) {
+  if (esp && esp.modelo3d)
+    return criarFeraGltf(scene, esp.modelo3d, esp.altura3d || 1.1, esp.giro3d || 0);
   const fabrica = FABRICAS[chave];
-  return fabrica ? fabrica(scene) : criarCascorro(scene);
+  return Promise.resolve((fabrica || criarCascorro)(scene));
 }
 
 // projétil elemental. Bola única = esfera de fogo com CAUDA de chamas;
@@ -565,6 +618,7 @@ export function passoGiro(M, dt) {
 // vida em repouso: o corpo RESPIRA (infla e desinfla), a cauda abana,
 // a cabeça observa e as asas se ajeitam
 export function animaIdle(M, t) {
+  if (M.gltf) return; // o esqueleto do glTF já respira sozinho (clipes)
   if (M.corpo && M.corpo.userData.s0) {
     const s0 = M.corpo.userData.s0;
     const r = 1 + Math.sin(t * 2.4) * 0.04;
@@ -589,6 +643,7 @@ export function animaIdle(M, t) {
 // quadrúpedes TROTAM (pares diagonais alternando), bípedes dão passadas
 // (pernas e braços em oposição), asas/nadadeiras batem junto
 export function animaAndarFera(M, t, movendo) {
+  if (M.gltf) { M.g.userData._leanAndar = 0; return; } // clipes Walk/Run cuidam disso
   const a = movendo ? Math.sin(t * 11) * 0.6 : 0;
   if (M.pernas.length === 4) {
     // trote: diagonais juntas (frente-esq + trás-dir vs frente-dir + trás-esq)

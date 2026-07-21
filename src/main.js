@@ -20,11 +20,12 @@ const cena = criarCena(cv);
 const hud = criarHUD();
 
 // modelos 3D: um conjunto para a fera do jogador e outro para a selvagem
+// (criarFera é assíncrono — espécies com "modelo3d" carregam arquivos glTF)
 const domador = MD.criarDomador(cena.scene);
 const modelosJog = {}, modelosIni = {};
 for (const k of Object.keys(especies)) {
-  modelosJog[k] = MD.criarFera(cena.scene, k); MD.mostra(modelosJog[k], false);
-  modelosIni[k] = MD.criarFera(cena.scene, k); MD.mostra(modelosIni[k], false);
+  modelosJog[k] = await MD.criarFera(cena.scene, k, especies[k]); MD.mostra(modelosJog[k], false);
+  modelosIni[k] = await MD.criarFera(cena.scene, k, especies[k]); MD.mostra(modelosIni[k], false);
 }
 const cristal = MD.criarCristal(cena.scene); MD.mostra(cristal, false);
 const discoHolo = MD.criarDiscoHolo(cena.scene); MD.mostra(discoHolo, false);
@@ -589,8 +590,9 @@ function sincronizaVisual(dt) {
     MD.setPos(feraAtual, RINGUE.fera);
     feraAtual.g.position.y = Math.abs(Math.sin(tempo * 3)) * 0.05;
     MD.animaIdle(feraAtual, tempo);
+    atualizaClips(feraAtual, null, dt);
   }
-  if (holoM) MD.animaIdle(holoM, tempo);
+  if (holoM) { MD.animaIdle(holoM, tempo); atualizaClips(holoM, null, dt); }
   if (modo === 'batalha' && batalha && playerM) {
     MD.setPos(playerM, batalha.p.pos);
     MD.encara(playerM, batalha.e.pos.x, batalha.e.pos.z);
@@ -598,6 +600,7 @@ function sincronizaVisual(dt) {
     MD.animaIdle(playerM, tempo);
     MD.animaAndarFera(playerM, tempo, batalha.p.movendo && batalha.p.estado === 'idle');
     MD.animaLuta(playerM, batalha.p);
+    atualizaClips(playerM, batalha.p, dt);
     efeitoSopro(playerM, batalha.p, batalha.e.pos);
     if (batalha.p.estado === 'ko') MD.setOpacidade(playerM, Math.max(0, 1 - batalha.p.t * 1.1));
     aplicaFlash(playerM, batalha.p);
@@ -608,6 +611,7 @@ function sincronizaVisual(dt) {
     MD.animaIdle(feraAtual, tempo);
     MD.animaAndarFera(feraAtual, tempo, batalha.e.movendo && batalha.e.estado === 'idle');
     MD.animaLuta(feraAtual, batalha.e);
+    atualizaClips(feraAtual, batalha.e, dt);
     efeitoSopro(feraAtual, batalha.e, batalha.p.pos);
     if (batalha.e.estado === 'ko') MD.setOpacidade(feraAtual, Math.max(0, 1 - batalha.e.t * 1.1));
     if (batalha.captura && batalha.captura.escalaFera !== undefined)
@@ -677,6 +681,14 @@ function efeitoSopro(M, f, alvoPos) {
     if (Math.random() < 0.5)
       jato(cena, boca, { x: dx / L, y: dy / L, z: dz / L }, 0xffe066, 2, 11);
   }
+}
+// modelos glTF: escolhe o clipe do esqueleto conforme a situação e avança o mixer
+function atualizaClips(M, f, dt) {
+  if (!M || !M.gltf) return;
+  if (f && (f.estado === 'atk' || f.estado === 'dash')) MD.tocaClip(M, 'Run', 0.1);
+  else if (f && f.movendo && f.estado === 'idle') MD.tocaClip(M, 'Walk');
+  else MD.tocaClip(M, 'Survey');
+  MD.passoMixer(M, dt);
 }
 function aplicaFlash(M, f) {
   if (f.flash > 0) MD.flashCor(M, f.flash > 0.5 ? 0xffffff : 0xff5533);
