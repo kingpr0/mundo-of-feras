@@ -181,6 +181,114 @@
       { "nivel": 5, "golpe": "investida_feroz" }
     ]
   },
+  "sapum": {
+    "nome": "Sapum",
+    "tipo": "agua",
+    "raridade": "rara",
+    "selvagem": true,
+    "vida": 70,
+    "velocidade": 4.6,
+    "ataque": 1.05,
+    "impulso": 7.6,
+    "sequencia": ["baixo"],
+    "modelo3d": "./assets/feras/sapum.glb",
+    "altura3d": 1.0,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "CharacterArmature|Idle",
+      "andar": "CharacterArmature|Walk",
+      "correr": "CharacterArmature|Run",
+      "ataque": "CharacterArmature|Punch",
+      "dano": "CharacterArmature|HitReact",
+      "ko": "CharacterArmature|Death"
+    },
+    "aprendizado": [
+      { "nivel": 1, "golpe": "investida" },
+      { "nivel": 5, "golpe": "jato_agua" },
+      { "nivel": 8, "golpe": "investida_feroz" },
+      { "nivel": 10, "golpe": "rajada_bolhas" }
+    ]
+  },
+  "diabrim": {
+    "nome": "Diabrim",
+    "tipo": "fogo",
+    "raridade": "rara",
+    "selvagem": true,
+    "vida": 66,
+    "velocidade": 5.0,
+    "ataque": 1.15,
+    "impulso": 7.8,
+    "sequencia": ["baixo", "frente"],
+    "modelo3d": "./assets/feras/diabrim.glb",
+    "altura3d": 1.25,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "CharacterArmature|Flying_Idle",
+      "andar": "CharacterArmature|Fast_Flying",
+      "ataque": "CharacterArmature|Headbutt",
+      "forte": "CharacterArmature|Punch",
+      "dano": "CharacterArmature|HitReact",
+      "ko": "CharacterArmature|Death"
+    },
+    "aprendizado": [
+      { "nivel": 1, "golpe": "investida" },
+      { "nivel": 5, "golpe": "bola_fogo" },
+      { "nivel": 8, "golpe": "investida_feroz" },
+      { "nivel": 10, "golpe": "lanca_chamas" }
+    ]
+  },
+  "yetao": {
+    "nome": "Yetão",
+    "tipo": "comum",
+    "raridade": "rara",
+    "selvagem": true,
+    "vida": 95,
+    "velocidade": 3.2,
+    "ataque": 1.35,
+    "impulso": 6.4,
+    "sequencia": ["baixo"],
+    "modelo3d": "./assets/feras/yetao.glb",
+    "altura3d": 1.4,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "CharacterArmature|Idle",
+      "andar": "CharacterArmature|Walk",
+      "ataque": "CharacterArmature|Bite_Front",
+      "dano": "CharacterArmature|HitRecieve",
+      "ko": "CharacterArmature|Death"
+    },
+    "aprendizado": [
+      { "nivel": 1, "golpe": "investida" },
+      { "nivel": 6, "golpe": "investida_feroz" }
+    ]
+  },
+  "espinhim": {
+    "nome": "Espinhim",
+    "tipo": "planta",
+    "raridade": "comum",
+    "selvagem": true,
+    "vida": 66,
+    "velocidade": 4.0,
+    "ataque": 1.1,
+    "impulso": 7.0,
+    "sequencia": ["frente"],
+    "modelo3d": "./assets/feras/espinhim.glb",
+    "altura3d": 0.95,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "CharacterArmature|Idle",
+      "andar": "CharacterArmature|Walk",
+      "ataque": "CharacterArmature|Bite_Front",
+      "dano": "CharacterArmature|HitRecieve",
+      "ko": "CharacterArmature|Death"
+    },
+    "aprendizado": [
+      { "nivel": 1, "golpe": "investida" },
+      { "nivel": 5, "golpe": "folha_navalha" },
+      { "nivel": 8, "golpe": "investida_feroz" },
+      { "nivel": 10, "golpe": "tempestade_folhas" }
+    ]
+  },
   "gotim": {
     "nome": "Gotim",
     "tipo": "agua",
