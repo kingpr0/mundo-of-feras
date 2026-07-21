@@ -7,6 +7,7 @@ import { criarBatalha, passoBatalha, podeCapturar, fugirBatalha, trocaFera, cont
 import { ganhaXp, xpParaSubir, xpPorVitoria, nivelSelvagem, vidaMaxima, NIVEL_INICIAL } from './sim/progressao.js';
 import { criarFera, aprendeGolpe, lembraGolpe, montaSlots, aprendizadosDoNivel, curaTotal, bonusNivel, paraBatalha } from './sim/equipe.js';
 import { criarCena, poof, jato, passoParticulas, passoCamera, mostraArena, montaMapa, passoOclusores } from './render/cena.js';
+import { criarEfeitos } from './render/efeitos.js';
 import * as MD from './render/modelos.js';
 import { criarHUD } from './render/hud.js';
 import { audioInit, sfx, musica } from './render/audio.js';
@@ -17,6 +18,7 @@ const golpesCat = await (await fetch('./src/dados/golpes.json')).json();
 
 const cv = document.getElementById('cv');
 const cena = criarCena(cv);
+const fx = criarEfeitos(cena.scene); // golpes elementais em sprites 2.5D
 const hud = criarHUD();
 
 // modelos 3D: um conjunto para a fera do jogador e outro para a selvagem
@@ -164,10 +166,12 @@ function progressoCarga() {
 function aoEvento(evt) {
   switch (evt.tipo) {
     case 'hit': sfx.hit(); cena.shake = 0.28; hitstop = 0.05;
-      poof(cena, { ...evt.pos, y: evt.pos.y + 1 }, 0xffd23f, 12, 4.5);
+      fx.impacto(evt.pos, false);
+      poof(cena, { ...evt.pos, y: evt.pos.y + 1 }, 0xffd23f, 8, 4.5);
       hud.dano(evt.pos, evt.dano, false); break;
     case 'hitForte': sfx.hitForte(); cena.shake = 0.5; hitstop = 0.09;
-      poof(cena, { ...evt.pos, y: evt.pos.y + 1 }, 0xff6b4a, 12, 4.5);
+      fx.impacto(evt.pos, true);
+      poof(cena, { ...evt.pos, y: evt.pos.y + 1 }, 0xff6b4a, 8, 4.5);
       hud.dano(evt.pos, evt.dano, true); break;
     case 'rastroFogo': if (Math.random() < 0.5)
       poof(cena, evt.pos, Math.random() < 0.5 ? 0xff8a3d : 0xffd93b, 2, 2.5); break;
@@ -638,29 +642,31 @@ function sincronizaVisual(dt) {
     if (batalha.p.estado === 'dash' && Math.random() < 0.7)
       poof(cena, { ...batalha.p.pos, y: 0.3 }, 0xcbd0d8, 2, 2);
 
+    // projéteis em 2.5D: bola elemental animada + rastro de fagulhas; ao
+    // sumir (acertou, caiu ou passou longe) estoura um impacto no lugar
     const vivos = new Set();
     for (const pr of batalha.projeteis) {
       vivos.add(pr.id);
-      let M = projMeshes.get(pr.id);
-      if (!M) {
-        M = MD.criarProjetil(cena.scene, CORES_TIPO[pr.tipo] || 0xffffff, pr.rajada);
-        projMeshes.set(pr.id, M);
+      let e = projMeshes.get(pr.id);
+      if (!e) {
+        e = fx.projetil(pr.tipo, pr.rajada);
+        projMeshes.set(pr.id, e);
       }
-      MD.setPos(M, pr.pos);
-      // aponta na direção do voo; labaredas tremeluzem, bolas giram
-      M.g.rotation.y = Math.atan2(pr.vel.x, pr.vel.z);
-      M.g.rotation.x = -Math.atan2(pr.vel.y, Math.hypot(pr.vel.x, pr.vel.z));
-      if (pr.rajada) M.g.scale.setScalar(0.8 + Math.random() * 0.5);
-      else M.g.rotation.z += dt * 7;
-      if (Math.random() < (pr.rajada ? 0.95 : 0.8))
-        poof(cena, pr.pos, pr.rajada && Math.random() < 0.4 ? 0xffe066 : (CORES_TIPO[pr.tipo] || 0xffffff), 1, 1.6);
+      fx.posiciona(e, pr.pos);
+      e.ultPos = { ...pr.pos };
+      if (Math.random() < 0.35)
+        poof(cena, pr.pos, CORES_TIPO[pr.tipo] || 0xffffff, 1, 1.4);
     }
-    for (const [id, M] of projMeshes)
-      if (!vivos.has(id)) { cena.scene.remove(M.g); projMeshes.delete(id); }
+    for (const [id, e] of projMeshes)
+      if (!vivos.has(id)) {
+        if (e.ultPos) fx.impacto({ ...e.ultPos, y: e.ultPos.y - 0.9 }, false);
+        fx.removeProjetil(e);
+        projMeshes.delete(id);
+      }
   }
 }
 function limpaProjeteis() {
-  for (const [, M] of projMeshes) cena.scene.remove(M.g);
+  for (const [, e] of projMeshes) fx.removeProjetil(e);
   projMeshes.clear();
 }
 // SOPRO elemental (estilo Pokkén): enquanto carrega, fagulhas convergem na
@@ -675,11 +681,12 @@ function efeitoSopro(M, f, alvoPos) {
     if (Math.random() < 0.85)
       poof(cena, { x: boca.x, y: boca.y, z: boca.z }, cor, 2, 0.9);
   } else if (g.rajada) {
+    // jato contínuo em 2.5D: línguas do elemento voam da boca ao alvo
     const dx = alvoPos.x - boca.x, dy = (alvoPos.y + 0.6) - boca.y, dz = alvoPos.z - boca.z;
     const L = Math.hypot(dx, dy, dz) || 1;
-    jato(cena, boca, { x: dx / L, y: dy / L, z: dz / L }, cor, 6, 11);
-    if (Math.random() < 0.5)
-      jato(cena, boca, { x: dx / L, y: dy / L, z: dz / L }, 0xffe066, 2, 11);
+    const dir = { x: dx / L, y: dy / L, z: dz / L };
+    if (Math.random() < 0.8) fx.sopro(boca, dir, g.tipo || f.esp.tipo, 11);
+    if (Math.random() < 0.35) jato(cena, boca, dir, cor, 2, 11);
   }
 }
 // modelos glTF: escolhe o clipe do esqueleto conforme a situação e avança o mixer
@@ -709,6 +716,7 @@ function loop(agora) {
   if (hitstop > 0) { hitstop -= dt; cena.renderer.render(cena.scene, cena.camera); return; }
 
   passoParticulas(cena, dt);
+  fx.passo(dt);
   hud.passoDanos(cena.camera, dt, THREE);
 
   if (modo === 'explorar') {
