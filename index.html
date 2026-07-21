@@ -47,9 +47,9 @@
   .opt { color:#8f89a6; font-size:18px; font-weight:bold; letter-spacing:2px; }
   .opt.sel { color:#ffd23f; }
   .opt.sel::before { content:'▶ '; }
-  #menu { position:fixed; top:312px; right:12px;
-    background:rgba(13,11,20,.9); border:2px solid #ffd23f; padding:10px 14px;
-    min-width:180px; max-width:230px; max-height:46vh; overflow-y:auto; display:none; }
+  #menu { width:124px; margin:0 0 0 auto; text-align:left;
+    background:rgba(13,11,20,.9); border:2px solid #ffd23f; border-top:none;
+    padding:8px 9px; max-height:44vh; overflow-y:auto; display:none; }
   #menuTit { color:#ffd23f; font-size:12px; font-weight:bold; letter-spacing:1px;
     margin-bottom:8px; border-bottom:1px solid #3a3350; padding-bottom:5px; }
   #menuItens .opt { font-size:13px; margin:6px 0; letter-spacing:1px; }
@@ -85,6 +85,10 @@
     <div id="miniNome">—</div>
     <canvas id="mini" width="120" height="120"></canvas>
     <canvas id="regiao" width="120" height="86"></canvas>
+    <div id="menu">
+      <div id="menuTit">MENU</div>
+      <div id="menuItens"></div>
+    </div>
   </div>
   <div class="hpwrap" id="hpP"><div class="hpname" id="nomeP">♦ BRASINHA</div>
     <div class="hpbar"><div class="hpfill" id="fillP"></div></div>
@@ -97,10 +101,6 @@
     <div class="opt sel" id="optLutar">LUTAR</div>
     <div class="opt" id="optFugir">FUGIR</div>
   </div>
-  <div id="menu">
-    <div id="menuTit">MENU</div>
-    <div id="menuItens"></div>
-  </div>
   <div id="toast"></div>
   <div id="dica">Setas: andar · na luta: ↑/↓ aproxima-afasta · ←/→ orbita · ESPAÇO pula · Z golpe · X especial · C captura</div>
   <div id="flash"></div>
@@ -111,8 +111,7 @@
     <p>Feras selvagens vivem escondidas na grama alta — pise com cuidado!</p>
     <p>LUTA: ↑/↓ aproxima e afasta · ←/→ orbita · ESPAÇO pula<br>
        Z / X / C / V golpes · F capturar (fera fraca)</p>
-    <p>GOLPE FORTE: SEGURE o botão do golpe por 1,5s —<br>
-       um campo de energia envolve a fera e ela solta a versão forte</p>
+    <p>GOLPE FORTE: <b>SHIFT + botão do golpe</b></p>
     <p style="color:#ff8a8a">⚠ Fera que desmaiar é perdida para sempre — cuide delas!</p>
     <p class="go">— clique no jogo e pressione ENTER —</p>
   </div>

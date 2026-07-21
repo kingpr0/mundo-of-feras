@@ -511,6 +511,19 @@ export function criarFeraGltf(scene, url, alturaAlvo = 1.1, giroGraus = 0) {
       gltf.scene.traverse((o) => {
         if (o.isMesh) {
           o.castShadow = true;
+          // troca o material PBR (escuro sob nossa luz estilizada) por
+          // Lambert, o mesmo das outras feras — cores vivas e flash ok
+          const troca = (mt) => {
+            const novo = new THREE.MeshLambertMaterial({
+              color: mt.color ? mt.color.clone() : 0xffffff,
+              map: mt.map || null,
+            });
+            novo.skinning = o.isSkinnedMesh === true;
+            if (mt.vertexColors) novo.vertexColors = mt.vertexColors;
+            return novo;
+          };
+          if (Array.isArray(o.material)) o.material = o.material.map(troca);
+          else o.material = troca(o.material);
           const mats = Array.isArray(o.material) ? o.material : [o.material];
           for (const mt of mats) M.materiais.push(mt);
         }
@@ -710,7 +723,9 @@ export function animaLuta(M, f) {
     } else if (t < 0.85) {
       M.g.scale.setScalar(0.72);
       const giro = ((t - 0.2) / 0.65) * Math.PI * 2;
-      if (Math.abs(rel.x) > Math.abs(rel.z)) rz = rel.x > 0 ? -giro : giro;
+      // cambalhota lateral roda ACOMPANHANDO o deslocamento (direita = roda
+      // para a direita); frente/trás já estavam certos
+      if (Math.abs(rel.x) > Math.abs(rel.z)) rz = rel.x > 0 ? giro : -giro;
       else rx = rel.z > 0 ? -giro : giro;
     } else {
       const k = (t - 0.85) / 0.15;

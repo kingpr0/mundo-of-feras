@@ -32,11 +32,6 @@ for (const k of Object.keys(especies)) {
 const cristal = MD.criarCristal(cena.scene); MD.mostra(cristal, false);
 const discoHolo = MD.criarDiscoHolo(cena.scene); MD.mostra(discoHolo, false);
 let holoM = null; // fera projetada no menu de status/compêndio
-// campo de energia da CARGA de golpe forte (segurar o botão)
-const campoMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0 });
-const campoMesh = new THREE.Mesh(new THREE.SphereGeometry(1, 18, 12), campoMat);
-campoMesh.visible = false;
-cena.scene.add(campoMesh);
 
 const RINGUE = { dom: { x: -5, y: 0, z: 0 }, fera: { x: 3.5, y: 0, z: 0 } };
 const DICA_EXPLORAR = 'Setas: andar (2 toques = correr) · M abre o menu';
@@ -79,9 +74,6 @@ let escolha = 0;
 let menu = { tipo: 'exploracao', sel: 0, fera: 0, especie: null, ativo: false };
 let retornoPorta = null;
 let hitstop = 0, tempo = 0;
-// carga do golpe forte: segurar o botão do slot por 1,5s
-const TEMPO_CARGA = 1.5;
-let carga = { slot: -1, inicio: 0, forte: false };
 
 /* ---------- entrada (setas + Z/X/C/V golpes, F captura, M/ESC menu) ---- */
 const keys = {};
@@ -152,15 +144,8 @@ function detectaDashLuta() {
   return dash;
 }
 
-/* carga de golpe forte: o botão segurado infla um "campo" na fera */
-const slotSegurado = (i) =>
-  [keys.KeyZ || keys.KeyJ, keys.KeyX || keys.KeyK, keys.KeyC, keys.KeyV][i];
-function progressoCarga() {
-  if (carga.slot < 0 || carga.forte || !batalha) return 0;
-  const s = batalha.p.slots[carga.slot];
-  if (!s || !s.forte || !slotSegurado(carga.slot)) return 0;
-  return Math.min(1, (tempo - carga.inicio) / TEMPO_CARGA);
-}
+/* golpe forte: SHIFT segurado junto do botão do golpe */
+const shiftSegurado = () => !!(keys.ShiftLeft || keys.ShiftRight);
 
 /* ---------- eventos da simulação -> apresentação ---------- */
 function aoEvento(evt) {
@@ -209,7 +194,7 @@ function linhasGolpes() {
   f.slots.forEach((s, i) => {
     linhas.push({ tecla: TECLAS_GOLPE[i], nome: s.def.nome, usos: usosTxt(s.id, s.def) });
     if (s.forte)
-      linhas.push({ tecla: `seg.${TECLAS_GOLPE[i]}`, nome: s.forte.def.nome, usos: usosTxt(s.forte.id, s.forte.def) });
+      linhas.push({ tecla: `Shift+${TECLAS_GOLPE[i]}`, nome: s.forte.def.nome, usos: usosTxt(s.forte.id, s.forte.def) });
   });
   return linhas;
 }
@@ -485,10 +470,9 @@ function iniciaBatalha() {
     RINGUE.dom, RINGUE.fera);
   modo = 'batalha';
   trocaModeloJogador(fera);
-  carga = { slot: -1, inicio: 0, forte: false };
   hud.batalhaVisivel(true); hud.atualizaHP(batalha);
   hud.golpesPainel(linhasGolpes());
-  hud.dica('toque Z/X/C/V = golpe · SEGURE 1,5s = golpe forte · 2 toques na direção = cambalhota · ESPAÇO pula · F captura · ESC menu');
+  hud.dica('Z/X/C/V = golpe · SHIFT + botão = golpe forte · 2 toques na direção = cambalhota · ESPAÇO pula · F captura · ESC menu');
   hud.toast(`${nomeDe(fera)}, eu escolho você!`);
 }
 function fugir() {
@@ -547,8 +531,6 @@ function encerraBatalha() {
   }
   if (resultado === 'fuga') hud.toast('Você recuou da batalha!');
   daImunidade(mundo);
-  campoMesh.visible = false;
-  carga = { slot: -1, inicio: 0, forte: false };
   hud.exploracaoVisivel(true);
   hud.dica(DICA_EXPLORAR);
   batalha = null; modo = 'explorar';
@@ -624,19 +606,6 @@ function sincronizaVisual(dt) {
     else aplicaFlash(feraAtual, batalha.e);
 
     if (batalha.captura) { MD.setPos(cristal, batalha.captura.pos); cristal.g.rotation.y += dt * 5; }
-
-    // campo de carga do golpe forte: cresce em volta da fera enquanto segura
-    const prog = progressoCarga();
-    if (prog > 0.1) {
-      const s = batalha.p.slots[carga.slot];
-      campoMesh.visible = true;
-      campoMesh.position.set(batalha.p.pos.x, batalha.p.pos.y + 0.7, batalha.p.pos.z);
-      campoMesh.scale.setScalar(0.7 + prog * 0.9);
-      campoMat.color.setHex(CORES_TIPO[s.forte.def.tipo] || 0xffffff);
-      campoMat.opacity = 0.1 + prog * 0.24;
-      if (Math.random() < prog * 0.9)
-        poof(cena, { ...batalha.p.pos, y: 0.6 }, CORES_TIPO[s.forte.def.tipo] || 0xffffff, 1, 1.6);
-    } else campoMesh.visible = false;
 
     // rastro de poeira da cambalhota
     if (batalha.p.estado === 'dash' && Math.random() < 0.7)
@@ -780,20 +749,10 @@ function loop(agora) {
     else if (escE || mE) { menu.tipo = 'batalha'; menu.sel = 0; menu.ativo = true; renderMenu(); }
     else {
       const dash = detectaDashLuta();
-      // toque = golpe simples na hora; SEGURAR 1,5s = a versão forte sai
-      let golpeIdx = null, forte = false;
+      // toque = golpe simples; SHIFT + botão = a versão forte na hora
       const press = jE ? 0 : kE ? 1 : cE ? 2 : vE ? 3 : null;
-      if (press != null) {
-        golpeIdx = press;
-        carga = { slot: press, inicio: tempo, forte: false };
-      }
-      if (carga.slot >= 0) {
-        if (!slotSegurado(carga.slot)) carga.slot = -1;
-        else if (!carga.forte && batalha.p.slots[carga.slot] && batalha.p.slots[carga.slot].forte &&
-                 tempo - carga.inicio >= TEMPO_CARGA) {
-          golpeIdx = carga.slot; forte = true; carga.forte = true;
-        }
-      }
+      const golpeIdx = press;
+      const forte = press != null && shiftSegurado();
       const inpP = {
         mov: { x: eixo(['ArrowLeft','KeyA'], ['ArrowRight','KeyD']),
                z: eixo(['ArrowUp','KeyW'], ['ArrowDown','KeyS']) },

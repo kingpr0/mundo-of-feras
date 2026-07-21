@@ -1,7 +1,7 @@
 // CENA — Three.js: luz, cenário dos mapas (montados a partir de mapas.json),
 // arena de batalha, partículas e as duas câmeras (exploração e lock-on).
 import * as THREE from 'three';
-import { alturaTerreno } from '../sim/mundo.js';
+import { alturaTerreno, alturaMorros } from '../sim/mundo.js';
 import { criarNPC } from './modelos.js';
 import { texturaChamaAnimada } from './efeitos.js';
 
@@ -50,12 +50,12 @@ export function criarCena(canvas) {
   return estado;
 }
 
-function montaChao(scene, tam = 70, tipo = 'grama') {
+function montaChao(scene, tam = 70, tipo = 'grama', mapa = null) {
   const c = document.createElement('canvas'); c.width = c.height = 512;
   const x = c.getContext('2d');
   const terra = tipo === 'terra';
   // gerador determinístico (a textura repete sem costura)
-  let semente = { grama: 31, terra: 77, vila: 51, penhasco: 93 }[tipo] || 31;
+  let semente = { grama: 31, terra: 77, vila: 51, penhasco: 93, deserto: 63 }[tipo] || 31;
   const rnd = () => (semente = (semente * 1103515245 + 12345) % 2147483648) / 2147483648;
   // base orgânica: manchas suaves em vez de xadrez
   const PALETAS = {
@@ -63,6 +63,7 @@ function montaChao(scene, tam = 70, tipo = 'grama') {
     terra:    { base: '#a67f50', tons: ['#b08a5a', '#9c7449', '#ad8355', '#a17a4d'] },
     vila:     { base: '#b39064', tons: ['#a67f50', '#bc9668', '#8faf5f', '#ab8558'] },
     penhasco: { base: '#9c5242', tons: ['#a85a4a', '#8f4a3c', '#b06552', '#96503f'] },
+    deserto:  { base: '#dcc084', tons: ['#e3c98f', '#d4b678', '#e8d09a', '#d0ad6c'] },
   };
   const pal = PALETAS[tipo] || PALETAS.grama;
   x.fillStyle = pal.base;
@@ -85,6 +86,10 @@ function montaChao(scene, tam = 70, tipo = 'grama') {
     } else if (tipo === 'vila') {
       x.fillStyle = i % 4 === 0 ? '#8faf5f' : i % 4 === 1 ? '#96744e' : '#c9a06a';
       x.fillRect(px, py, 3 + rnd() * 2, 2 + rnd() * 2);
+    } else if (tipo === 'deserto') {
+      // pedrinhas claras e sombras de vento na areia
+      if (i % 3 === 0) { x.fillStyle = '#bfa26a'; x.fillRect(px, py, 3 + rnd() * 3, 2); }
+      else { x.fillStyle = i % 3 === 1 ? '#efdcae' : '#c7ab72'; x.fillRect(px, py, 5 + rnd() * 6, 1.5); }
     } else {
       const k = i % 7;
       if (k < 3) { x.fillStyle = '#8fd977'; x.fillRect(px, py, 2, 4); x.fillRect(px + 2, py + 1, 2, 3); }
@@ -96,9 +101,18 @@ function montaChao(scene, tam = 70, tipo = 'grama') {
   }
   const t = new THREE.CanvasTexture(c);
   t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(tam / 22, tam / 22);
-  const ch = new THREE.Mesh(new THREE.PlaneGeometry(tam, tam),
-    new THREE.MeshLambertMaterial({ map: t }));
-  ch.rotation.x = -Math.PI / 2; ch.receiveShadow = true; scene.add(ch);
+  // chão com RELEVO: a malha é deslocada pelos morros suaves da sim
+  const temMorros = mapa && mapa.morros && mapa.morros.length;
+  const geo = new THREE.PlaneGeometry(tam, tam, temMorros ? 96 : 1, temMorros ? 96 : 1);
+  geo.rotateX(-Math.PI / 2);
+  if (temMorros) {
+    const p = geo.attributes.position;
+    for (let i = 0; i < p.count; i++)
+      p.setY(i, alturaMorros(mapa, { x: p.getX(i), z: p.getZ(i) }));
+    geo.computeVertexNormals();
+  }
+  const ch = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ map: t }));
+  ch.receiveShadow = true; scene.add(ch);
 }
 
 /* casinha estilo Pokémon: corpo claro, telhado piramidal colorido, porta e janelas */
@@ -252,55 +266,33 @@ function montaBorda(g, mapa) {
     if (ag && x > ag.x0 - 1 && x < ag.x1 + 1 && z > ag.z0 - 1 && z < ag.z1 + 1) return true;
     return false;
   };
-  const planta = (x, z, i) => {
+  // sem muros artificiais: a moldura é feita de árvores/rochas GRANDES em
+  // filas escalonadas — cada fila mais funda é maior, tapando o horizonte
+  // de forma natural, com vãos nas passagens
+  const planta = (x, z, i, esc = 1) => {
     if (bloqueada(x, z)) return;
     if (mapa.borda === 'montanha') {
-      // muralha de rochas em vez de mata
-      const r = 1.3 + (i % 3) * 0.5;
+      const r = (1.3 + (i % 3) * 0.5) * esc;
       const pedra = new THREE.Mesh(new THREE.DodecahedronGeometry(r),
         new THREE.MeshLambertMaterial({ color: (i % 2) ? 0x7d838c : 0x6e7680 }));
       pedra.position.set(x + (Math.random() - 0.5), r * 0.7, z + (Math.random() - 0.5));
       pedra.castShadow = true; pedra.userData.oclusor = true; g.add(pedra);
       return;
     }
-    arvore(g, x + (Math.random() - 0.5), z + (Math.random() - 0.5), i % 2);
+    const arv = arvore(g, x + (Math.random() - 0.5), z + (Math.random() - 0.5), i % 2);
+    if (arv && esc !== 1) arv.scale.setScalar(esc);
   };
   const passo = 2.4;
   let i = 0;
-  for (let x = -L.x - 1.5; x <= L.x + 1.5; x += passo, i++) {
+  for (let x = -L.x - 1.5; x <= L.x + 5; x += passo, i++) {
     planta(x, -L.z - 1.5, i); planta(x, L.z + 1.5, i);
-    planta(x + 1.2, -L.z - 3.4, i + 1); planta(x + 1.2, L.z + 3.4, i + 1);
+    planta(x + 1.2, -L.z - 3.4, i + 1, 1.35); planta(x + 1.2, L.z + 3.4, i + 1, 1.35);
+    planta(x + 0.5, -L.z - 5.6, i + 2, 1.7); planta(x + 0.5, L.z + 5.6, i + 2, 1.7);
   }
-  for (let z = -L.z - 1.5; z <= L.z + 1.5; z += passo, i++) {
+  for (let z = -L.z - 1.5; z <= L.z + 5; z += passo, i++) {
     planta(-L.x - 1.5, z, i); planta(L.x + 1.5, z, i);
-    planta(-L.x - 3.4, z + 1.2, i + 1); planta(L.x + 3.4, z + 1.2, i + 1);
-  }
-  // cortina sólida atrás da muralha (nada do "mundo cru" aparece por trás),
-  // com VÃOS abertos exatamente nas passagens
-  const corCortina = mapa.borda === 'montanha' ? 0x5a6068 : 0x24491f;
-  const segCortina = (horizontal, fixo, a0, a1) => {
-    if (a1 - a0 < 1) return;
-    const w = horizontal ? a1 - a0 : 2.5;
-    const d = horizontal ? 2.5 : a1 - a0;
-    const m = new THREE.Mesh(new THREE.BoxGeometry(w, 8, d),
-      new THREE.MeshLambertMaterial({ color: corCortina }));
-    m.position.set(horizontal ? (a0 + a1) / 2 : fixo, 3.5, horizontal ? fixo : (a0 + a1) / 2);
-    m.userData.oclusor = true;
-    g.add(m);
-  };
-  const lados = [
-    { borda: 'norte', horizontal: true, fixo: -L.z - 5.6, ini: -L.x - 11, fim: L.x + 11 },
-    { borda: 'sul', horizontal: true, fixo: L.z + 5.6, ini: -L.x - 11, fim: L.x + 11 },
-    { borda: 'oeste', horizontal: false, fixo: -L.x - 5.6, ini: -L.z - 11, fim: L.z + 11 },
-    { borda: 'leste', horizontal: false, fixo: L.x + 5.6, ini: -L.z - 11, fim: L.z + 11 },
-  ];
-  for (const lado of lados) {
-    const vaos = saidas.filter((s) => s.borda === lado.borda)
-      .map((s) => [s.de - 2.5, s.ate + 2.5])
-      .sort((a, b) => a[0] - b[0]);
-    let cursor = lado.ini;
-    for (const [v0, v1] of vaos) { segCortina(lado.horizontal, lado.fixo, cursor, v0); cursor = v1; }
-    segCortina(lado.horizontal, lado.fixo, cursor, lado.fim);
+    planta(-L.x - 3.4, z + 1.2, i + 1, 1.35); planta(L.x + 3.4, z + 1.2, i + 1, 1.35);
+    planta(-L.x - 5.6, z + 0.5, i + 2, 1.7); planta(L.x + 5.6, z + 0.5, i + 2, 1.7);
   }
 }
 
@@ -360,33 +352,10 @@ function arvore(scene, x, z, pinheiro) {
   return g;
 }
 
-/* grama alta: mar contínuo de TUFOS DE CAPIM 2.5D — lâminas desenhadas em
-   canvas, aplicadas em pares de planos cruzados e fundidas numa geometria
-   única por zona (barato). Quem entra some da cintura para baixo. */
-let _texCapim = null;
-function texturaCapim() {
-  if (_texCapim) return _texCapim;
-  const c = document.createElement('canvas'); c.width = c.height = 128;
-  const x = c.getContext('2d');
-  let sem = 7;
-  const rnd = () => (sem = (sem * 1103515245 + 12345) % 2147483648) / 2147483648;
-  const cores = ['#3d8a35', '#4a9a3d', '#59b04a', '#357a2e', '#65bd52'];
-  for (let i = 0; i < 12; i++) {
-    const bx = 10 + rnd() * 108;          // pé da lâmina no rodapé
-    const topx = bx + (rnd() - 0.5) * 50; // ponta se inclina
-    const h = 66 + rnd() * 58, w = 5 + rnd() * 6;
-    x.fillStyle = cores[Math.floor(rnd() * cores.length)];
-    x.beginPath();
-    x.moveTo(bx - w, 128);
-    x.quadraticCurveTo(bx - w * 0.4, 128 - h * 0.6, topx, 128 - h);
-    x.quadraticCurveTo(bx + w * 0.4, 128 - h * 0.6, bx + w, 128);
-    x.closePath(); x.fill();
-  }
-  _texCapim = new THREE.CanvasTexture(c);
-  return _texCapim;
-}
+/* grama alta: um mar CONTÍNUO de arbustos arredondados lado a lado (grade
+   com leve variação) — quem entra some da cintura para baixo, estilo
+   Pokémon/ClaudeCraft */
 function montaGrama(scene, G) {
-  // o MIOLO segue como sempre foi: mar contínuo de arbustos arredondados
   const mats = [0x3d8a35, 0x46983c, 0x51a746]
     .map((c) => new THREE.MeshLambertMaterial({ color: c }));
   const base = new THREE.Mesh(
@@ -409,43 +378,6 @@ function montaGrama(scene, G) {
       scene.add(m);
     }
   }
-
-  // EM VOLTA dos arbustos, uma franja de tufos de capim 2.5D faz a
-  // transição para o campo (geometria única = barato)
-  let sem = Math.abs((G.x0 * 73 + G.z0 * 31) | 0) + 5;
-  const rnd = () => (sem = (sem * 1103515245 + 12345) % 2147483648) / 2147483648;
-  const pos = [], nrm = [], uv = [], cor = [], idx = [];
-  let vi = 0;
-  const tufo = (cx, cz) => {
-    const esc = 0.55 + rnd() * 0.35, rot = rnd() * Math.PI;
-    const tinta = 0.82 + rnd() * 0.3; // varia o tom por tufo
-    for (const a of [rot, rot + Math.PI / 2]) { // dois planos em X
-      const dx = Math.cos(a) * 0.72 * esc, dz = Math.sin(a) * 0.72 * esc;
-      const h = 0.95 * esc;
-      pos.push(cx - dx, 0, cz - dz, cx + dx, 0, cz + dz,
-               cx + dx, h, cz + dz, cx - dx, h, cz - dz);
-      for (let k = 0; k < 4; k++) { nrm.push(0, 1, 0); cor.push(tinta, tinta, tinta); }
-      uv.push(0, 0, 1, 0, 1, 1, 0, 1);
-      idx.push(vi, vi + 1, vi + 2, vi, vi + 2, vi + 3);
-      vi += 4;
-    }
-  };
-  const dentro = (x, z) => x > G.x0 - 0.4 && x < G.x1 + 0.4 && z > G.z0 - 0.4 && z < G.z1 + 0.4;
-  for (let px = G.x0 - 1.5; px <= G.x1 + 1.5; px += 0.8)
-    for (let pz = G.z0 - 1.5; pz <= G.z1 + 1.5; pz += 0.8) {
-      const jx = px + (rnd() - 0.5) * 0.5, jz = pz + (rnd() - 0.5) * 0.5;
-      if (!dentro(jx, jz)) tufo(jx, jz);
-    }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  geo.setAttribute('normal', new THREE.Float32BufferAttribute(nrm, 3));
-  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
-  geo.setAttribute('color', new THREE.Float32BufferAttribute(cor, 3));
-  geo.setIndex(idx);
-  const capim = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({
-    map: texturaCapim(), alphaTest: 0.55, side: THREE.DoubleSide, vertexColors: true,
-  }));
-  scene.add(capim);
 }
 
 // tile transparente de cristas de onda (senoides com período inteiro:
@@ -685,7 +617,7 @@ export function montaMapa(cena, mapa) {
   cena.anims = [];
   g.userData.anims = cena.anims;
   if (mapa.tipo === 'interior') { montaInterior(g, mapa); return; }
-  montaChao(g, Math.max(mapa.limite.x, mapa.limite.z) * 2 + 24, mapa.chao || 'grama');
+  montaChao(g, Math.max(mapa.limite.x, mapa.limite.z) * 2 + 24, mapa.chao || 'grama', mapa);
   montaCaminhos(g, mapa);
   montaPedras(g, mapa);
   (mapa.arvores || []).forEach(([x, z, p]) => {
