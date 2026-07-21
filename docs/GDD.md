@@ -119,7 +119,7 @@ Feras selvagens: comportamento simples por arquétipo (agressiva, cautelosa, ter
 
 ## 10. Treinadores e NPCs
 
-O **protagonista** e os **Domadores NPC** compartilham a direção visual Farever-sem-armas. Domadores NPC desafiam o jogador em batalhas sequenciais (a equipe deles, uma fera por vez). Vencer rende XP em dobro **(proposta)** e recompensas. Estrutura de líderes/insígnias da campanha: em aberto.
+O **protagonista** e os **Domadores NPC** compartilham a direção visual Farever-sem-armas. Vilarejos têm **moradores decorativos** (maga, aldeões, mercador) e vida de cenário — fogueira, poço, bancas de feira — para o mundo parecer habitado antes mesmo dos NPC de batalha existirem. Domadores NPC desafiam o jogador em batalhas sequenciais (a equipe deles, uma fera por vez). Vencer rende XP em dobro **(proposta)** e recompensas. Estrutura de líderes/insígnias da campanha: em aberto.
 
 ## 11. Interface
 
