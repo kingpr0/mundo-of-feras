@@ -47,12 +47,12 @@
   .opt { color:#8f89a6; font-size:18px; font-weight:bold; letter-spacing:2px; }
   .opt.sel { color:#ffd23f; }
   .opt.sel::before { content:'▶ '; }
-  #menu { position:fixed; top:50%; right:48px; transform:translateY(-50%);
-    background:rgba(13,11,20,.94); border:2px solid #ffd23f; padding:16px 24px;
-    min-width:200px; display:none; }
-  #menuTit { color:#ffd23f; font-size:14px; font-weight:bold; letter-spacing:2px;
-    margin-bottom:10px; border-bottom:1px solid #3a3350; padding-bottom:6px; }
-  #menuItens .opt { font-size:15px; margin:8px 0; }
+  #menu { position:fixed; top:312px; right:12px;
+    background:rgba(13,11,20,.9); border:2px solid #ffd23f; padding:10px 14px;
+    min-width:180px; max-width:230px; max-height:46vh; overflow-y:auto; display:none; }
+  #menuTit { color:#ffd23f; font-size:12px; font-weight:bold; letter-spacing:1px;
+    margin-bottom:8px; border-bottom:1px solid #3a3350; padding-bottom:5px; }
+  #menuItens .opt { font-size:13px; margin:6px 0; letter-spacing:1px; }
   #painel { position:fixed; top:12px; left:12px; background:rgba(13,11,20,.88);
     border:2px solid #ffd23f; padding:10px 14px; min-width:150px; }
   #painel .ptit { color:#ffd23f; font-size:13px; font-weight:bold; letter-spacing:2px;
@@ -111,8 +111,8 @@
     <p>Feras selvagens vivem escondidas na grama alta — pise com cuidado!</p>
     <p>LUTA: ↑/↓ aproxima e afasta · ←/→ orbita · ESPAÇO pula<br>
        Z / X / C / V golpes · F capturar (fera fraca)</p>
-    <p>COMBO: sequência de setas + botão = versão forte do golpe<br>
-       (↓ = seta baixo · → = seta cima, avançar no oponente)</p>
+    <p>GOLPE FORTE: SEGURE o botão do golpe por 1,5s —<br>
+       um campo de energia envolve a fera e ela solta a versão forte</p>
     <p style="color:#ff8a8a">⚠ Fera que desmaiar é perdida para sempre — cuide delas!</p>
     <p class="go">— clique no jogo e pressione ENTER —</p>
   </div>

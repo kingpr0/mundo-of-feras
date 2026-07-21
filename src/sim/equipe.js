@@ -4,15 +4,16 @@
 // É o que viaja no save e, no futuro, pela rede (GDD §13).
 import { vidaMaxima, NIVEL_INICIAL } from './progressao.js';
 
-// cria uma fera nova no nível dado, já com os golpes do seu aprendizado
-export function criarFera(especies, catalogo, chave, nivel = NIVEL_INICIAL) {
+// cria uma fera nova no nível dado, já com os golpes do seu aprendizado.
+// liberaTudo (modo de teste da inicial): aprende a tabela inteira de uma vez
+export function criarFera(especies, catalogo, chave, nivel = NIVEL_INICIAL, liberaTudo = false) {
   const fera = {
     especie: chave, nivel, xp: 0, apelido: null,
     conhecidos: [], golpes: [], usos: {},
     hpAtual: vidaMaxima(especies[chave].vida, nivel),
   };
   for (const a of especies[chave].aprendizado || [])
-    if (a.nivel <= nivel) aprendeGolpe(fera, catalogo, a.golpe);
+    if (liberaTudo || a.nivel <= nivel) aprendeGolpe(fera, catalogo, a.golpe);
   return fera;
 }
 

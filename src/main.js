@@ -4,7 +4,6 @@
 import * as THREE from 'three';
 import { criarMundo, passoMundo, daImunidade, entradaDoMapa } from './sim/mundo.js';
 import { criarBatalha, passoBatalha, podeCapturar, fugirBatalha, trocaFera, continuaComOutraFera } from './sim/batalha.js';
-import { guardaDirecao, sequenciaCompleta } from './sim/comandos.js';
 import { ganhaXp, xpParaSubir, xpPorVitoria, nivelSelvagem, vidaMaxima, NIVEL_INICIAL } from './sim/progressao.js';
 import { criarFera, aprendeGolpe, lembraGolpe, montaSlots, aprendizadosDoNivel, curaTotal, bonusNivel, paraBatalha } from './sim/equipe.js';
 import { criarCena, poof, jato, passoParticulas, passoCamera, mostraArena, montaMapa, passoOclusores } from './render/cena.js';
@@ -29,7 +28,12 @@ for (const k of Object.keys(especies)) {
 }
 const cristal = MD.criarCristal(cena.scene); MD.mostra(cristal, false);
 const discoHolo = MD.criarDiscoHolo(cena.scene); MD.mostra(discoHolo, false);
-let holoM = null; // fera projetada no menu de status
+let holoM = null; // fera projetada no menu de status/compêndio
+// campo de energia da CARGA de golpe forte (segurar o botão)
+const campoMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0 });
+const campoMesh = new THREE.Mesh(new THREE.SphereGeometry(1, 18, 12), campoMat);
+campoMesh.visible = false;
+cena.scene.add(campoMesh);
 
 const RINGUE = { dom: { x: -5, y: 0, z: 0 }, fera: { x: 3.5, y: 0, z: 0 } };
 const DICA_EXPLORAR = 'Setas: andar (2 toques = correr) · M abre o menu';
@@ -51,7 +55,8 @@ montaMapa(cena, mundo.mapa);
 hud.localAtual(mundo.mapa.nome);
 hud.mapaRegiao(dadosMapas, chaveMapa);
 
-let equipe = [criarFera(especies, golpesCat, 'brasinha', NIVEL_INICIAL)];
+// fera inicial em modo de teste: todos os golpes da tabela já liberados
+let equipe = [criarFera(especies, golpesCat, 'brasinha', NIVEL_INICIAL, true)];
 let ativa = 0;
 const nomeDe = (f) => f.apelido || especies[f.especie].nome;
 function atualizaPainel() {
@@ -59,6 +64,7 @@ function atualizaPainel() {
   hud.nomeJogador(nomeDe(f), f.nivel);
   hud.painelVida(f.hpAtual, vidaMaxima(especies[f.especie].vida, f.nivel));
   hud.equipe(equipe.length);
+  if (modo === 'explorar') renderMenu();
 }
 atualizaPainel();
 
@@ -66,9 +72,13 @@ let batalha = null;
 let playerM = null;
 let feraAtual = null;
 let escolha = 0;
-let menu = null; // { tipo, sel, fera }
+// menu lateral: SEMPRE visível na exploração; "ativo" = navegando nele
+let menu = { tipo: 'exploracao', sel: 0, fera: 0, especie: null, ativo: false };
 let retornoPorta = null;
 let hitstop = 0, tempo = 0;
+// carga do golpe forte: segurar o botão do slot por 1,5s
+const TEMPO_CARGA = 1.5;
+let carga = { slot: -1, inicio: 0, forte: false };
 
 /* ---------- entrada (setas + Z/X/C/V golpes, F captura, M/ESC menu) ---- */
 const keys = {};
@@ -82,6 +92,7 @@ addEventListener('keydown', (e) => {
   if (e.code === 'Enter' && modo === 'titulo') {
     hud.escondeTitulo(); modo = 'explorar'; cv.focus();
     musica('explorar');
+    renderMenu();
     hud.toast('Explore a grama alta... e cuide das suas feras: quem desmaia não volta!');
     hud.dica(DICA_EXPLORAR);
   }
@@ -138,11 +149,14 @@ function detectaDashLuta() {
   return dash;
 }
 
-/* combos: buffer de direções (matching puro em sim/comandos.js) */
-let seqBuf = [];
-function guardaDirecoes() {
-  if (baixoE) guardaDirecao(seqBuf, 'baixo', tempo);
-  if (cimaE) guardaDirecao(seqBuf, 'frente', tempo);
+/* carga de golpe forte: o botão segurado infla um "campo" na fera */
+const slotSegurado = (i) =>
+  [keys.KeyZ || keys.KeyJ, keys.KeyX || keys.KeyK, keys.KeyC, keys.KeyV][i];
+function progressoCarga() {
+  if (carga.slot < 0 || carga.forte || !batalha) return 0;
+  const s = batalha.p.slots[carga.slot];
+  if (!s || !s.forte || !slotSegurado(carga.slot)) return 0;
+  return Math.min(1, (tempo - carga.inicio) / TEMPO_CARGA);
 }
 
 /* ---------- eventos da simulação -> apresentação ---------- */
@@ -185,13 +199,12 @@ function aoEvento(evt) {
 function linhasGolpes() {
   if (!batalha) return [];
   const f = batalha.p;
-  const simb = (especies[f.chave].sequencia || []).map((d) => SIMBOLO[d]).join('');
   const usosTxt = (id, def) => def.usos == null ? '∞' : `${f.usos[id] || 0}/${def.usos}`;
   const linhas = [];
   f.slots.forEach((s, i) => {
     linhas.push({ tecla: TECLAS_GOLPE[i], nome: s.def.nome, usos: usosTxt(s.id, s.def) });
     if (s.forte)
-      linhas.push({ tecla: `${simb}${TECLAS_GOLPE[i]}`, nome: s.forte.def.nome, usos: usosTxt(s.forte.id, s.forte.def) });
+      linhas.push({ tecla: `seg.${TECLAS_GOLPE[i]}`, nome: s.forte.def.nome, usos: usosTxt(s.forte.id, s.forte.def) });
   });
   return linhas;
 }
@@ -235,8 +248,11 @@ function tituloMenu() {
     const f = equipe[menu.fera];
     return `${nomeDe(f).toUpperCase()} · Lv.${f.nivel}`;
   }
+  if (t === 'compendioFera') return especies[menu.especie].nome.toUpperCase();
+  if (t === 'exploracao' && !menu.ativo) return 'MENU · aperte M';
   return { exploracao: 'MENU', batalha: 'BATALHA', equipeExp: 'EQUIPE',
-           equipeBat: 'TROCAR FERA', statusLista: 'STATUS', catalogo: 'CATÁLOGO DE GOLPES' }[t] || 'MENU';
+           equipeBat: 'TROCAR FERA', statusLista: 'STATUS', catalogo: 'CATÁLOGO DE GOLPES',
+           compendio: 'COMPÊNDIO DE FERAS' }[t] || 'MENU';
 }
 function itensDoMenu() {
   const t = menu.tipo;
@@ -244,6 +260,7 @@ function itensDoMenu() {
   if (t === 'exploracao') return [
     { txt: 'Equipe', acao: () => abreMenu('equipeExp') },
     { txt: 'Status', acao: () => abreMenu('statusLista') },
+    { txt: 'Compêndio', acao: () => abreMenu('compendio') },
     { txt: 'Catálogo', acao: () => abreMenu('catalogo') },
     { txt: 'Itens', acao: () => hud.toast('Itens: em breve!') },
     { txt: 'Carteira', acao: () => hud.toast('Carteira: 0 moedas (economia em breve)') },
@@ -300,28 +317,46 @@ function itensDoMenu() {
   }
   if (t === 'catalogo') return [
     ...Object.values(golpesCat).map((g) => ({
-      txt: `${g.nome} · ${g.tipo}${g.base ? ' · combo' : ''} · ${g.usos == null ? '∞' : g.usos} usos`,
+      txt: `${g.nome} · ${g.tipo}${g.base ? ' · forte' : ''} · ${g.usos == null ? '∞' : g.usos} usos`,
       acao: nada,
     })),
     { txt: 'Voltar', acao: () => abreMenu('exploracao') },
   ];
+  if (t === 'compendio') return [
+    ...Object.keys(especies).map((k) => ({
+      txt: especies[k].nome,
+      acao: () => { menu.especie = k; abreMenu('compendioFera'); },
+    })),
+    { txt: 'Voltar', acao: () => abreMenu('exploracao') },
+  ];
+  if (t === 'compendioFera') {
+    const k = menu.especie, e2 = especies[k];
+    const locais = Object.values(dadosMapas.mapas)
+      .filter((mp) => (mp.selvagens || []).includes(k))
+      .map((mp) => mp.nome);
+    return [
+      { txt: `Tipo: ${e2.tipo} · ${e2.raridade.replace('_', ' ')}`, acao: nada },
+      { txt: locais.length ? `Habitat: ${locais.join(', ')}` : 'Habitat: ainda não avistada', acao: nada },
+      { txt: 'Voltar', acao: () => abreMenu('compendio') },
+    ];
+  }
   return [];
 }
-/* holograma: a fera selecionada aparece girando na frente do domador */
-function mostraHolo(fera) {
+/* holograma GIGANTE: a fera aparece girando no centro da tela */
+function mostraHoloEspecie(chave) {
   escondeHolo();
-  holoM = modelosIni[fera.especie];
+  holoM = modelosIni[chave];
   // o domador dá lugar à projeção — o holograma fica no centro da tela
   MD.mostra(domador, false);
   const base = { x: mundo.domador.pos.x, y: mundo.domador.pos.y + 0.1, z: mundo.domador.pos.z };
   MD.setPos(holoM, base);
-  MD.setEscala(holoM, 1.5);
+  MD.setEscala(holoM, 4.5);
   MD.setOpacidade(holoM, 0.85);
   MD.flashCor(holoM, 0x0f4652);
   holoM.g.rotation.x = 0;
   MD.mostra(holoM, true);
   MD.setPos(discoHolo, base);
-  MD.setEscala(discoHolo, 1.4);
+  MD.setEscala(discoHolo, 3.6);
   MD.mostra(discoHolo, true);
 }
 function escondeHolo() {
@@ -335,19 +370,31 @@ function escondeHolo() {
   holoM = null;
 }
 
+// desenha o menu lateral (com destaque só quando está ativo)
+function renderMenu() {
+  hud.menu(true, tituloMenu(), itensDoMenu().map((i) => i.txt), menu.ativo ? menu.sel : -1);
+}
 function abreMenu(tipo) {
-  menu = { tipo, sel: 0, fera: menu ? menu.fera : 0 };
-  hud.menu(true, tituloMenu(), itensDoMenu().map((i) => i.txt), 0);
-  if (tipo === 'statusFera' || tipo === 'lembrar') mostraHolo(equipe[menu.fera]);
+  menu = { tipo, sel: 0, fera: menu.fera, especie: menu.especie, ativo: true };
+  renderMenu();
+  if (tipo === 'statusFera' || tipo === 'lembrar') mostraHoloEspecie(equipe[menu.fera].especie);
+  else if (tipo === 'compendioFera') mostraHoloEspecie(menu.especie);
   else escondeHolo();
 }
-function fechaMenu() { menu = null; hud.menu(false); escondeHolo(); }
+// "fechar": na exploração o menu continua na lateral, só desativa a navegação
+function fechaMenu() {
+  escondeHolo();
+  menu = { tipo: 'exploracao', sel: 0, fera: menu.fera, especie: menu.especie, ativo: false };
+  if (modo === 'batalha' || modo === 'encontro') hud.menu(false);
+  else renderMenu();
+}
 function voltaMenu() {
   const t = menu.tipo;
-  if (t === 'equipeExp' || t === 'statusLista' || t === 'catalogo') abreMenu('exploracao');
-  else if (t === 'equipeBat') abreMenu('batalha');
+  if (t === 'equipeExp' || t === 'statusLista' || t === 'catalogo' || t === 'compendio') abreMenu('exploracao');
+  else if (t === 'equipeBat' || t === 'batalha') fechaMenu();
   else if (t === 'statusFera') abreMenu('statusLista');
   else if (t === 'lembrar') abreMenu('statusFera');
+  else if (t === 'compendioFera') abreMenu('compendio');
   else fechaMenu();
 }
 function navegaMenu() {
@@ -355,7 +402,7 @@ function navegaMenu() {
   if (baixoE || cimaE) {
     menu.sel = (menu.sel + (baixoE ? 1 : -1) + itens.length) % itens.length;
     sfx.swing();
-    hud.menu(true, tituloMenu(), itens.map((i) => i.txt), menu.sel);
+    renderMenu();
   }
   if (kE || escE) { voltaMenu(); return; }
   if (jE) itens[menu.sel].acao();
@@ -400,6 +447,7 @@ function iniciaEncontro() {
   sfx.encontro(); hud.flash();
   musica('batalha');
   modo = 'encontro'; escolha = 0;
+  menu.ativo = false; escondeHolo(); hud.menu(false);
   hud.exploracaoVisivel(false);
   mostraArena(cena, true);
   MD.mostra(domador, false);
@@ -431,11 +479,10 @@ function iniciaBatalha() {
     RINGUE.dom, RINGUE.fera);
   modo = 'batalha';
   trocaModeloJogador(fera);
-  seqBuf = [];
-  const simb = (especies[fera.especie].sequencia || []).map((d) => SIMBOLO[d]).join('');
+  carga = { slot: -1, inicio: 0, forte: false };
   hud.batalhaVisivel(true); hud.atualizaHP(batalha);
   hud.golpesPainel(linhasGolpes());
-  hud.dica(`Z/X/C/V golpes · ${simb}+botão = forte · 2 toques na direção = cambalhota · ESPAÇO pula · F captura · ESC menu`);
+  hud.dica('toque Z/X/C/V = golpe · SEGURE 1,5s = golpe forte · 2 toques na direção = cambalhota · ESPAÇO pula · F captura · ESC menu');
   hud.toast(`${nomeDe(fera)}, eu escolho você!`);
 }
 function fugir() {
@@ -447,6 +494,8 @@ function fugir() {
   daImunidade(mundo);
   modo = 'explorar';
   hud.exploracaoVisivel(true);
+  menu = { tipo: 'exploracao', sel: 0, fera: menu.fera, especie: menu.especie, ativo: false };
+  renderMenu();
   hud.dica(DICA_EXPLORAR);
   hud.toast('Você fugiu em segurança!');
 }
@@ -492,14 +541,18 @@ function encerraBatalha() {
   }
   if (resultado === 'fuga') hud.toast('Você recuou da batalha!');
   daImunidade(mundo);
+  campoMesh.visible = false;
+  carga = { slot: -1, inicio: 0, forte: false };
   hud.exploracaoVisivel(true);
   hud.dica(DICA_EXPLORAR);
   batalha = null; modo = 'explorar';
+  menu = { tipo: 'exploracao', sel: 0, fera: menu.fera, especie: menu.especie, ativo: false };
+  renderMenu();
   if (resultado === 'derrota') {
     // derrota total: acorda na vila inicial; sem feras, recebe uma nova inicial
     trocaMapa(dadosMapas.inicial);
     if (equipe.length === 0) {
-      equipe = [criarFera(especies, golpesCat, 'brasinha', NIVEL_INICIAL)];
+      equipe = [criarFera(especies, golpesCat, 'brasinha', NIVEL_INICIAL, true)];
       ativa = 0;
       setTimeout(() => hud.toast('Você recebeu uma nova Brasinha. Cuide bem dela desta vez...', 3500), 1700);
     }
@@ -562,6 +615,19 @@ function sincronizaVisual(dt) {
     else aplicaFlash(feraAtual, batalha.e);
 
     if (batalha.captura) { MD.setPos(cristal, batalha.captura.pos); cristal.g.rotation.y += dt * 5; }
+
+    // campo de carga do golpe forte: cresce em volta da fera enquanto segura
+    const prog = progressoCarga();
+    if (prog > 0.1) {
+      const s = batalha.p.slots[carga.slot];
+      campoMesh.visible = true;
+      campoMesh.position.set(batalha.p.pos.x, batalha.p.pos.y + 0.7, batalha.p.pos.z);
+      campoMesh.scale.setScalar(0.7 + prog * 0.9);
+      campoMat.color.setHex(CORES_TIPO[s.forte.def.tipo] || 0xffffff);
+      campoMat.opacity = 0.1 + prog * 0.24;
+      if (Math.random() < prog * 0.9)
+        poof(cena, { ...batalha.p.pos, y: 0.6 }, CORES_TIPO[s.forte.def.tipo] || 0xffffff, 1, 1.6);
+    } else campoMesh.visible = false;
 
     // rastro de poeira da cambalhota
     if (batalha.p.estado === 'dash' && Math.random() < 0.7)
@@ -633,14 +699,14 @@ function loop(agora) {
   hud.passoDanos(cena.camera, dt, THREE);
 
   if (modo === 'explorar') {
-    if (menu) {
+    if (menu.ativo) {
       navegaMenu();
       if (holoM) { // holograma gira e flutua
         holoM.g.rotation.y += dt * 1.6;
         holoM.g.position.y = mundo.domador.pos.y + 0.15 + Math.sin(tempo * 2) * 0.08;
       }
     }
-    else if (mE || escE) abreMenu('exploracao');
+    else if (mE) { menu.ativo = true; renderMenu(); }
     else {
       detectaCorrida();
       const inp = { mov: { x: eixo(['ArrowLeft','KeyA'], ['ArrowRight','KeyD']),
@@ -675,21 +741,28 @@ function loop(agora) {
     if (cimaE || baixoE) { escolha = 1 - escolha; hud.escolha(true, escolha); sfx.swing(); }
     if (jE) confirmaEscolha();
   } else if (modo === 'batalha' && batalha) {
-    if (menu) navegaMenu();
-    else if (escE || mE) abreMenu('batalha');
+    if (menu.ativo) navegaMenu();
+    else if (escE || mE) { menu.tipo = 'batalha'; menu.sel = 0; menu.ativo = true; renderMenu(); }
     else {
       const dash = detectaDashLuta();
-      guardaDirecoes();
-      const idx = jE ? 0 : kE ? 1 : cE ? 2 : vE ? 3 : null;
-      let forte = false;
-      if (idx != null &&
-          sequenciaCompleta(seqBuf, especies[batalha.p.chave].sequencia, tempo)) {
-        forte = true; seqBuf = [];
+      // toque = golpe simples na hora; SEGURAR 1,5s = a versão forte sai
+      let golpeIdx = null, forte = false;
+      const press = jE ? 0 : kE ? 1 : cE ? 2 : vE ? 3 : null;
+      if (press != null) {
+        golpeIdx = press;
+        carga = { slot: press, inicio: tempo, forte: false };
+      }
+      if (carga.slot >= 0) {
+        if (!slotSegurado(carga.slot)) carga.slot = -1;
+        else if (!carga.forte && batalha.p.slots[carga.slot] && batalha.p.slots[carga.slot].forte &&
+                 tempo - carga.inicio >= TEMPO_CARGA) {
+          golpeIdx = carga.slot; forte = true; carga.forte = true;
+        }
       }
       const inpP = {
         mov: { x: eixo(['ArrowLeft','KeyA'], ['ArrowRight','KeyD']),
                z: eixo(['ArrowUp','KeyW'], ['ArrowDown','KeyS']) },
-        pulo: spE, golpe: idx, forte, dash, capturar: fE,
+        pulo: spE, golpe: golpeIdx, forte, dash, capturar: fE,
       };
       const fim = passoBatalha(batalha, inpP, dt, aoEvento);
       hud.atualizaHP(batalha);

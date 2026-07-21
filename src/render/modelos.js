@@ -107,6 +107,7 @@ function criarBrasinha(scene) {
   // corpo + peito fofo
   const corpo = parte(M, g, new THREE.SphereGeometry(0.32, 16, 12), COR.laranja, 0, 0.42, -0.08);
   corpo.scale.set(0.95, 0.88, 1.2);
+  M.corpo = corpo; corpo.userData.s0 = corpo.scale.clone();
   const peito = parte(M, g, new THREE.SphereGeometry(0.22, 12, 10), COR.creme, 0, 0.42, 0.16);
   peito.scale.set(0.95, 1.05, 0.7);
   // CABEÇA articulada: crânio, focinho pontudo, nariz, bochechas, orelhas 2 tons
@@ -137,11 +138,13 @@ function criarBrasinha(scene) {
   const ponta = parte(M, cauda, new THREE.ConeGeometry(0.09, 0.22, 8), COR.amarelo, 0, 0.4, -0.5);
   ponta.material.emissive.setHex(0x664400);
   M.materiais.pop(); // a chama da cauda não pisca com dano
-  // patas ARTICULADAS com "meias" escuras (pivô no quadril, para trotar)
+  // patas ARTICULADAS com "meias" escuras e patinha redonda na ponta
   for (const [x, z] of [[-0.16, 0.16], [0.16, 0.16], [-0.16, -0.28], [0.16, -0.28]]) {
     const quadril = grupoEm(M, x, 0.26, z);
+    parte(M, quadril, new THREE.SphereGeometry(0.075, 8, 8), COR.laranja, 0, 0, 0);
     parte(M, quadril, new THREE.CylinderGeometry(0.06, 0.06, 0.16, 8), COR.laranja, 0, -0.1, 0);
-    parte(M, quadril, new THREE.CylinderGeometry(0.065, 0.07, 0.08, 8), COR.vermelhoEscuro, 0, -0.21, 0);
+    const pata = parte(M, quadril, new THREE.SphereGeometry(0.075, 8, 8), COR.vermelhoEscuro, 0, -0.2, 0.01);
+    pata.scale.set(1, 0.7, 1.15);
     M.pernas.push(quadril);
   }
   return M;
@@ -150,7 +153,8 @@ function criarBrasinha(scene) {
 function criarCascorro(scene) {
   const M = novoModelo(scene, 1.1);
   const g = M.g;
-  parte(M, g, new THREE.BoxGeometry(0.75, 0.5, 0.95), COR.cinza, 0, 0.44, -0.05);
+  const corpoCas = parte(M, g, new THREE.BoxGeometry(0.75, 0.5, 0.95), COR.cinza, 0, 0.44, -0.05);
+  M.corpo = corpoCas; corpoCas.userData.s0 = corpoCas.scale.clone();
   // placas rochosas no lombo
   for (const [x, z, r] of [[-0.15, -0.3, 0.16], [0.12, -0.05, 0.19], [-0.08, 0.2, 0.14]]) {
     const placa = parte(M, g, new THREE.DodecahedronGeometry(r), COR.cinzaEscuro, x, 0.72, z);
@@ -189,6 +193,7 @@ function criarVoltim(scene) {
   const g = M.g;
   const corpo = parte(M, g, new THREE.SphereGeometry(0.34, 16, 12), COR.amarelo, 0, 0.4, 0);
   corpo.scale.set(1, 1.06, 0.95);
+  M.corpo = corpo; corpo.userData.s0 = corpo.scale.clone();
   const peito = parte(M, g, new THREE.SphereGeometry(0.2, 12, 10), COR.creme, 0, 0.32, 0.2);
   peito.scale.set(1.2, 1, 0.55);
   // topete em raio + bico + olhos (a "cabeça" é o próprio corpo)
@@ -232,6 +237,7 @@ function criarGotim(scene) {
   const azul = 0x4da3ff, azulEscuro = 0x2f6fc9;
   const corpo = parte(M, g, new THREE.SphereGeometry(0.34, 16, 12), azul, 0, 0.42, 0);
   corpo.scale.set(1, 1.08, 0.95);
+  M.corpo = corpo; corpo.userData.s0 = corpo.scale.clone();
   // brilho "molhado"
   const brilho = parte(M, g, new THREE.SphereGeometry(0.09, 8, 8), 0xbfe3ff, -0.14, 0.62, 0.2);
   brilho.scale.set(1, 0.6, 0.5);
@@ -268,6 +274,7 @@ function criarSalamandro(scene) {
   const laranja = 0xf08030, creme = 0xffe9c4;
   const corpo = parte(M, g, new THREE.SphereGeometry(0.32, 18, 14), laranja, 0, 0.52, 0);
   corpo.scale.set(1, 1.18, 0.95);
+  M.corpo = corpo; corpo.userData.s0 = corpo.scale.clone();
   const barriga = parte(M, g, new THREE.SphereGeometry(0.25, 14, 12), creme, 0, 0.48, 0.15);
   barriga.scale.set(1.0, 1.25, 0.55);
   // CABEÇA articulada
@@ -292,7 +299,8 @@ function criarSalamandro(scene) {
     M.bracos.push(ombro);
     const quadril = grupoEm(M, lado * 0.17, 0.28, 0);
     parte(M, quadril, new THREE.SphereGeometry(0.14, 10, 8), laranja, 0, -0.08, 0);
-    parte(M, quadril, new THREE.BoxGeometry(0.2, 0.1, 0.3), laranja, 0, -0.23, 0.08);
+    const peS = parte(M, quadril, new THREE.SphereGeometry(0.13, 10, 8), laranja, 0, -0.23, 0.08);
+    peS.scale.set(0.85, 0.45, 1.25);
     for (const dg of [-0.06, 0, 0.06]) {
       const garra = parte(M, quadril, new THREE.ConeGeometry(0.028, 0.09, 6), 0xfff6df, dg, -0.23, 0.25);
       garra.rotation.x = Math.PI / 2;
@@ -317,7 +325,137 @@ function criarSalamandro(scene) {
   return M;
 }
 
-const FABRICAS = { brasinha: criarBrasinha, cascorro: criarCascorro, voltim: criarVoltim, gotim: criarGotim, salamandro: criarSalamandro };
+/* ---------- novatas do Compêndio (aguardando aprovação do Domador) ---------- */
+function criarFolhito(scene) {
+  // quadrúpede de planta com bulbo-folha nas costas
+  const M = novoModelo(scene, 1.1);
+  const g = M.g;
+  const verde = 0x54b98a, escuro = 0x2f8a4a;
+  const corpo = parte(M, g, new THREE.SphereGeometry(0.32, 16, 12), verde, 0, 0.42, -0.02);
+  corpo.scale.set(1.05, 0.9, 1.15);
+  M.corpo = corpo; corpo.userData.s0 = corpo.scale.clone();
+  // manchas
+  for (const [x, y2, z] of [[-0.2, 0.5, 0.18], [0.22, 0.42, -0.1], [-0.1, 0.36, -0.26]]) {
+    const m = parte(M, g, new THREE.SphereGeometry(0.07, 8, 6), escuro, x, y2, z);
+    m.scale.set(1, 0.4, 1);
+  }
+  // bulbo com folha
+  parte(M, g, new THREE.SphereGeometry(0.2, 12, 10), escuro, 0, 0.72, -0.16);
+  const broto = parte(M, g, new THREE.ConeGeometry(0.09, 0.3, 8), 0x3fae5a, 0, 0.98, -0.16);
+  for (const lado of [-1, 1]) {
+    const folha = parte(M, g, new THREE.SphereGeometry(0.14, 8, 6), 0x3fae5a, lado * 0.2, 0.84, -0.16);
+    folha.scale.set(1.3, 0.25, 0.7);
+    folha.rotation.z = lado * 0.5;
+  }
+  const cab = grupoEm(M, 0, 0.66, 0.32);
+  M.cabeca = cab;
+  parte(M, cab, new THREE.SphereGeometry(0.24, 16, 12), verde, 0, 0, 0);
+  const foc = parte(M, cab, new THREE.SphereGeometry(0.14, 10, 8), verde, 0, -0.07, 0.16);
+  foc.scale.set(1.2, 0.7, 1);
+  for (const lado of [-1, 1]) {
+    parte(M, cab, new THREE.SphereGeometry(0.06, 8, 8), 0xffffff, lado * 0.12, 0.06, 0.17);
+    parte(M, cab, new THREE.SphereGeometry(0.035, 8, 6), 0x8a2f2f, lado * 0.12, 0.06, 0.22);
+    const orelha = parte(M, cab, new THREE.ConeGeometry(0.06, 0.14, 6), verde, lado * 0.13, 0.24, -0.04);
+    orelha.rotation.z = -lado * 0.3;
+  }
+  marcaBoca(M, cab, 0, -0.1, 0.26);
+  for (const [x, z] of [[-0.18, 0.16], [0.18, 0.16], [-0.18, -0.24], [0.18, -0.24]]) {
+    const quadril = grupoEm(M, x, 0.24, z);
+    parte(M, quadril, new THREE.CylinderGeometry(0.065, 0.06, 0.16, 8), verde, 0, -0.09, 0);
+    const pata = parte(M, quadril, new THREE.SphereGeometry(0.07, 8, 8), escuro, 0, -0.18, 0.01);
+    pata.scale.set(1, 0.7, 1.1);
+    M.pernas.push(quadril);
+  }
+  return M;
+}
+
+function criarAssombrim(scene) {
+  // bola de sombra sorridente com espetos de "cabelo"
+  const M = novoModelo(scene, 1.05);
+  const g = M.g;
+  const roxo = 0x5a3f8a, roxoEscuro = 0x43306b;
+  const corpo = parte(M, g, new THREE.SphereGeometry(0.38, 18, 14), roxo, 0, 0.55, 0);
+  corpo.scale.set(1.05, 1, 1);
+  M.corpo = corpo; corpo.userData.s0 = corpo.scale.clone();
+  // espetos nas costas e topo
+  for (const [x, y2, z, rz] of [[-0.2, 0.9, -0.1, 0.5], [0, 0.98, -0.15, 0], [0.2, 0.9, -0.1, -0.5],
+                                 [-0.32, 0.72, -0.2, 0.9], [0.32, 0.72, -0.2, -0.9]]) {
+    const esp = parte(M, g, new THREE.ConeGeometry(0.09, 0.28, 6), roxoEscuro, x, y2, z);
+    esp.rotation.z = rz;
+  }
+  // olhos grandes malandros + sorriso de dentes
+  for (const lado of [-1, 1]) {
+    const olho = parte(M, g, new THREE.SphereGeometry(0.09, 10, 8), 0xffffff, lado * 0.15, 0.66, 0.3);
+    olho.scale.set(1, 1.2, 0.5);
+    parte(M, g, new THREE.SphereGeometry(0.045, 8, 6), 0x8a2f2f, lado * 0.14, 0.66, 0.36);
+  }
+  for (let i = -2; i <= 2; i++) {
+    const dente = parte(M, g, new THREE.ConeGeometry(0.035, 0.09, 4), 0xffffff, i * 0.08, 0.42 - Math.abs(i) * 0.02, 0.34);
+    dente.rotation.x = Math.PI;
+  }
+  marcaBoca(M, g, 0, 0.44, 0.38);
+  // bracinhos e perninhas de sombra
+  for (const lado of [-1, 1]) {
+    const braco = grupoEm(M, lado * 0.36, 0.5, 0.06);
+    const b = parte(M, braco, new THREE.SphereGeometry(0.1, 8, 8), roxo, lado * 0.06, -0.08, 0.04);
+    b.scale.set(0.7, 1.2, 0.7);
+    M.bracos.push(braco);
+    const perna = grupoEm(M, lado * 0.15, 0.2, 0);
+    const p2 = parte(M, perna, new THREE.SphereGeometry(0.1, 8, 8), roxoEscuro, 0, -0.08, 0.02);
+    p2.scale.set(0.9, 0.7, 1.1);
+    M.pernas.push(perna);
+  }
+  return M;
+}
+
+function criarRaiozim(scene) {
+  // ratinho elétrico de orelhas compridas e cauda-raio
+  const M = novoModelo(scene, 1.05);
+  const g = M.g;
+  const amarelo = 0xffd93b, marromP = 0x8a6a50;
+  const corpo = parte(M, g, new THREE.SphereGeometry(0.28, 16, 12), amarelo, 0, 0.38, 0);
+  corpo.scale.set(1, 1.12, 0.95);
+  M.corpo = corpo; corpo.userData.s0 = corpo.scale.clone();
+  const cab = grupoEm(M, 0, 0.82, 0.04);
+  M.cabeca = cab;
+  parte(M, cab, new THREE.SphereGeometry(0.24, 16, 12), amarelo, 0, 0, 0);
+  // orelhas compridas de ponta escura
+  for (const lado of [-1, 1]) {
+    const orelha = parte(M, cab, new THREE.ConeGeometry(0.07, 0.42, 8), amarelo, lado * 0.14, 0.34, -0.04);
+    orelha.rotation.z = -lado * 0.35;
+    const ponta = parte(M, cab, new THREE.ConeGeometry(0.05, 0.14, 8), 0x33313d, lado * 0.2, 0.5, -0.04);
+    ponta.rotation.z = -lado * 0.35;
+  }
+  // bochechas VERMELHAS de eletricidade
+  for (const lado of [-1, 1])
+    parte(M, cab, new THREE.SphereGeometry(0.07, 8, 8), 0xe05a41, lado * 0.18, -0.06, 0.14);
+  parte(M, cab, new THREE.SphereGeometry(0.045, 8, 6), COR.olho, -0.09, 0.04, 0.21);
+  parte(M, cab, new THREE.SphereGeometry(0.045, 8, 6), COR.olho, 0.09, 0.04, 0.21);
+  parte(M, cab, new THREE.SphereGeometry(0.025, 6, 6), COR.olho, 0, -0.04, 0.235);
+  marcaBoca(M, cab, 0, -0.08, 0.24);
+  // bracinhos, pernas e a cauda-raio grande
+  for (const lado of [-1, 1]) {
+    const braco = grupoEm(M, lado * 0.26, 0.48, 0.08);
+    parte(M, braco, new THREE.SphereGeometry(0.07, 8, 8), amarelo, lado * 0.03, -0.06, 0.03);
+    M.bracos.push(braco);
+    const perna = grupoEm(M, lado * 0.13, 0.16, 0);
+    const pe = parte(M, perna, new THREE.SphereGeometry(0.09, 8, 8), amarelo, 0, -0.06, 0.03);
+    pe.scale.set(0.8, 0.6, 1.3);
+    M.pernas.push(perna);
+  }
+  const cauda = grupoEm(M, 0, 0.4, -0.24);
+  M.cauda = cauda;
+  parte(M, cauda, new THREE.BoxGeometry(0.07, 0.16, 0.1), marromP, 0, -0.02, -0.05);
+  const r1 = parte(M, cauda, new THREE.BoxGeometry(0.2, 0.06, 0.26), amarelo, -0.06, 0.12, -0.16);
+  r1.rotation.y = 0.5;
+  const r2 = parte(M, cauda, new THREE.BoxGeometry(0.24, 0.06, 0.3), amarelo, 0.06, 0.3, -0.28);
+  r2.rotation.y = -0.5;
+  const r3 = parte(M, cauda, new THREE.BoxGeometry(0.3, 0.06, 0.2), amarelo, -0.02, 0.46, -0.36);
+  r3.rotation.y = 0.4;
+  return M;
+}
+
+const FABRICAS = { brasinha: criarBrasinha, cascorro: criarCascorro, voltim: criarVoltim, gotim: criarGotim, salamandro: criarSalamandro, folhito: criarFolhito, assombrim: criarAssombrim, raiozim: criarRaiozim };
 export function criarFera(scene, chave) {
   const fabrica = FABRICAS[chave];
   return fabrica ? fabrica(scene) : criarCascorro(scene);
@@ -395,9 +533,18 @@ export function passoGiro(M, dt) {
   M.g.rotation.y += d * Math.min(1, 14 * dt);
 }
 
-// vida em repouso: cauda abana, cabeça observa, asas se ajeitam
+// vida em repouso: o corpo RESPIRA (infla e desinfla), a cauda abana,
+// a cabeça observa e as asas se ajeitam
 export function animaIdle(M, t) {
-  if (M.cauda) M.cauda.rotation.y = Math.sin(t * 3.2) * 0.28;
+  if (M.corpo && M.corpo.userData.s0) {
+    const s0 = M.corpo.userData.s0;
+    const r = 1 + Math.sin(t * 2.4) * 0.04;
+    M.corpo.scale.set(s0.x * (2 - r), s0.y * r, s0.z * (2 - r) * 0.5 + s0.z * 0.5);
+  }
+  if (M.cauda) {
+    M.cauda.rotation.y = Math.sin(t * 3.2) * 0.28;
+    M.cauda.rotation.x *= 0.85; // desfaz posições de golpe aos poucos
+  }
   if (M.cabeca) {
     M.cabeca.rotation.x = Math.sin(t * 1.6) * 0.05;
     M.cabeca.rotation.y = Math.sin(t * 0.9) * 0.1;
@@ -479,25 +626,47 @@ export function animaLuta(M, f) {
     const g = f.golpe;
     const cab = M.cabeca;
     if (g.rajada) {
+      // agacha plantando as patas, rabo empinado, e cospe tremendo
       if (f.t < g.prep) {
         rx = -0.3 * (f.t / g.prep);
+        M.g.position.y -= 0.06 * (f.t / g.prep);
         if (cab) cab.rotation.x = -0.55 * (f.t / g.prep); // inspira fundo
+        if (M.cauda) M.cauda.rotation.x = -0.6 * (f.t / g.prep);
       } else {
         rx = -0.12;
+        M.g.position.y -= 0.06;
         if (cab) cab.rotation.x = 0.35 + Math.sin(f.t * 50) * 0.06; // cospe tremendo
+        if (M.cauda) M.cauda.rotation.x = -0.6;
         M.g.rotation.z = Math.sin(f.t * 45) * 0.08;
       }
     } else if (g.projetil) {
+      // carrega recuando e SALTA no disparo, com chicote de cabeça
       if (f.t < g.prep) {
         rx = -0.45 * (f.t / g.prep);
         if (cab) cab.rotation.x = -0.5 * (f.t / g.prep);
       } else if (f.t < g.prep + g.ativo + 0.12) {
+        const k = (f.t - g.prep) / (g.ativo + 0.12);
         rx = 0.3;
-        if (cab) cab.rotation.x = 0.45; // chicote da cabeça no disparo
+        M.g.position.y += Math.sin(k * Math.PI) * 0.2; // pulinho do disparo
+        if (cab) cab.rotation.x = 0.45;
       } else if (cab) cab.rotation.x = 0;
-    } else {
+    } else if (g.forte) {
+      // físico FORTE: giro completo de 360° durante o bote (impacto visual)
+      const total = g.prep + g.ativo;
+      const k = Math.min(1, f.t / total);
+      M.g.rotation.y += k * Math.PI * 2;
       if (f.t < g.prep) rx = -0.4 * (f.t / g.prep);
-      else if (f.t < g.prep + g.ativo) { rx = g.forte ? 0.7 : 0.5; if (cab) cab.rotation.x = 0.25; }
+      else if (f.t < total) { rx = 0.7; if (cab) cab.rotation.x = 0.25; }
+      else { rx = 0.5 * (1 - Math.min(1, (f.t - total) / g.recup)); if (cab) cab.rotation.x = 0; }
+    } else {
+      // físico normal: bote com pulinho
+      if (f.t < g.prep) rx = -0.4 * (f.t / g.prep);
+      else if (f.t < g.prep + g.ativo) {
+        const k = (f.t - g.prep) / g.ativo;
+        rx = 0.5;
+        M.g.position.y += Math.sin(k * Math.PI) * 0.22;
+        if (cab) cab.rotation.x = 0.25;
+      }
       else { rx = 0.5 * (1 - Math.min(1, (f.t - g.prep - g.ativo) / g.recup)); if (cab) cab.rotation.x = 0; }
     }
   } else if (f.estado === 'hurt') {

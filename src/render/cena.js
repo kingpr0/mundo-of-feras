@@ -603,10 +603,12 @@ function montaArena(scene) {
   // clareira de grama + platô de terra batida
   const base = new THREE.Mesh(new THREE.CircleGeometry(34, 24), lamb(0x578f43));
   base.rotation.x = -Math.PI / 2; base.position.y = 0.004; base.receiveShadow = true; g.add(base);
-  const terra = new THREE.Mesh(new THREE.CircleGeometry(10.5, 28), lamb(0xb08a5a));
-  terra.rotation.x = -Math.PI / 2; terra.position.y = 0.01; terra.receiveShadow = true; g.add(terra);
-  const borda = new THREE.Mesh(new THREE.TorusGeometry(10.5, 0.22, 8, 28), lamb(0x8a6a50));
-  borda.rotation.x = -Math.PI / 2; borda.position.y = 0.05; g.add(borda);
+  // tablado de AREIA elevado: as feras afundam levemente os pés (nada de flutuar)
+  const areia = new THREE.Mesh(new THREE.CylinderGeometry(10.5, 11.3, 0.5, 28), lamb(0xd0b183));
+  areia.position.y = -0.13; // topo em y ≈ 0.12
+  areia.receiveShadow = true; g.add(areia);
+  const borda = new THREE.Mesh(new THREE.TorusGeometry(10.6, 0.2, 8, 28), lamb(0x8a6a50));
+  borda.rotation.x = -Math.PI / 2; borda.position.y = 0.14; g.add(borda);
   // cerca de troncos: postes + travessão
   for (let i = 0; i < 20; i++) {
     const a = (i / 20) * Math.PI * 2;

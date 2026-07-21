@@ -61,7 +61,47 @@
       { "nivel": 1, "golpe": "investida" },
       { "nivel": 5, "golpe": "bola_fogo" },
       { "nivel": 8, "golpe": "investida_feroz" },
-      { "nivel": 12, "golpe": "lanca_chamas" }
+      { "nivel": 9, "golpe": "lanca_chamas" }
+    ]
+  },
+  "folhito": {
+    "nome": "Folhito",
+    "tipo": "planta",
+    "raridade": "rara",
+    "vida": 68,
+    "velocidade": 4.2,
+    "ataque": 1.05,
+    "impulso": 7.0,
+    "sequencia": ["baixo", "frente"],
+    "aprendizado": [
+      { "nivel": 1, "golpe": "investida" }
+    ]
+  },
+  "assombrim": {
+    "nome": "Assombrim",
+    "tipo": "comum",
+    "raridade": "muito_rara",
+    "vida": 60,
+    "velocidade": 5.0,
+    "ataque": 1.15,
+    "impulso": 8.0,
+    "sequencia": ["baixo", "frente"],
+    "aprendizado": [
+      { "nivel": 1, "golpe": "investida" }
+    ]
+  },
+  "raiozim": {
+    "nome": "Raiozim",
+    "tipo": "eletrico",
+    "raridade": "rara",
+    "vida": 58,
+    "velocidade": 5.4,
+    "ataque": 1.0,
+    "impulso": 8.2,
+    "sequencia": ["frente"],
+    "aprendizado": [
+      { "nivel": 1, "golpe": "investida" },
+      { "nivel": 5, "golpe": "esfera_voltaica" }
     ]
   },
   "gotim": {

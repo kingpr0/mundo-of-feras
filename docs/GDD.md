@@ -60,7 +60,7 @@ Três raridades, com três efeitos definidos: **probabilidade de encontro**, **p
 
 A conta fecha com elegância se cada tipo tiver: **1 linha comum (2 espécies) + 1 linha rara (3 espécies) + 1 fera muito rara (1 espécie) = 6 espécies por tipo × 5 tipos = 30**. Isso dá a cada tipo um "bicho de entrada", uma "linha estrela" e uma "lenda".
 
-As feras já criadas no protótipo se encaixam assim **(proposta)**: **Brasinha** = Fogo, linha rara (a inicial do jogador, 3 estágios); **Cascorro** = tipo Comum, linha comum; **Voltim** = Elétrico; **Folhito** = Planta; **Gotim** = Água, linha comum (o pinguinzinho-gota, frágil e equilibrado); **Salamandro** = Fogo, linha comum (lagartinho ereto com chama na cauda, das Colinas Rochosas). Faltam as demais espécies.
+As feras já criadas no protótipo se encaixam assim **(proposta)**: **Brasinha** = Fogo, linha rara (a inicial do jogador, 3 estágios); **Cascorro** = tipo Comum, linha comum; **Voltim** = Elétrico; **Folhito** = Planta; **Gotim** = Água, linha comum (o pinguinzinho-gota, frágil e equilibrado); **Salamandro** = Fogo, linha comum (lagartinho ereto com chama na cauda, das Colinas Rochosas). **Aguardando aprovação no Compêndio (proposta)**: **Folhito** = Planta, linha rara (quadrúpede com bulbo-folha nas costas); **Assombrim** = Muito Rara (bola de sombra sorridente com espetos); **Raiozim** = Elétrico, linha rara (ratinho de orelhas compridas, bochechas vermelhas e cauda-raio). Faltam as demais espécies.
 
 ### 7.4 Atributos (stats)
 
@@ -78,7 +78,7 @@ Duelo **1v1 em tempo real** numa **arena dedicada** — um ringue cercado, separ
 
 ### 9.2 Controles e golpes
 
-**Catálogo de golpes data-driven** (`golpes.json`): todos os golpes do jogo, com dano, frames e **usos limitados** para golpes não-físicos (ex.: Bola de Fogo 70, Lança-Chamas 30); golpes físicos são infinitos. Feras **aprendem golpes por nível** (tabela de aprendizado por espécie), preenchendo até **4 slots** acionados por **Z / X / C / V** (slot 1 = golpe físico inicial, intocável). Ao aprender com os slots cheios, o novo substitui um antigo; golpes esquecidos podem ser **relembrados** no menu de status (fora de batalha). **Combos** (sequência de direções + o botão do slot) disparam a **versão forte** daquele golpe (Investida→Investida Feroz, Bola de Fogo→Lança-Chamas, com ~2x de dano total). **F** lança o Cristal de Captura. Golpes se restauram no Centro de Curas (tudo), ao subir de nível (20%) ou com itens (futuro).
+**Catálogo de golpes data-driven** (`golpes.json`): todos os golpes do jogo, com dano, frames e **usos limitados** para golpes não-físicos (ex.: Bola de Fogo 70, Lança-Chamas 30); golpes físicos são infinitos. Feras **aprendem golpes por nível** (tabela de aprendizado por espécie), preenchendo até **4 slots** acionados por **Z / X / C / V** (slot 1 = golpe físico inicial, intocável). Ao aprender com os slots cheios, o novo substitui um antigo; golpes esquecidos podem ser **relembrados** no menu de status (fora de batalha). **Golpe forte por CARGA** (decidido, substituindo os combos de direção — que ficam para o futuro): toque no botão = golpe simples; **segurar o botão por 1,5s** faz um campo de energia crescer em volta da fera e ela solta a **versão forte** daquele slot (Investida→Investida Feroz, Bola de Fogo→Lança-Chamas, ~2x de dano total). **F** lança o Cristal de Captura. Golpes se restauram no Centro de Curas (tudo), ao subir de nível (20%) ou com itens (futuro).
 
 Modelo anterior de slots fixos, mantido como referência histórica:
 
@@ -115,7 +115,7 @@ Feras selvagens com vida abaixo de **~35%** podem ser capturadas: o jogador lan�
 
 ### 9.6 IA adversária
 
-Feras selvagens: comportamento simples por arquétipo (agressiva, cautelosa, territorial), com dificuldade crescendo por região. Feras de Domadores NPC: IA mais deliberada — telegrafa, pune erros do jogador, explora vantagem de tipo. A IA gera os mesmos inputs abstratos que um jogador humano geraria — decisão de arquitetura deliberada para o futuro online.
+Feras selvagens: comportamento simples por arquétipo (agressiva, cautelosa, territorial), com dificuldade crescendo por região. **Fúria (implementado)**: quanto mais ferida, mais rápida e agressiva a fera selvagem fica — decide mais rápido, ataca e usa golpes fortes com mais frequência, e esquiva com cambalhotas laterais. Feras de Domadores NPC: IA mais deliberada — telegrafa, pune erros do jogador, explora vantagem de tipo. A IA gera os mesmos inputs abstratos que um jogador humano geraria — decisão de arquitetura deliberada para o futuro online.
 
 ## 10. Treinadores e NPCs
 

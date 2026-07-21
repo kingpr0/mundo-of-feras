@@ -206,10 +206,11 @@ function iaSelvagem(b, dt, rnd) {
   b.aiT -= dt;
   const dist = distXZ(e.pos, p.pos);
   const dir = normXZ(sub(p.pos, e.pos));
+  // fúria: quanto mais machucada, mais rápida e agressiva a fera fica
+  const furia = 1 - e.hp / e.max;
   if (b.aiT <= 0) {
-    // ritmo calmo: decide com menos frequência e avança devagar
-    b.aiT = 0.55 + rnd() * 0.5;
-    if (dist > 4.5) b.iaMov = rnd() < 0.55 ? escala(dir, 0.65) : null;
+    b.aiT = (0.55 + rnd() * 0.5) * (1 - 0.45 * furia);
+    if (dist > 4.5) b.iaMov = rnd() < 0.55 + 0.3 * furia ? escala(dir, 0.65 + 0.3 * furia) : null;
     else if (dist > 2.2) b.iaMov = rnd() < 0.75 ? escala(dir, 0.8) : null;
     else {
       // a IA gera os mesmos inputs abstratos que um jogador (GDD §9.6/§12)
@@ -220,10 +221,10 @@ function iaSelvagem(b, dt, rnd) {
           const s = e.slots[i];
           return s.def.usos == null || (e.usos[s.id] || 0) > 0;
         });
-      if (r < 0.6 && livres.length) {
+      if (r < 0.6 + 0.25 * furia && livres.length) {
         inp.golpe = livres[Math.floor(rnd() * livres.length)];
         const s = e.slots[inp.golpe];
-        if (s.forte && rnd() < 0.25) {
+        if (s.forte && rnd() < 0.25 + 0.3 * furia) {
           const fd = s.forte.def;
           if (fd.usos == null || (e.usos[s.forte.id] || 0) > 0) inp.forte = true;
         }
@@ -232,7 +233,16 @@ function iaSelvagem(b, dt, rnd) {
       else if (r < 0.85) b.iaMov = escala(dir, -0.8);
       else { inp.pulo = true; b.iaMov = dir; }
     }
-    if (p.estado === 'atk' && p.golpe && p.golpe.forte && dist < 4 && rnd() < 0.35) inp.pulo = true;
+    // esquiva: rola de lado (cambalhota) ou pula quando o jogador ataca forte
+    if (p.estado === 'atk' && p.golpe && p.golpe.forte && dist < 4.5 &&
+        rnd() < 0.35 + 0.35 * furia) {
+      if (rnd() < 0.6) {
+        const lado = rnd() < 0.5 ? 1 : -1;
+        inp.dash = escala(perpXZ(dir), lado);
+        inp.dashRel = { x: lado, z: 0 };
+        b.iaMov = null;
+      } else inp.pulo = true;
+    }
   }
   if (b.iaMov) inp.mov = b.iaMov;
   return inp;
