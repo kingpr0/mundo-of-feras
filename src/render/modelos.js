@@ -137,10 +137,12 @@ function criarBrasinha(scene) {
   const ponta = parte(M, cauda, new THREE.ConeGeometry(0.09, 0.22, 8), COR.amarelo, 0, 0.4, -0.5);
   ponta.material.emissive.setHex(0x664400);
   M.materiais.pop(); // a chama da cauda não pisca com dano
-  // patas com "meias" escuras
+  // patas ARTICULADAS com "meias" escuras (pivô no quadril, para trotar)
   for (const [x, z] of [[-0.16, 0.16], [0.16, 0.16], [-0.16, -0.28], [0.16, -0.28]]) {
-    parte(M, g, new THREE.CylinderGeometry(0.06, 0.06, 0.16, 8), COR.laranja, x, 0.16, z);
-    parte(M, g, new THREE.CylinderGeometry(0.065, 0.07, 0.08, 8), COR.vermelhoEscuro, x, 0.05, z);
+    const quadril = grupoEm(M, x, 0.26, z);
+    parte(M, quadril, new THREE.CylinderGeometry(0.06, 0.06, 0.16, 8), COR.laranja, 0, -0.1, 0);
+    parte(M, quadril, new THREE.CylinderGeometry(0.065, 0.07, 0.08, 8), COR.vermelhoEscuro, 0, -0.21, 0);
+    M.pernas.push(quadril);
   }
   return M;
 }
@@ -169,9 +171,12 @@ function criarCascorro(scene) {
   }
   parte(M, cab, new THREE.BoxGeometry(0.26, 0.16, 0.12), COR.marrom, 0, -0.14, 0.3);
   marcaBoca(M, cab, 0, -0.18, 0.34);
-  // patas e CAUDA
-  for (const [x, z] of [[-0.24, 0.28], [0.24, 0.28], [-0.24, -0.34], [0.24, -0.34]])
-    parte(M, g, new THREE.BoxGeometry(0.18, 0.36, 0.2), COR.cinzaEscuro, x, 0.18, z);
+  // patas ARTICULADAS e CAUDA
+  for (const [x, z] of [[-0.24, 0.28], [0.24, 0.28], [-0.24, -0.34], [0.24, -0.34]]) {
+    const quadril = grupoEm(M, x, 0.38, z);
+    parte(M, quadril, new THREE.BoxGeometry(0.18, 0.36, 0.2), COR.cinzaEscuro, 0, -0.2, 0);
+    M.pernas.push(quadril);
+  }
   const cauda = grupoEm(M, 0, 0.5, -0.55);
   M.cauda = cauda;
   parte(M, cauda, new THREE.BoxGeometry(0.14, 0.14, 0.24), COR.cinza, 0, 0.02, -0.1);
@@ -204,7 +209,9 @@ function criarVoltim(scene) {
     const pena = parte(M, asa, new THREE.SphereGeometry(0.14, 10, 8), COR.amareloEscuro, lado * 0.05, -0.04, 0);
     pena.scale.set(0.4, 1, 0.8);
     M.bracos.push(asa);
-    parte(M, g, new THREE.BoxGeometry(0.11, 0.06, 0.17), COR.laranja, lado * 0.11, 0.03, 0.03);
+    const pe = grupoEm(M, lado * 0.11, 0.12, 0.03);
+    parte(M, pe, new THREE.BoxGeometry(0.11, 0.06, 0.17), COR.laranja, 0, -0.09, 0);
+    M.pernas.push(pe);
   }
   // CAUDA em raio (zigue-zague elétrico)
   const cauda = grupoEm(M, 0, 0.42, -0.3);
@@ -247,8 +254,11 @@ function criarGotim(scene) {
   M.cauda = cauda;
   const c = parte(M, cauda, new THREE.ConeGeometry(0.12, 0.3, 8), azulEscuro, 0, 0, -0.1);
   c.rotation.x = Math.PI / 2;
-  for (const lado of [-1, 1])
-    parte(M, g, new THREE.BoxGeometry(0.12, 0.06, 0.18), azulEscuro, lado * 0.12, 0.03, 0.03);
+  for (const lado of [-1, 1]) {
+    const pe = grupoEm(M, lado * 0.12, 0.12, 0.03);
+    parte(M, pe, new THREE.BoxGeometry(0.12, 0.06, 0.18), azulEscuro, 0, -0.09, 0);
+    M.pernas.push(pe);
+  }
   return M;
 }
 
@@ -273,17 +283,21 @@ function criarSalamandro(scene) {
     parte(M, cab, new THREE.SphereGeometry(0.042, 8, 6), COR.olho, lado * 0.13, 0.1, 0.24);
   }
   marcaBoca(M, cab, 0, -0.16, 0.38);
-  // braços, coxas e pés com garras
+  // braços e pernas ARTICULADOS (ombro e quadril como pivôs)
   for (const lado of [-1, 1]) {
-    const braco = parte(M, g, new THREE.CylinderGeometry(0.06, 0.055, 0.26, 8), laranja, lado * 0.3, 0.64, 0.1);
+    const ombro = grupoEm(M, lado * 0.28, 0.7, 0.06);
+    const braco = parte(M, ombro, new THREE.CylinderGeometry(0.06, 0.055, 0.26, 8), laranja, lado * 0.03, -0.08, 0.05);
     braco.rotation.z = lado * 0.7; braco.rotation.x = -0.4;
-    parte(M, g, new THREE.SphereGeometry(0.065, 8, 8), laranja, lado * 0.4, 0.55, 0.18);
-    parte(M, g, new THREE.SphereGeometry(0.14, 10, 8), laranja, lado * 0.17, 0.2, 0);
-    parte(M, g, new THREE.BoxGeometry(0.2, 0.1, 0.3), laranja, lado * 0.17, 0.05, 0.08);
+    parte(M, ombro, new THREE.SphereGeometry(0.065, 8, 8), laranja, lado * 0.12, -0.15, 0.12);
+    M.bracos.push(ombro);
+    const quadril = grupoEm(M, lado * 0.17, 0.28, 0);
+    parte(M, quadril, new THREE.SphereGeometry(0.14, 10, 8), laranja, 0, -0.08, 0);
+    parte(M, quadril, new THREE.BoxGeometry(0.2, 0.1, 0.3), laranja, 0, -0.23, 0.08);
     for (const dg of [-0.06, 0, 0.06]) {
-      const garra = parte(M, g, new THREE.ConeGeometry(0.028, 0.09, 6), 0xfff6df, lado * 0.17 + dg, 0.05, 0.25);
+      const garra = parte(M, quadril, new THREE.ConeGeometry(0.028, 0.09, 6), 0xfff6df, dg, -0.23, 0.25);
       garra.rotation.x = Math.PI / 2;
     }
+    M.pernas.push(quadril);
   }
   // CAUDA articulada com a chama em três camadas
   const cauda = grupoEm(M, 0, 0.44, -0.3);
@@ -309,16 +323,29 @@ export function criarFera(scene, chave) {
   return fabrica ? fabrica(scene) : criarCascorro(scene);
 }
 
-// projétil elemental (bola de fogo, esfera voltaica...) — cor vem do tipo
-export function criarProjetil(scene, corHex) {
+// projétil elemental. Bola única = esfera de fogo com CAUDA de chamas;
+// tiro de rajada = labareda pequena e tremeluzente (nada de "bola")
+export function criarProjetil(scene, corHex, rajada = false) {
   const M = novoModelo(scene, 0.5);
-  const mat = new THREE.MeshLambertMaterial({
-    color: corHex, emissive: corHex, emissiveIntensity: 0.65 });
-  const m = new THREE.Mesh(new THREE.SphereGeometry(0.38, 12, 10), mat);
-  m.castShadow = true; M.materiais.push(mat); M.g.add(m);
-  const halo = new THREE.Mesh(new THREE.OctahedronGeometry(0.56),
-    new THREE.MeshBasicMaterial({ color: corHex, transparent: true, opacity: 0.4 }));
-  M.g.add(halo);
+  const basico = (cor, op) => new THREE.MeshBasicMaterial({ color: cor, transparent: true, opacity: op });
+  if (rajada) {
+    // língua de fogo: cones sobrepostos apontando na direção do voo (+z)
+    for (const [r, l, cor, op] of [[0.16, 0.55, corHex, 0.9], [0.1, 0.38, 0xffe066, 0.9], [0.2, 0.3, corHex, 0.35]]) {
+      const cone = new THREE.Mesh(new THREE.ConeGeometry(r, l, 7), basico(cor, op));
+      cone.rotation.x = -Math.PI / 2;
+      M.g.add(cone);
+    }
+  } else {
+    const mat = new THREE.MeshLambertMaterial({
+      color: corHex, emissive: corHex, emissiveIntensity: 0.7 });
+    const m = new THREE.Mesh(new THREE.SphereGeometry(0.34, 12, 10), mat);
+    m.castShadow = true; M.materiais.push(mat); M.g.add(m);
+    // cauda de chamas atrás (-z)
+    const c1 = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.7, 8), basico(corHex, 0.55));
+    c1.rotation.x = Math.PI / 2; c1.position.z = -0.5; M.g.add(c1);
+    const c2 = new THREE.Mesh(new THREE.ConeGeometry(0.13, 0.5, 8), basico(0xffe066, 0.7));
+    c2.rotation.x = Math.PI / 2; c2.position.z = -0.42; M.g.add(c2);
+  }
   return M;
 }
 
@@ -377,20 +404,34 @@ export function animaIdle(M, t) {
   }
 }
 
-// balanço de corpo (e asas/nadadeiras) para feras se movendo
+// caminhada das feras — como o domador, mas por tipo de corpo:
+// quadrúpedes TROTAM (pares diagonais alternando), bípedes dão passadas
+// (pernas e braços em oposição), asas/nadadeiras batem junto
 export function animaAndarFera(M, t, movendo) {
+  const a = movendo ? Math.sin(t * 11) * 0.6 : 0;
+  if (M.pernas.length === 4) {
+    // trote: diagonais juntas (frente-esq + trás-dir vs frente-dir + trás-esq)
+    M.pernas[0].rotation.x = a;  M.pernas[3].rotation.x = a;
+    M.pernas[1].rotation.x = -a; M.pernas[2].rotation.x = -a;
+  } else if (M.pernas.length === 2) {
+    M.pernas[0].rotation.x = a;
+    M.pernas[1].rotation.x = -a;
+  }
   if (movendo) {
-    M.g.position.y += Math.abs(Math.sin(t * 10)) * 0.08;
-    M.g.rotation.z = Math.sin(t * 10) * 0.09;
+    M.g.position.y += Math.abs(Math.sin(t * 11)) * 0.06;
     M.g.userData._leanAndar = 0.12;
     if (M.bracos.length === 2) {
-      M.bracos[0].rotation.z = Math.sin(t * 12) * 0.5;
-      M.bracos[1].rotation.z = -Math.sin(t * 12) * 0.5;
+      // braços em oposição às pernas; asas/nadadeiras batem (eixo z)
+      M.bracos[0].rotation.x = -a * 0.7;
+      M.bracos[1].rotation.x = a * 0.7;
+      M.bracos[0].rotation.z = Math.sin(t * 13) * 0.45;
+      M.bracos[1].rotation.z = -Math.sin(t * 13) * 0.45;
     }
   } else {
-    M.g.rotation.z = 0;
     M.g.userData._leanAndar = 0;
-    if (M.bracos.length === 2 && !M.pernas.length) {
+    if (M.bracos.length === 2) {
+      M.bracos[0].rotation.x = 0;
+      M.bracos[1].rotation.x = 0;
       M.bracos[0].rotation.z = Math.sin(t * 2.4) * 0.12;
       M.bracos[1].rotation.z = -Math.sin(t * 2.4) * 0.12;
     }

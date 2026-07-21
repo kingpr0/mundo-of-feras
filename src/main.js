@@ -563,14 +563,26 @@ function sincronizaVisual(dt) {
 
     if (batalha.captura) { MD.setPos(cristal, batalha.captura.pos); cristal.g.rotation.y += dt * 5; }
 
+    // rastro de poeira da cambalhota
+    if (batalha.p.estado === 'dash' && Math.random() < 0.7)
+      poof(cena, { ...batalha.p.pos, y: 0.3 }, 0xcbd0d8, 2, 2);
+
     const vivos = new Set();
     for (const pr of batalha.projeteis) {
       vivos.add(pr.id);
       let M = projMeshes.get(pr.id);
-      if (!M) { M = MD.criarProjetil(cena.scene, CORES_TIPO[pr.tipo] || 0xffffff); projMeshes.set(pr.id, M); }
+      if (!M) {
+        M = MD.criarProjetil(cena.scene, CORES_TIPO[pr.tipo] || 0xffffff, pr.rajada);
+        projMeshes.set(pr.id, M);
+      }
       MD.setPos(M, pr.pos);
-      M.g.rotation.y += dt * 9;
-      if (Math.random() < 0.8) poof(cena, pr.pos, CORES_TIPO[pr.tipo] || 0xffffff, 1, 1.6);
+      // aponta na direção do voo; labaredas tremeluzem, bolas giram
+      M.g.rotation.y = Math.atan2(pr.vel.x, pr.vel.z);
+      M.g.rotation.x = -Math.atan2(pr.vel.y, Math.hypot(pr.vel.x, pr.vel.z));
+      if (pr.rajada) M.g.scale.setScalar(0.8 + Math.random() * 0.5);
+      else M.g.rotation.z += dt * 7;
+      if (Math.random() < (pr.rajada ? 0.95 : 0.8))
+        poof(cena, pr.pos, pr.rajada && Math.random() < 0.4 ? 0xffe066 : (CORES_TIPO[pr.tipo] || 0xffffff), 1, 1.6);
     }
     for (const [id, M] of projMeshes)
       if (!vivos.has(id)) { cena.scene.remove(M.g); projMeshes.delete(id); }
@@ -594,7 +606,9 @@ function efeitoSopro(M, f, alvoPos) {
   } else if (g.rajada) {
     const dx = alvoPos.x - boca.x, dy = (alvoPos.y + 0.6) - boca.y, dz = alvoPos.z - boca.z;
     const L = Math.hypot(dx, dy, dz) || 1;
-    jato(cena, boca, { x: dx / L, y: dy / L, z: dz / L }, cor, 4, 9.5);
+    jato(cena, boca, { x: dx / L, y: dy / L, z: dz / L }, cor, 6, 11);
+    if (Math.random() < 0.5)
+      jato(cena, boca, { x: dx / L, y: dy / L, z: dz / L }, 0xffe066, 2, 11);
   }
 }
 function aplicaFlash(M, f) {

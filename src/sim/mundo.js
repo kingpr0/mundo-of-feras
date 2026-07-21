@@ -24,17 +24,23 @@ export function criarMundo(mapa, selvagens = ['cascorro'], rnd = Math.random) {
   };
 }
 
-// altura do terreno: platôs elevam o domador com rampa suave nas beiradas
+// altura do terreno: platôs têm paredão SECO (não dá para escalar) — a única
+// subida é pela rampa das ESCADAS. O passoMundo bloqueia degraus > 0.45.
+const DV_ESCADA = { norte: [0, -1], sul: [0, 1], leste: [1, 0], oeste: [-1, 0] };
+const COMP_ESCADA = 1.7;
 export function alturaTerreno(mapa, pos) {
   let h = 0;
   for (const p of mapa.platos || []) {
-    const margem = 1.4;
-    if (pos.x > p.x0 - margem && pos.x < p.x1 + margem &&
-        pos.z > p.z0 - margem && pos.z < p.z1 + margem) {
-      const dx = Math.min((pos.x - (p.x0 - margem)) / margem, ((p.x1 + margem) - pos.x) / margem, 1);
-      const dz = Math.min((pos.z - (p.z0 - margem)) / margem, ((p.z1 + margem) - pos.z) / margem, 1);
-      h = Math.max(h, p.h * Math.max(0, Math.min(dx, dz)));
-    }
+    if (pos.x > p.x0 && pos.x < p.x1 && pos.z > p.z0 && pos.z < p.z1)
+      h = Math.max(h, p.h);
+  }
+  for (const e of mapa.escadas || []) {
+    const dv = DV_ESCADA[e.dir];
+    const dx = pos.x - e.x, dz = pos.z - e.z;
+    const along = -(dx * dv[0] + dz * dv[1]);       // descendo a escada
+    const perp = Math.abs(dx * dv[1] - dz * dv[0]); // desvio lateral
+    if (along >= -0.2 && along <= COMP_ESCADA && perp <= e.w / 2)
+      h = Math.max(h, e.h * (1 - Math.max(0, along) / COMP_ESCADA));
   }
   return h;
 }
@@ -135,7 +141,11 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
   if (d.andando) {
     const mov = normXZ(vec(inp.mov.x, 0, inp.mov.z));
     const novo = soma(d.pos, escala(mov, (d.correndo ? 4.2 * 1.5 : 4.2) * dt));
-    if (!colide(m.mapa, novo)) { d.pos.x = novo.x; d.pos.z = novo.z; }
+    if (!colide(m.mapa, novo)) {
+      // paredões não se escalam: só passa se o desnível for de degrau
+      const dh = Math.abs(alturaTerreno(m.mapa, novo) - alturaTerreno(m.mapa, d.pos));
+      if (dh < 0.45) { d.pos.x = novo.x; d.pos.z = novo.z; }
+    }
     const saida = verificaSaida(m.mapa, d.pos);
     if (saida) return { tipo: 'saida', saida };
     prende(m.mapa, d.pos);

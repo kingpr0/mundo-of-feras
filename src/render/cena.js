@@ -390,25 +390,44 @@ function montaAgua(g, ag) {
 
 /* platô elevado: dois degraus (base larga + topo), combinando com a rampa
    suave da sim; o topo é gramado */
+function formaArredondada(w, d, r) {
+  const s = new THREE.Shape();
+  const hw = w / 2, hd = d / 2;
+  s.moveTo(-hw + r, -hd);
+  s.lineTo(hw - r, -hd); s.absarc(hw - r, -hd + r, r, -Math.PI / 2, 0);
+  s.lineTo(hw, hd - r);  s.absarc(hw - r, hd - r, r, 0, Math.PI / 2);
+  s.lineTo(-hw + r, hd); s.absarc(-hw + r, hd - r, r, Math.PI / 2, Math.PI);
+  s.lineTo(-hw, -hd + r); s.absarc(-hw + r, -hd + r, r, Math.PI, Math.PI * 1.5);
+  return s;
+}
 function plato(g, p, mapa = {}) {
-  const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
-  // penhasco: paredões avermelhados com topo verde, como no TUNIC
+  // morro de CANTOS ARREDONDADOS em camadas que clareiam aos poucos
+  // (base larga escura -> topo estreito claro), com o topo gramado
   const pen = mapa.chao === 'penhasco';
-  const corBase = pen ? 0x8a4a3e : 0x9c7a4e;
-  const corLado = pen ? 0x9c5242 : 0xb08a5a;
+  const c0 = new THREE.Color(pen ? 0x6e3c32 : 0x7d5f3e);
+  const c1 = new THREE.Color(pen ? 0xb06552 : 0xbc9668);
   const w = p.x1 - p.x0, d = p.z1 - p.z0;
   const cx = (p.x0 + p.x1) / 2, cz = (p.z0 + p.z1) / 2;
-  const baseM = new THREE.Mesh(new THREE.BoxGeometry(w + 2.4, p.h * 0.55, d + 2.4), lamb(corBase));
-  baseM.position.set(cx, p.h * 0.275, cz); baseM.castShadow = baseM.receiveShadow = true;
-  baseM.userData.oclusor = true;
-  g.add(baseM);
-  const topoM = new THREE.Mesh(new THREE.BoxGeometry(w, p.h, d), lamb(corLado));
-  topoM.position.set(cx, p.h / 2, cz); topoM.castShadow = topoM.receiveShadow = true;
-  topoM.userData.oclusor = true;
-  g.add(topoM);
-  const gramaM = new THREE.Mesh(new THREE.BoxGeometry(w, 0.1, d), lamb(0x67b34f));
-  gramaM.position.set(cx, p.h + 0.05, cz); gramaM.receiveShadow = true;
-  g.add(gramaM);
+  const r = Math.min(1.6, Math.min(w, d) * 0.22);
+  const camadas = 4;
+  for (let i = 0; i < camadas; i++) {
+    const cor = c0.clone().lerp(c1, i / (camadas - 1));
+    const folga = (camadas - 1 - i) * 0.45;
+    const shape = formaArredondada(w + folga, d + folga, r);
+    const geo = new THREE.ExtrudeGeometry(shape, { depth: p.h / camadas, bevelEnabled: false });
+    const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ color: cor }));
+    m.rotation.x = -Math.PI / 2;
+    m.position.set(cx, (i * p.h) / camadas, cz);
+    m.castShadow = m.receiveShadow = true;
+    m.userData.oclusor = true;
+    g.add(m);
+  }
+  const topoGeo = new THREE.ExtrudeGeometry(formaArredondada(w - 0.15, d - 0.15, r), { depth: 0.09, bevelEnabled: false });
+  const topo = new THREE.Mesh(topoGeo, new THREE.MeshLambertMaterial({ color: 0x67b34f }));
+  topo.rotation.x = -Math.PI / 2;
+  topo.position.set(cx, p.h, cz);
+  topo.receiveShadow = true;
+  g.add(topo);
 }
 
 /* boca de caverna nas rochas (o interior vem no futuro) */
