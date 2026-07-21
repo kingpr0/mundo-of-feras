@@ -26,10 +26,20 @@ export function criarMundo(mapa, selvagens = ['cascorro'], rnd = Math.random) {
 
 // altura do terreno: platôs têm paredão SECO (não dá para escalar) — a única
 // subida é pela rampa das ESCADAS. O passoMundo bloqueia degraus > 0.45.
+// MORROS são colinas suaves (cosseno) que qualquer um sobe andando.
 const DV_ESCADA = { norte: [0, -1], sul: [0, 1], leste: [1, 0], oeste: [-1, 0] };
 const COMP_ESCADA = 1.7;
-export function alturaTerreno(mapa, pos) {
+// só a parte suave do relevo (morros) — o render desloca o chão com isso
+export function alturaMorros(mapa, pos) {
   let h = 0;
+  for (const mo of mapa.morros || []) {
+    const d = Math.hypot(pos.x - mo.x, pos.z - mo.z);
+    if (d < mo.r) h += mo.h * 0.5 * (1 + Math.cos((d / mo.r) * Math.PI));
+  }
+  return h;
+}
+export function alturaTerreno(mapa, pos) {
+  let h = alturaMorros(mapa, pos);
   for (const p of mapa.platos || []) {
     if (pos.x > p.x0 && pos.x < p.x1 && pos.z > p.z0 && pos.z < p.z1)
       h = Math.max(h, p.h);
@@ -77,7 +87,7 @@ export function zonasGrama(mapa) {
 }
 
 function colide(mapa, pos) {
-  for (const a of mapa.arvores) {
+  for (const a of mapa.arvores || []) {
     const dx = pos.x - a[0], dz = pos.z - a[1];
     if (dx * dx + dz * dz < RAIO_ARVORE * RAIO_ARVORE) return true;
   }

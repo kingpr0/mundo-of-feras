@@ -22,12 +22,40 @@
         [-15, 14, "vermelho"], [-7, 16, "azul"], [-17, 6, "vermelho"]
       ],
       "centro": { "x": -1, "z": 17 },
+      "morros": [
+        { "x": -11, "z": 12.5, "r": 3.5, "h": 0.55 },
+        { "x": 14, "z": 8, "r": 5, "h": 0.5 }
+      ],
       "grama": { "x0": 8, "z0": -18, "x1": 20, "z1": -4 },
       "spawn": { "x": -11, "z": 10 },
       "selvagens": ["cascorro"],
       "saidas": [
         { "borda": "leste", "de": -2, "ate": 2, "destino": "trilha" },
-        { "borda": "norte", "de": -2, "ate": 2, "destino": "campo" }
+        { "borda": "norte", "de": -2, "ate": 2, "destino": "campo" },
+        { "borda": "sul", "de": -2, "ate": 2, "destino": "deserto" }
+      ]
+    },
+    "deserto": {
+      "nome": "Dunas Escaldantes",
+      "regiao": { "x": 0, "y": 1 },
+      "chao": "deserto",
+      "borda": "montanha",
+      "limite": { "x": 22, "z": 22 },
+      "morros": [
+        { "x": -10, "z": 2, "r": 6, "h": 0.8 },
+        { "x": 8, "z": 4, "r": 7, "h": 1.0 },
+        { "x": -2, "z": 14, "r": 6, "h": 0.6 },
+        { "x": 14, "z": -12, "r": 5, "h": 0.7 }
+      ],
+      "pedras": [
+        [-16, 6, 1.3], [18, -4, 1.5], [4, -16, 1.0], [-8, 16, 1.1], [-14, -12, 1.2]
+      ],
+      "agua": { "x0": 12, "z0": 12, "x1": 20, "z1": 20 },
+      "grama": { "x0": -18, "z0": -18, "x1": -6, "z1": -8 },
+      "spawn": { "x": 0, "z": -19 },
+      "selvagens": ["cascorro", "raposa", "espinhim"],
+      "saidas": [
+        { "borda": "norte", "de": -2, "ate": 2, "destino": "clareira" }
       ]
     },
     "trilha": {
@@ -56,7 +84,7 @@
       ],
       "grama": { "x0": -18, "z0": -8, "x1": -8, "z1": 6 },
       "spawn": { "x": -19, "z": 14 },
-      "selvagens": ["voltim", "gotim"],
+      "selvagens": ["voltim", "gotim", "sapum"],
       "saidas": [
         { "borda": "oeste", "de": -2, "ate": 2, "destino": "trilha" },
         { "borda": "norte", "de": -6, "ate": -2, "destino": "encosta" }
@@ -76,6 +104,9 @@
         { "x": -8, "z": 4, "w": 2.6, "dir": "norte", "h": 0.9 },
         { "x": -6, "z": -8, "w": 2.4, "dir": "sul", "h": 0.9 },
         { "x": -2, "z": 0, "w": 2.4, "dir": "oeste", "h": 0.9 }
+      ],
+      "morros": [
+        { "x": 10, "z": 10, "r": 6, "h": 0.7 }
       ],
       "grama": { "x0": 4, "z0": -18, "x1": 18, "z1": -6 },
       "spawn": { "x": 0, "z": 18 },
@@ -134,7 +165,7 @@
       "centro": { "x": 14, "z": -13 },
       "grama": { "x0": -14, "z0": 4, "x1": -4, "z1": 12 },
       "spawn": { "x": 0, "z": 13 },
-      "selvagens": ["voltim", "salamandro", "folhito", "draguim"],
+      "selvagens": ["voltim", "salamandro", "folhito", "draguim", "diabrim"],
       "saidas": [
         { "borda": "sul", "de": -2, "ate": 2, "destino": "campo" },
         { "borda": "leste", "de": 2, "ate": 6, "destino": "encosta" }
@@ -156,7 +187,7 @@
       ],
       "grama": { "x0": 0, "z0": 2, "x1": 10, "z1": 10 },
       "spawn": { "x": -12, "z": 8 },
-      "selvagens": ["voltim", "gotim", "raiozim"],
+      "selvagens": ["voltim", "gotim", "raiozim", "sapum"],
       "saidas": [
         { "borda": "oeste", "de": 2, "ate": 6, "destino": "colinas" },
         { "borda": "sul", "de": -6, "ate": -2, "destino": "lago" },
@@ -192,7 +223,7 @@
         { "x0": 4, "z0": 8, "x1": 14, "z1": 13 }
       ],
       "spawn": { "x": -16, "z": 0 },
-      "selvagens": ["salamandro", "cascorro", "raiozim", "assombrim", "draguim"],
+      "selvagens": ["salamandro", "cascorro", "raiozim", "assombrim", "draguim", "yetao"],
       "saidas": [
         { "borda": "oeste", "de": -2, "ate": 2, "destino": "encosta" }
       ]
