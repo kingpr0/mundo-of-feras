@@ -6,7 +6,7 @@ import { criarMundo, passoMundo, daImunidade, entradaDoMapa } from './sim/mundo.
 import { criarBatalha, passoBatalha, podeCapturar, fugirBatalha, trocaFera, continuaComOutraFera } from './sim/batalha.js';
 import { ganhaXp, xpParaSubir, xpPorVitoria, nivelSelvagem, vidaMaxima, NIVEL_INICIAL } from './sim/progressao.js';
 import { criarFera, aprendeGolpe, lembraGolpe, montaSlots, aprendizadosDoNivel, curaTotal, bonusNivel, paraBatalha } from './sim/equipe.js';
-import { criarCena, poof, jato, passoParticulas, passoCamera, mostraArena, montaMapa, passoOclusores } from './render/cena.js';
+import { criarCena, poof, jato, passoParticulas, passoAmbiente, passoCamera, mostraArena, montaMapa, passoOclusores } from './render/cena.js';
 import { criarEfeitos } from './render/efeitos.js';
 import * as MD from './render/modelos.js';
 import { criarHUD } from './render/hud.js';
@@ -717,6 +717,7 @@ function loop(agora) {
 
   passoParticulas(cena, dt);
   fx.passo(dt);
+  passoAmbiente(cena, tempo);
   hud.passoDanos(cena.camera, dt, THREE);
 
   if (modo === 'explorar') {

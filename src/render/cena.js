@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { alturaTerreno } from '../sim/mundo.js';
 import { criarNPC } from './modelos.js';
+import { texturaChamaAnimada } from './efeitos.js';
 
 export function criarCena(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -37,6 +38,7 @@ export function criarCena(canvas) {
     parts: [],
     oclusores: [],
     oclusoresArena: [],
+    anims: [], // animações de ambiente do mapa atual (fogueira, água...)
   };
   arenaG.traverse((o) => { if (o.isMesh && o.userData.oclusor) estado.oclusoresArena.push(o); });
   const resize = () => {
@@ -160,12 +162,25 @@ function fogueira(g, x, z, y = 0) {
     tronco.rotation.z = Math.PI / 2; tronco.rotation.y = rot;
     tronco.position.set(x, y + 0.1, z); g.add(tronco);
   }
-  const ch1 = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.5, 8),
-    new THREE.MeshLambertMaterial({ color: 0xff8a3d, emissive: 0x993300 }));
-  ch1.position.set(x, y + 0.4, z); g.add(ch1);
-  const ch2 = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.3, 8),
-    new THREE.MeshLambertMaterial({ color: 0xffe066, emissive: 0x996600 }));
-  ch2.position.set(x, y + 0.5, z); g.add(ch2);
+  // brasas incandescentes + chama 2.5D (flipbook) + luz quente tremulando
+  const brasa = new THREE.Mesh(new THREE.DodecahedronGeometry(0.16),
+    new THREE.MeshLambertMaterial({ color: 0x4a2a1a, emissive: 0xa33000 }));
+  brasa.position.set(x, y + 0.18, z); g.add(brasa);
+  const folha = texturaChamaAnimada();
+  const chama = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: folha.tex, transparent: true, depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  }));
+  chama.position.set(x, y + 0.85, z);
+  g.add(chama);
+  const luz = new THREE.PointLight(0xff9a4d, 1.2, 9);
+  luz.position.set(x, y + 1.1, z); g.add(luz);
+  (g.userData.anims || []).push((t) => {
+    folha.tex.offset.x = (Math.floor(t * 14) % folha.quadros) / folha.quadros;
+    const s = 1.15 + Math.sin(t * 11) * 0.1 + Math.sin(t * 23.7) * 0.05;
+    chama.scale.set(s, s * 1.2, 1);
+    luz.intensity = 1.1 + Math.sin(t * 13.7) * 0.2 + Math.sin(t * 31.3) * 0.12;
+  });
 }
 function poco(g, x, z, y = 0) {
   const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
@@ -345,34 +360,94 @@ function arvore(scene, x, z, pinheiro) {
   return g;
 }
 
-/* grama alta: um mar CONTÍNUO de arbustos arredondados lado a lado (grade
-   com leve variação) — quem entra some da cintura para baixo, estilo
-   Pokémon/ClaudeCraft */
+/* grama alta: mar contínuo de TUFOS DE CAPIM 2.5D — lâminas desenhadas em
+   canvas, aplicadas em pares de planos cruzados e fundidas numa geometria
+   única por zona (barato). Quem entra some da cintura para baixo. */
+let _texCapim = null;
+function texturaCapim() {
+  if (_texCapim) return _texCapim;
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const x = c.getContext('2d');
+  let sem = 7;
+  const rnd = () => (sem = (sem * 1103515245 + 12345) % 2147483648) / 2147483648;
+  const cores = ['#3d8a35', '#4a9a3d', '#59b04a', '#357a2e', '#65bd52'];
+  for (let i = 0; i < 12; i++) {
+    const bx = 10 + rnd() * 108;          // pé da lâmina no rodapé
+    const topx = bx + (rnd() - 0.5) * 50; // ponta se inclina
+    const h = 66 + rnd() * 58, w = 5 + rnd() * 6;
+    x.fillStyle = cores[Math.floor(rnd() * cores.length)];
+    x.beginPath();
+    x.moveTo(bx - w, 128);
+    x.quadraticCurveTo(bx - w * 0.4, 128 - h * 0.6, topx, 128 - h);
+    x.quadraticCurveTo(bx + w * 0.4, 128 - h * 0.6, bx + w, 128);
+    x.closePath(); x.fill();
+  }
+  _texCapim = new THREE.CanvasTexture(c);
+  return _texCapim;
+}
 function montaGrama(scene, G) {
-  const mats = [0x3d8a35, 0x46983c, 0x51a746]
-    .map((c) => new THREE.MeshLambertMaterial({ color: c }));
   const base = new THREE.Mesh(
     new THREE.PlaneGeometry(G.x1 - G.x0 + 1, G.z1 - G.z0 + 1),
     new THREE.MeshLambertMaterial({ color: 0x357a2e }));
   base.rotation.x = -Math.PI / 2;
   base.position.set((G.x0 + G.x1) / 2, 0.012, (G.z0 + G.z1) / 2);
   base.receiveShadow = true; scene.add(base);
-  const geo = new THREE.SphereGeometry(0.78, 10, 7);
-  const passo = 1.05;
-  let i = 0;
-  for (let px = G.x0 + 0.6; px <= G.x1 - 0.3; px += passo) {
-    for (let pz = G.z0 + 0.6; pz <= G.z1 - 0.3; pz += passo, i++) {
-      const m = new THREE.Mesh(geo, mats[(i * 7) % mats.length]);
-      const esc = 0.9 + ((i * 13) % 10) / 45;
-      m.scale.set(esc, 0.62 * esc, esc);
-      m.position.set(px + (((i * 31) % 7) - 3) * 0.06, 0.34,
-                     pz + (((i * 17) % 7) - 3) * 0.06);
-      m.castShadow = true;
-      scene.add(m);
+
+  let sem = Math.abs((G.x0 * 73 + G.z0 * 31) | 0) + 5;
+  const rnd = () => (sem = (sem * 1103515245 + 12345) % 2147483648) / 2147483648;
+  const pos = [], nrm = [], uv = [], cor = [], idx = [];
+  let vi = 0;
+  const tufo = (cx, cz) => {
+    const esc = 0.85 + rnd() * 0.45, rot = rnd() * Math.PI;
+    const tinta = 0.82 + rnd() * 0.3; // varia o tom por tufo
+    for (const a of [rot, rot + Math.PI / 2]) { // dois planos em X
+      const dx = Math.cos(a) * 0.72 * esc, dz = Math.sin(a) * 0.72 * esc;
+      const h = 0.95 * esc;
+      pos.push(cx - dx, 0, cz - dz, cx + dx, 0, cz + dz,
+               cx + dx, h, cz + dz, cx - dx, h, cz - dz);
+      for (let k = 0; k < 4; k++) { nrm.push(0, 1, 0); cor.push(tinta, tinta, tinta); }
+      uv.push(0, 0, 1, 0, 1, 1, 0, 1);
+      idx.push(vi, vi + 1, vi + 2, vi, vi + 2, vi + 3);
+      vi += 4;
     }
-  }
+  };
+  for (let px = G.x0 + 0.55; px <= G.x1 - 0.3; px += 0.95)
+    for (let pz = G.z0 + 0.55; pz <= G.z1 - 0.3; pz += 0.95)
+      tufo(px + (rnd() - 0.5) * 0.4, pz + (rnd() - 0.5) * 0.4);
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('normal', new THREE.Float32BufferAttribute(nrm, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(cor, 3));
+  geo.setIndex(idx);
+  const capim = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({
+    map: texturaCapim(), alphaTest: 0.55, side: THREE.DoubleSide, vertexColors: true,
+  }));
+  scene.add(capim);
 }
 
+// tile transparente de cristas de onda (senoides com período inteiro:
+// a emenda horizontal fecha sem costura)
+function texturaOndas() {
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const x = c.getContext('2d');
+  let sem = 19;
+  const rnd = () => (sem = (sem * 1103515245 + 12345) % 2147483648) / 2147483648;
+  x.lineCap = 'round';
+  for (let i = 0; i < 5; i++) {
+    const y0 = 14 + i * 22 + rnd() * 8;
+    const amp = 3 + rnd() * 3, per = 1 + Math.floor(rnd() * 2);
+    x.strokeStyle = `rgba(255,255,255,${0.25 + rnd() * 0.2})`;
+    x.lineWidth = 2.5 + rnd() * 2;
+    x.beginPath();
+    for (let px = -4; px <= 132; px += 4) {
+      const py = y0 + Math.sin((px / 128) * Math.PI * 2 * per + i * 1.7) * amp;
+      if (px === -4) x.moveTo(px, py); else x.lineTo(px, py);
+    }
+    x.stroke();
+  }
+  return new THREE.CanvasTexture(c);
+}
 function montaAgua(g, ag) {
   const areia = new THREE.Mesh(
     new THREE.PlaneGeometry(ag.x1 - ag.x0 + 1.6, ag.z1 - ag.z0 + 1.6),
@@ -380,12 +455,30 @@ function montaAgua(g, ag) {
   areia.rotation.x = -Math.PI / 2;
   areia.position.set((ag.x0 + ag.x1) / 2, 0.02, (ag.z0 + ag.z1) / 2);
   areia.receiveShadow = true; g.add(areia);
+  const w = ag.x1 - ag.x0, d = ag.z1 - ag.z0;
   const agua = new THREE.Mesh(
-    new THREE.PlaneGeometry(ag.x1 - ag.x0, ag.z1 - ag.z0),
+    new THREE.PlaneGeometry(w, d),
     new THREE.MeshLambertMaterial({ color: 0x3f8fd4, transparent: true, opacity: 0.9 }));
   agua.rotation.x = -Math.PI / 2;
   agua.position.set((ag.x0 + ag.x1) / 2, 0.04, (ag.z0 + ag.z1) / 2);
   g.add(agua);
+  // duas camadas de cristas deslizando em sentidos opostos = água viva
+  const camadas = [];
+  for (const [rep, op, alt] of [[4.2, 0.5, 0.055], [2.8, 0.32, 0.07]]) {
+    const tex = texturaOndas();
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(w / rep, d / rep);
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d),
+      new THREE.MeshLambertMaterial({ map: tex, transparent: true, opacity: op, depthWrite: false }));
+    m.rotation.x = -Math.PI / 2;
+    m.position.set((ag.x0 + ag.x1) / 2, alt, (ag.z0 + ag.z1) / 2);
+    g.add(m);
+    camadas.push(tex);
+  }
+  (g.userData.anims || []).push((t) => {
+    camadas[0].offset.set(t * 0.018, Math.sin(t * 0.6) * 0.02);
+    camadas[1].offset.set(-t * 0.012, t * 0.008);
+  });
 }
 
 /* platô elevado: dois degraus (base larga + topo), combinando com a rampa
@@ -566,6 +659,9 @@ export function montaMapa(cena, mapa) {
   g.visible = !cena.arenaG.visible;
   cena.scene.add(g);
   cena.mundoG = g;
+  // as peças do cenário registram aqui suas animações (fogueira, água...)
+  cena.anims = [];
+  g.userData.anims = cena.anims;
   if (mapa.tipo === 'interior') { montaInterior(g, mapa); return; }
   montaChao(g, Math.max(mapa.limite.x, mapa.limite.z) * 2 + 24, mapa.chao || 'grama');
   montaCaminhos(g, mapa);
@@ -664,6 +760,11 @@ export function poof(cena, pos, cor, n = 10, vel = 3) {
       vz: (Math.random()-.5)*vel, vida: 0.5 + Math.random() * 0.3 });
   }
 }
+// animações de ambiente do mapa (fogueira, água...) — registradas na montagem
+export function passoAmbiente(cena, t) {
+  for (const f of cena.anims) f(t);
+}
+
 export function passoParticulas(cena, dt) {
   for (let i = cena.parts.length - 1; i >= 0; i--) {
     const p = cena.parts[i];

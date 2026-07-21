@@ -125,6 +125,11 @@ function fazTex(cv) {
 
 const FOLHA_DO_TIPO = { fogo: 'fogo', eletrico: 'eletrico', agua: 'agua' };
 
+// folha de chamas para uso do cenário (fogueira da vila, tochas...)
+export function texturaChamaAnimada() {
+  return { tex: fazTex(desenhaSheet(pintaFogo)), quadros: QUADROS };
+}
+
 export function criarEfeitos(scene) {
   const canvases = {
     fogo: desenhaSheet(pintaFogo),
