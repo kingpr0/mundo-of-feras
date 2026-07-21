@@ -351,8 +351,9 @@ function mostraHoloEspecie(chave) {
   const base = { x: mundo.domador.pos.x, y: mundo.domador.pos.y + 0.1, z: mundo.domador.pos.z };
   MD.setPos(holoM, base);
   MD.setEscala(holoM, 4.5);
-  MD.setOpacidade(holoM, 0.85);
-  MD.flashCor(holoM, 0x0f4652);
+  // sólido e com tinta azulada BEM sutil: as cores reais da fera aparecem
+  MD.setOpacidade(holoM, 1);
+  MD.flashCor(holoM, 0x06222a);
   holoM.g.rotation.x = 0;
   MD.mostra(holoM, true);
   MD.setPos(discoHolo, base);

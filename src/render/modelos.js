@@ -269,59 +269,88 @@ function criarGotim(scene) {
 }
 
 function criarSalamandro(scene) {
+  // lagartinho de fogo colado na referência: silhueta CONTÍNUA em pêra
+  // (esferas emendadas), barrigão creme, boca larga aberta com presinhas,
+  // olhos verde-água, braços abertos e a chama em gota NA PONTA da cauda
   const M = novoModelo(scene, 1.2);
   const g = M.g;
   const laranja = 0xf08030, creme = 0xffe9c4;
-  const corpo = parte(M, g, new THREE.SphereGeometry(0.32, 18, 14), laranja, 0, 0.52, 0);
-  corpo.scale.set(1, 1.18, 0.95);
+  // corpo-pêra contínuo: quadril -> tronco -> pescoço se sobrepõem
+  const corpo = parte(M, g, new THREE.SphereGeometry(0.34, 18, 14), laranja, 0, 0.42, 0);
+  corpo.scale.set(1.08, 1, 1);
   M.corpo = corpo; corpo.userData.s0 = corpo.scale.clone();
-  const barriga = parte(M, g, new THREE.SphereGeometry(0.25, 14, 12), creme, 0, 0.48, 0.15);
-  barriga.scale.set(1.0, 1.25, 0.55);
-  // CABEÇA articulada
-  const cab = grupoEm(M, 0, 1.12, 0.03);
+  parte(M, g, new THREE.SphereGeometry(0.27, 16, 12), laranja, 0, 0.68, 0.01);
+  parte(M, g, new THREE.SphereGeometry(0.21, 14, 10), laranja, 0, 0.9, 0.02);
+  // barrigão creme do peito à barriga
+  const barriga = parte(M, g, new THREE.SphereGeometry(0.28, 14, 12), creme, 0, 0.46, 0.15);
+  barriga.scale.set(0.95, 1.15, 0.55);
+  // CABEÇA articulada: crânio largo + focinho + BOCA ABERTA com presas
+  const cab = grupoEm(M, 0, 1.14, 0.03);
   M.cabeca = cab;
-  parte(M, cab, new THREE.SphereGeometry(0.29, 18, 14), laranja, 0, 0, 0);
-  const focinho = parte(M, cab, new THREE.SphereGeometry(0.18, 14, 10), laranja, 0, -0.1, 0.23);
-  focinho.scale.set(1.15, 0.72, 1.1);
-  parte(M, cab, new THREE.SphereGeometry(0.022, 6, 6), COR.olho, -0.06, -0.03, 0.39);
-  parte(M, cab, new THREE.SphereGeometry(0.022, 6, 6), COR.olho, 0.06, -0.03, 0.39);
+  const cranio = parte(M, cab, new THREE.SphereGeometry(0.3, 18, 14), laranja, 0, 0.02, -0.02);
+  cranio.scale.set(1.05, 0.95, 1);
+  const focinho = parte(M, cab, new THREE.SphereGeometry(0.2, 14, 10), laranja, 0, -0.08, 0.2);
+  focinho.scale.set(1.1, 0.7, 1.15);
+  // boca aberta (interior escuro) com duas presinhas brancas
+  const bocaAberta = parte(M, cab, new THREE.SphereGeometry(0.13, 10, 8), 0x7a3328, 0, -0.16, 0.28);
+  bocaAberta.scale.set(1.25, 0.5, 0.7);
   for (const lado of [-1, 1]) {
-    parte(M, cab, new THREE.SphereGeometry(0.08, 10, 8), 0xffffff, lado * 0.13, 0.1, 0.17);
-    parte(M, cab, new THREE.SphereGeometry(0.042, 8, 6), COR.olho, lado * 0.13, 0.1, 0.24);
+    const presa = parte(M, cab, new THREE.ConeGeometry(0.025, 0.07, 5), 0xffffff, lado * 0.1, -0.13, 0.36);
+    presa.rotation.x = Math.PI; // pontinha para baixo
+  }
+  parte(M, cab, new THREE.SphereGeometry(0.02, 6, 6), COR.olho, -0.06, 0.0, 0.34);
+  parte(M, cab, new THREE.SphereGeometry(0.02, 6, 6), COR.olho, 0.06, 0.0, 0.34);
+  // olhos grandes com íris verde-água (como na referência)
+  for (const lado of [-1, 1]) {
+    const olhoB = parte(M, cab, new THREE.SphereGeometry(0.085, 10, 8), 0xffffff, lado * 0.14, 0.12, 0.19);
+    olhoB.scale.set(0.9, 1.15, 0.6);
+    parte(M, cab, new THREE.SphereGeometry(0.05, 8, 8), 0x1f8a8a, lado * 0.14, 0.12, 0.25);
+    parte(M, cab, new THREE.SphereGeometry(0.026, 6, 6), COR.olho, lado * 0.14, 0.12, 0.29);
   }
   marcaBoca(M, cab, 0, -0.16, 0.38);
-  // braços e pernas ARTICULADOS (ombro e quadril como pivôs)
+  // braços ABERTOS para os lados, com garrinhas brancas
   for (const lado of [-1, 1]) {
-    const ombro = grupoEm(M, lado * 0.28, 0.7, 0.06);
-    const braco = parte(M, ombro, new THREE.CylinderGeometry(0.06, 0.055, 0.26, 8), laranja, lado * 0.03, -0.08, 0.05);
-    braco.rotation.z = lado * 0.7; braco.rotation.x = -0.4;
-    parte(M, ombro, new THREE.SphereGeometry(0.065, 8, 8), laranja, lado * 0.12, -0.15, 0.12);
+    const ombro = grupoEm(M, lado * 0.3, 0.74, 0.04);
+    const braco = parte(M, ombro, new THREE.CylinderGeometry(0.065, 0.06, 0.3, 8), laranja, lado * 0.1, -0.05, 0.03);
+    braco.rotation.z = lado * 1.1;
+    parte(M, ombro, new THREE.SphereGeometry(0.07, 8, 8), laranja, lado * 0.24, -0.1, 0.05);
+    for (const dg of [-0.03, 0.03]) {
+      const garra = parte(M, ombro, new THREE.ConeGeometry(0.022, 0.06, 5), 0xffffff, lado * 0.29 + dg, -0.12, 0.06);
+      garra.rotation.z = lado * 1.4;
+    }
     M.bracos.push(ombro);
-    const quadril = grupoEm(M, lado * 0.17, 0.28, 0);
-    parte(M, quadril, new THREE.SphereGeometry(0.14, 10, 8), laranja, 0, -0.08, 0);
-    const peS = parte(M, quadril, new THREE.SphereGeometry(0.13, 10, 8), laranja, 0, -0.23, 0.08);
-    peS.scale.set(0.85, 0.45, 1.25);
+  }
+  // pernas grossas com pés e garras
+  for (const lado of [-1, 1]) {
+    const quadril = grupoEm(M, lado * 0.18, 0.28, 0);
+    parte(M, quadril, new THREE.SphereGeometry(0.15, 10, 8), laranja, 0, -0.06, 0);
+    const peS = parte(M, quadril, new THREE.SphereGeometry(0.13, 10, 8), laranja, 0, -0.22, 0.07);
+    peS.scale.set(0.9, 0.5, 1.3);
     for (const dg of [-0.06, 0, 0.06]) {
-      const garra = parte(M, quadril, new THREE.ConeGeometry(0.028, 0.09, 6), 0xfff6df, dg, -0.23, 0.25);
+      const garra = parte(M, quadril, new THREE.ConeGeometry(0.028, 0.09, 6), 0xffffff, dg, -0.24, 0.24);
       garra.rotation.x = Math.PI / 2;
     }
     M.pernas.push(quadril);
   }
-  // CAUDA articulada com a chama em três camadas
-  const cauda = grupoEm(M, 0, 0.44, -0.3);
+  // CAUDA grossa em curva (esferas emendadas) com a CHAMA na ponta
+  const cauda = grupoEm(M, 0, 0.38, -0.26);
   M.cauda = cauda;
-  const c1 = parte(M, cauda, new THREE.ConeGeometry(0.15, 0.5, 10), laranja, 0, 0, -0.1);
-  c1.rotation.x = -2.3;
-  parte(M, cauda, new THREE.SphereGeometry(0.1, 10, 8), laranja, 0, 0.24, -0.32);
-  const c2 = parte(M, cauda, new THREE.CylinderGeometry(0.07, 0.1, 0.3, 8), laranja, 0, 0.41, -0.36);
-  c2.rotation.x = 0.3;
-  const chamaExt = parte(M, cauda, new THREE.ConeGeometry(0.16, 0.42, 10), 0xff5a2a, 0, 0.76, -0.4);
-  const chamaMeio = parte(M, cauda, new THREE.ConeGeometry(0.11, 0.3, 8), 0xff9a3d, 0, 0.8, -0.4);
-  const chamaMiolo = parte(M, cauda, new THREE.ConeGeometry(0.055, 0.18, 8), 0xffe066, 0, 0.84, -0.4);
-  chamaExt.material.emissive.setHex(0x882200);
-  chamaMeio.material.emissive.setHex(0x883300);
-  chamaMiolo.material.emissive.setHex(0x886600);
-  M.materiais.splice(-3, 3);
+  parte(M, cauda, new THREE.SphereGeometry(0.16, 12, 10), laranja, 0, 0.02, -0.12);
+  parte(M, cauda, new THREE.SphereGeometry(0.13, 12, 10), laranja, 0, 0.1, -0.3);
+  parte(M, cauda, new THREE.SphereGeometry(0.1, 10, 8), laranja, 0, 0.24, -0.44);
+  parte(M, cauda, new THREE.SphereGeometry(0.075, 10, 8), laranja, 0, 0.4, -0.5);
+  // chama em GOTA: base esférica vermelha + línguas laranja e amarela
+  const chama = new THREE.Group();
+  chama.position.set(0, 0.55, -0.5);
+  cauda.add(chama);
+  M.chama = chama;
+  const fBase = parte(M, chama, new THREE.SphereGeometry(0.12, 10, 8), 0xff4422, 0, 0, 0);
+  const fMeio = parte(M, chama, new THREE.ConeGeometry(0.11, 0.3, 8), 0xff8a3d, 0, 0.14, 0);
+  const fPonta = parte(M, chama, new THREE.ConeGeometry(0.055, 0.2, 8), 0xffe066, 0, 0.26, 0);
+  fBase.material.emissive.setHex(0x992200);
+  fMeio.material.emissive.setHex(0x994400);
+  fPonta.material.emissive.setHex(0x997700);
+  M.materiais.splice(-3, 3); // a chama não pisca com dano
   return M;
 }
 
@@ -548,6 +577,11 @@ export function animaIdle(M, t) {
   if (M.cabeca) {
     M.cabeca.rotation.x = Math.sin(t * 1.6) * 0.05;
     M.cabeca.rotation.y = Math.sin(t * 0.9) * 0.1;
+  }
+  // chama da cauda tremeluz sempre
+  if (M.chama) {
+    M.chama.scale.setScalar(0.85 + Math.abs(Math.sin(t * 9)) * 0.3);
+    M.chama.rotation.y = t * 2.5;
   }
 }
 
