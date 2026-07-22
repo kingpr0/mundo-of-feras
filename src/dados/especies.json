@@ -7,12 +7,27 @@
     "velocidade": 4.6,
     "ataque": 1.1,
     "impulso": 7.5,
-    "sequencia": ["baixo", "frente"],
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
     "aprendizado": [
-      { "nivel": 1, "golpe": "investida" },
-      { "nivel": 5, "golpe": "bola_fogo" },
-      { "nivel": 8, "golpe": "investida_feroz" },
-      { "nivel": 10, "golpe": "lanca_chamas" }
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "bola_fogo"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "lanca_chamas"
+      }
     ]
   },
   "cascorro": {
@@ -24,10 +39,18 @@
     "velocidade": 2.9,
     "ataque": 1.3,
     "impulso": 6.2,
-    "sequencia": ["baixo"],
+    "sequencia": [
+      "baixo"
+    ],
     "aprendizado": [
-      { "nivel": 1, "golpe": "investida" },
-      { "nivel": 6, "golpe": "rolamento_demolidor" }
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 6,
+        "golpe": "rolamento_demolidor"
+      }
     ]
   },
   "voltim": {
@@ -39,12 +62,26 @@
     "velocidade": 5.6,
     "ataque": 0.95,
     "impulso": 8.5,
-    "sequencia": ["frente"],
+    "sequencia": [
+      "frente"
+    ],
     "aprendizado": [
-      { "nivel": 1, "golpe": "investida" },
-      { "nivel": 5, "golpe": "esfera_voltaica" },
-      { "nivel": 9, "golpe": "investida_feroz" },
-      { "nivel": 10, "golpe": "rajada_voltaica" }
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "esfera_voltaica"
+      },
+      {
+        "nivel": 9,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "rajada_voltaica"
+      }
     ]
   },
   "salamandro": {
@@ -56,12 +93,27 @@
     "velocidade": 4.3,
     "ataque": 1.05,
     "impulso": 7.2,
-    "sequencia": ["baixo", "frente"],
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
     "aprendizado": [
-      { "nivel": 1, "golpe": "investida" },
-      { "nivel": 5, "golpe": "bola_fogo" },
-      { "nivel": 8, "golpe": "investida_feroz" },
-      { "nivel": 9, "golpe": "lanca_chamas" }
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "bola_fogo"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 9,
+        "golpe": "lanca_chamas"
+      }
     ]
   },
   "folhito": {
@@ -72,8 +124,11 @@
     "vida": 68,
     "velocidade": 4.2,
     "ataque": 1.05,
-    "impulso": 7.0,
-    "sequencia": ["baixo", "frente"],
+    "impulso": 7,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
     "modelo3d": "./assets/feras/folhito.glb",
     "altura3d": 1.05,
     "giro3d": 0,
@@ -85,10 +140,22 @@
       "ko": "CharacterArmature|Death"
     },
     "aprendizado": [
-      { "nivel": 1, "golpe": "investida" },
-      { "nivel": 5, "golpe": "folha_navalha" },
-      { "nivel": 8, "golpe": "investida_feroz" },
-      { "nivel": 10, "golpe": "tempestade_folhas" }
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "folha_navalha"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "tempestade_folhas"
+      }
     ]
   },
   "assombrim": {
@@ -97,10 +164,13 @@
     "raridade": "muito_rara",
     "selvagem": true,
     "vida": 60,
-    "velocidade": 5.0,
+    "velocidade": 5,
     "ataque": 1.15,
-    "impulso": 8.0,
-    "sequencia": ["baixo", "frente"],
+    "impulso": 8,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
     "modelo3d": "./assets/feras/assombrim.glb",
     "altura3d": 1.2,
     "giro3d": 0,
@@ -113,9 +183,16 @@
       "ko": "CharacterArmature|Death"
     },
     "aprendizado": [
-      { "nivel": 1, "golpe": "investida" },
-      { "nivel": 7, "golpe": "investida_feroz" }
-    ]
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 7,
+        "golpe": "investida_feroz"
+      }
+    ],
+    "voa": true
   },
   "raiozim": {
     "nome": "Raiozim",
@@ -124,14 +201,28 @@
     "selvagem": true,
     "vida": 58,
     "velocidade": 5.4,
-    "ataque": 1.0,
+    "ataque": 1,
     "impulso": 8.2,
-    "sequencia": ["frente"],
+    "sequencia": [
+      "frente"
+    ],
     "aprendizado": [
-      { "nivel": 1, "golpe": "investida" },
-      { "nivel": 5, "golpe": "esfera_voltaica" },
-      { "nivel": 8, "golpe": "investida_feroz" },
-      { "nivel": 10, "golpe": "rajada_voltaica" }
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "esfera_voltaica"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "trovao"
+      }
     ]
   },
   "draguim": {
@@ -143,7 +234,10 @@
     "velocidade": 4.4,
     "ataque": 1.2,
     "impulso": 7.4,
-    "sequencia": ["baixo", "frente"],
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
     "modelo3d": "./assets/feras/draguim.glb",
     "altura3d": 1.35,
     "giro3d": 0,
@@ -156,11 +250,24 @@
       "ko": "CharacterArmature|Death"
     },
     "aprendizado": [
-      { "nivel": 1, "golpe": "investida" },
-      { "nivel": 5, "golpe": "bola_fogo" },
-      { "nivel": 8, "golpe": "investida_feroz" },
-      { "nivel": 9, "golpe": "lanca_chamas" }
-    ]
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "bola_fogo"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 9,
+        "golpe": "lanca_chamas"
+      }
+    ],
+    "voa": true
   },
   "raposa": {
     "nome": "Raposa (demo 3D)",
@@ -171,14 +278,26 @@
     "velocidade": 5.2,
     "ataque": 1.1,
     "impulso": 7.8,
-    "sequencia": ["frente"],
+    "sequencia": [
+      "frente"
+    ],
     "modelo3d": "./assets/feras/raposa.glb",
     "altura3d": 1.15,
     "giro3d": 0,
-    "clipes": { "parado": "Survey", "andar": "Walk", "correr": "Run" },
+    "clipes": {
+      "parado": "Survey",
+      "andar": "Walk",
+      "correr": "Run"
+    },
     "aprendizado": [
-      { "nivel": 1, "golpe": "investida" },
-      { "nivel": 5, "golpe": "investida_feroz" }
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "investida_feroz"
+      }
     ]
   },
   "sapum": {
@@ -190,9 +309,11 @@
     "velocidade": 4.6,
     "ataque": 1.05,
     "impulso": 7.6,
-    "sequencia": ["baixo"],
+    "sequencia": [
+      "baixo"
+    ],
     "modelo3d": "./assets/feras/sapum.glb",
-    "altura3d": 1.0,
+    "altura3d": 1,
     "giro3d": 0,
     "clipes": {
       "parado": "CharacterArmature|Idle",
@@ -203,10 +324,22 @@
       "ko": "CharacterArmature|Death"
     },
     "aprendizado": [
-      { "nivel": 1, "golpe": "investida" },
-      { "nivel": 5, "golpe": "jato_agua" },
-      { "nivel": 8, "golpe": "investida_feroz" },
-      { "nivel": 10, "golpe": "rajada_bolhas" }
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "jato_agua"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "rajada_bolhas"
+      }
     ]
   },
   "diabrim": {
@@ -215,10 +348,13 @@
     "raridade": "rara",
     "selvagem": true,
     "vida": 66,
-    "velocidade": 5.0,
+    "velocidade": 5,
     "ataque": 1.15,
     "impulso": 7.8,
-    "sequencia": ["baixo", "frente"],
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
     "modelo3d": "./assets/feras/diabrim.glb",
     "altura3d": 1.25,
     "giro3d": 0,
@@ -231,11 +367,24 @@
       "ko": "CharacterArmature|Death"
     },
     "aprendizado": [
-      { "nivel": 1, "golpe": "investida" },
-      { "nivel": 5, "golpe": "bola_fogo" },
-      { "nivel": 8, "golpe": "investida_feroz" },
-      { "nivel": 10, "golpe": "lanca_chamas" }
-    ]
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "bola_fogo"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "lanca_chamas"
+      }
+    ],
+    "voa": true
   },
   "yetao": {
     "nome": "Yetão",
@@ -246,7 +395,9 @@
     "velocidade": 3.2,
     "ataque": 1.35,
     "impulso": 6.4,
-    "sequencia": ["baixo"],
+    "sequencia": [
+      "baixo"
+    ],
     "modelo3d": "./assets/feras/yetao.glb",
     "altura3d": 1.4,
     "giro3d": 0,
@@ -258,8 +409,14 @@
       "ko": "CharacterArmature|Death"
     },
     "aprendizado": [
-      { "nivel": 1, "golpe": "investida" },
-      { "nivel": 6, "golpe": "investida_feroz" }
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 6,
+        "golpe": "investida_feroz"
+      }
     ]
   },
   "espinhim": {
@@ -268,10 +425,12 @@
     "raridade": "comum",
     "selvagem": true,
     "vida": 66,
-    "velocidade": 4.0,
+    "velocidade": 4,
     "ataque": 1.1,
-    "impulso": 7.0,
-    "sequencia": ["frente"],
+    "impulso": 7,
+    "sequencia": [
+      "frente"
+    ],
     "modelo3d": "./assets/feras/espinhim.glb",
     "altura3d": 0.95,
     "giro3d": 0,
@@ -283,10 +442,22 @@
       "ko": "CharacterArmature|Death"
     },
     "aprendizado": [
-      { "nivel": 1, "golpe": "investida" },
-      { "nivel": 5, "golpe": "folha_navalha" },
-      { "nivel": 8, "golpe": "investida_feroz" },
-      { "nivel": 10, "golpe": "tempestade_folhas" }
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "folha_navalha"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "raio_esmeralda"
+      }
     ]
   },
   "gotim": {
@@ -295,14 +466,25 @@
     "raridade": "comum",
     "selvagem": true,
     "vida": 65,
-    "velocidade": 4.0,
-    "ataque": 1.0,
-    "impulso": 7.0,
-    "sequencia": ["baixo"],
+    "velocidade": 4,
+    "ataque": 1,
+    "impulso": 7,
+    "sequencia": [
+      "baixo"
+    ],
     "aprendizado": [
-      { "nivel": 1, "golpe": "investida" },
-      { "nivel": 5, "golpe": "jato_agua" },
-      { "nivel": 10, "golpe": "rajada_bolhas" }
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "jato_agua"
+      },
+      {
+        "nivel": 10,
+        "golpe": "rajada_bolhas"
+      }
     ]
   }
 }

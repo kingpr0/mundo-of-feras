@@ -21,6 +21,7 @@ export function criarMundo(mapa, selvagens = ['cascorro'], rnd = Math.random) {
     selvagens,
     imunidade: 0, // segundos sem novos encontros (após fugir/batalhar/trocar de mapa)
     cavernaT: 0,  // intervalo entre avisos da caverna
+    vencidos: new Set(), // treinadores já derrotados neste mapa
   };
 }
 
@@ -57,7 +58,7 @@ export function alturaTerreno(mapa, pos) {
 
 function colideDecor(mapa, pos) {
   for (const d of mapa.decor || []) {
-    const r = d[0] === 'banca' ? 1.3 : 0.95;
+    const r = d[0] === 'banca' ? 1.3 : d[0] === 'fogueira' ? 1.8 : 0.95;
     const dx = pos.x - d[1], dz = pos.z - d[2];
     if (dx * dx + dz * dz < r * r) return true;
   }
@@ -104,6 +105,10 @@ function colide(mapa, pos) {
   const ag = mapa.agua;
   if (ag && pos.x > ag.x0 && pos.x < ag.x1 && pos.z > ag.z0 && pos.z < ag.z1) return true;
   if (colideDecor(mapa, pos)) return true;
+  for (const t of mapa.treinadores || []) {
+    const dx = pos.x - t.x, dz = pos.z - t.z;
+    if (dx * dx + dz * dz < 0.55 * 0.55) return true;
+  }
   return false;
 }
 
@@ -180,6 +185,16 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
     if (m.mapa.tipo === 'interior' && mov.z > 0 &&
         d.pos.z > m.mapa.limite.z - 0.5 && Math.abs(d.pos.x) < 1.2)
       return { tipo: 'porta', destino: 'retorno' };
+
+    // treinador NPC: chegar perto de um ainda não vencido puxa o desafio
+    for (let ti = 0; ti < (m.mapa.treinadores || []).length; ti++) {
+      const t = m.mapa.treinadores[ti];
+      if (m.vencidos.has(t.nome) || m.cavernaT > 0) continue;
+      if (Math.hypot(d.pos.x - t.x, d.pos.z - t.z) < 1.9) {
+        m.cavernaT = 6; // trégua para não redisparar na mesma esquina
+        return { tipo: 'treinador', idx: ti, treinador: t };
+      }
+    }
 
     // boca da caverna: chegar perto avisa (interior dela vem no futuro)
     const cav = m.mapa.caverna;

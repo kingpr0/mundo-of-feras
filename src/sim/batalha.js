@@ -21,7 +21,9 @@ function novoLutador(l, esp, pos) {
     max: vida,
     estado: 'idle', t: 0, golpe: null, acertou: false, tiros: 0,
     invuln: 0, flash: 0, kb: vec(),
-    energia: 0, espinhoT: 0, // barra do golpe supremo · cooldown de perigo da arena
+    // energia estilo "ki": começa CHEIA, golpes especiais gastam, segurar
+    // o botão de carga recupera; espinhoT = cooldown do perigo da arena
+    energia: 100, espinhoT: 0, carregando: false, pulosAr: 0,
   };
 }
 
@@ -42,7 +44,15 @@ export function criarBatalha(especies, jogador, selvagem, posDomador, posSelvage
     tipos: extras.tipos || null,
     bioma: extras.bioma || null,
     supremos: extras.supremos || null,
+    treinador: !!extras.treinador, // duelo de treinador: captura proibida
   };
+}
+
+// duelo de treinador: caiu uma fera dele, entra a próxima
+export function proximaFeraTreinador(b, selvagem, especies, pos) {
+  b.e = novoLutador(selvagem, especies[selvagem.chave], copia(pos));
+  b.e.invuln = 1.2;
+  b.fim = false; b.resultado = null; b.fimT = 0;
 }
 
 // vantagem elemental: golpe do tipo forte contra o alvo = mais dano;
@@ -55,7 +65,10 @@ function eficacia(tipos, tipoGolpe, tipoAlvo) {
     return { m: tipos.penalidade || 0.75, ef: 'fraco' };
   return { m: 1, ef: null };
 }
-const ganhaEnergia = (f, n) => { f.energia = Math.min(100, (f.energia || 0) + n); };
+// custo de energia: físico simples é grátis; especial gasta 10; VERSÃO
+// FORTE (tem "base" no catálogo) gasta 60; supremo consome a barra inteira
+export const custoEnergia = (g) =>
+  g.supremo ? 100 : g.base ? 60 : (g.projetil || g.rajada || g.feixe) ? 10 : 0;
 
 // a fera caiu mas a equipe tem outra: o duelo continua contra o mesmo inimigo
 export function continuaComOutraFera(b, jogador, especies) {
@@ -76,8 +89,19 @@ export function trocaFera(b, jogador, especies) {
   b.p = novoLutador(jogador, especies[jogador.chave], pos);
 }
 
+// captura: só fera SELVAGEM com metade da vida ou menos. A chance cresce de
+// 50% (na metade) até 100% (a 25% de vida) — e a raridade corta o teto
+// (muito rara captura no máximo 25% das vezes).
+const FATOR_RARIDADE = { comum: 1, rara: 0.6, muito_rara: 0.25 };
 export function podeCapturar(b) {
-  return !b.fim && !b.captura && b.e.estado !== 'ko' && b.e.hp / b.e.max <= 0.35;
+  return !b.fim && !b.captura && !b.treinador &&
+         b.e.estado !== 'ko' && b.e.hp / b.e.max <= 0.5;
+}
+export function chanceCaptura(b) {
+  const hpr = b.e.hp / b.e.max;
+  if (hpr > 0.5) return 0;
+  const base = hpr <= 0.25 ? 1 : 0.5 + ((0.5 - hpr) / 0.25) * 0.5;
+  return base * (FATOR_RARIDADE[b.e.esp.raridade] || 1);
 }
 
 function aplicaDano(b, vitima, dano, dirKb, empurrao, forte, emitir, invulnT = 0.5, eficaz = null) {
@@ -97,7 +121,6 @@ function acerta(b, vitima, atacante, g, emitir) {
   const { m, ef } = eficacia(b.tipos, g.tipo || atacante.esp.tipo, vitima.esp.tipo);
   aplicaDano(b, vitima, Math.round(g.dano * atacante.forca * m),
     normXZ(sub(vitima.pos, atacante.pos)), g.empurrao, g.forte, emitir, 0.5, ef);
-  ganhaEnergia(atacante, 12); ganhaEnergia(vitima, 8);
 }
 
 /* projéteis: golpes elementais voam até o alvo — inclusive disparados do
@@ -115,6 +138,7 @@ function disparaProjetil(b, f, outro, g, cfg, emitir) {
     // tiros de rajada dão invulnerabilidade curtinha: a sequência inteira conecta
     rajada: !!g.rajada,
     vida: 1.8, tipo: g.tipo || f.esp.tipo,
+    visual: g.visual || null,
   });
   emitir({ tipo: 'projetil', pos: copia(pos), elemento: g.tipo || f.esp.tipo });
 }
@@ -130,8 +154,6 @@ function passoProjeteis(b, dt, emitir) {
       const { m, ef } = eficacia(b.tipos, pr.tipo, alvo.esp.tipo);
       aplicaDano(b, alvo, Math.round(pr.dano * pr.dono.forca * m),
         normXZ(pr.vel), pr.empurrao, true, emitir, pr.rajada ? 0.08 : 0.5, ef);
-      ganhaEnergia(pr.dono, pr.rajada ? 5 : 12);
-      ganhaEnergia(alvo, pr.rajada ? 3 : 8);
       b.projeteis.splice(i, 1);
     } else if (pr.vida <= 0 || Math.hypot(pr.pos.x, pr.pos.z) > ARENA.raio + 4) {
       b.projeteis.splice(i, 1);
@@ -146,12 +168,15 @@ function tentaGolpe(f, inp, emitir) {
   if (!s || !s.def) return;
   const escolhido = (inp.forte && s.forte) ? s.forte : s;
   const g = escolhido.def;
-  const podeNoAr = !!(g.projetil || g.rajada);
+  const podeNoAr = !!(g.projetil || g.rajada || g.feixe);
   if (f.pos.y > 0.01 && !podeNoAr) return;
+  const custo = custoEnergia(g);
+  if (f.energia < custo) { emitir({ tipo: 'semEnergia', nome: g.nome }); return; }
   if (g.usos != null) {
     if ((f.usos[escolhido.id] || 0) <= 0) { emitir({ tipo: 'semUsos', nome: g.nome }); return; }
     f.usos[escolhido.id]--;
   }
+  f.energia -= custo;
   f.estado = 'atk'; f.golpe = g; f.t = 0; f.acertou = false; f.tiros = 0;
   if (inp.forte && s.forte) emitir({ tipo: 'comando', nome: g.nome, pos: copia(f.pos) });
   else if (podeNoAr) emitir({ tipo: 'especial' });
@@ -172,6 +197,7 @@ function tentaSupremo(b, f, emitir) {
 
 function passoLutador(b, f, inp, outro, dt, emitir) {
   const p = f.pos;
+  f.carregando = false; // só o ramo "idle" pode reativar neste frame
   if (f.estado === 'ko') { f.t += dt; return; }
   if (f.estado === 'hurt') {
     f.t += dt;
@@ -186,7 +212,21 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
   } else if (f.estado === 'atk') {
     f.t += dt;
     const g = f.golpe;
-    if (g.rajada) {
+    if (g.feixe) {
+      // FEIXE instantâneo (trovão/energia): telegrafa na preparação e crava
+      if (!f.acertou && f.t >= g.prep) {
+        f.acertou = true;
+        const de = { x: f.pos.x, y: f.pos.y + 1.1, z: f.pos.z };
+        const para = { x: outro.pos.x, y: outro.pos.y + 0.7, z: outro.pos.z };
+        emitir({ tipo: 'feixe', de, para, elemento: g.tipo || f.esp.tipo, visual: g.visual || null });
+        if (outro.estado !== 'ko' && outro.invuln <= 0 &&
+            distXZ(f.pos, outro.pos) <= (g.feixe.alcance || 8)) {
+          const { m, ef } = eficacia(b.tipos, g.tipo || f.esp.tipo, outro.esp.tipo);
+          aplicaDano(b, outro, Math.round(g.dano * f.forca * m),
+            normXZ(sub(outro.pos, f.pos)), g.empurrao, true, emitir, 0.5, ef);
+        }
+      }
+    } else if (g.rajada) {
       if (f.tiros < g.rajada.tiros && f.t >= g.prep + f.tiros * g.rajada.intervalo) {
         f.tiros++;
         disparaProjetil(b, f, outro, g, g.rajada, emitir);
@@ -208,26 +248,41 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
     }
     if (f.t >= g.prep + g.ativo + g.recup) { f.estado = 'idle'; f.golpe = null; }
   } else {
-    f.movendo = inp.mov.x !== 0 || inp.mov.z !== 0;
-    if (f.movendo) {
-      const mag = Math.min(1, Math.hypot(inp.mov.x, inp.mov.z));
-      f.pos = soma(p, escala(normXZ(vec(inp.mov.x, 0, inp.mov.z)), f.esp.velocidade * mag * dt));
+    // CARREGAR energia (estilo ki): parado no chão, segurando o botão
+    f.carregando = !!inp.carregar && f.pos.y <= 0.01 && f.energia < 100;
+    if (f.carregando) {
+      f.energia = Math.min(100, f.energia + 45 * dt);
+      f.movendo = false;
+    } else {
+      f.movendo = inp.mov.x !== 0 || inp.mov.z !== 0;
+      if (f.movendo) {
+        const mag = Math.min(1, Math.hypot(inp.mov.x, inp.mov.z));
+        f.pos = soma(p, escala(normXZ(vec(inp.mov.x, 0, inp.mov.z)), f.esp.velocidade * mag * dt));
+      }
+      if (inp.dash && f.pos.y <= 0.01) {
+        f.estado = 'dash'; f.t = 0;
+        f.dashDir = normXZ(vec(inp.dash.x, 0, inp.dash.z));
+        f.dashRel = inp.dashRel || null; // direção relativa (para a animação)
+        f.invuln = Math.max(f.invuln, 0.3);
+        f.vy = 3.5; // pulinho da cambalhota
+        emitir({ tipo: 'dash' });
+      }
+      else if (inp.pulo) {
+        if (f.pos.y <= 0.01) { f.vy = f.esp.impulso; f.pulosAr = 0; emitir({ tipo: 'pulo' }); }
+        // feras VOADORAS batem asas: até dois pulos extras no ar
+        else if (f.esp.voa && f.pulosAr < 2) {
+          f.pulosAr++;
+          f.vy = f.esp.impulso * 0.85;
+          emitir({ tipo: 'pulo' });
+        }
+      }
+      else if (inp.supremo) tentaSupremo(b, f, emitir);
+      else if (inp.golpe != null) tentaGolpe(f, inp, emitir);
     }
-    if (inp.dash && f.pos.y <= 0.01) {
-      f.estado = 'dash'; f.t = 0;
-      f.dashDir = normXZ(vec(inp.dash.x, 0, inp.dash.z));
-      f.dashRel = inp.dashRel || null; // direção relativa (para a animação)
-      f.invuln = Math.max(f.invuln, 0.3);
-      f.vy = 3.5; // pulinho da cambalhota
-      emitir({ tipo: 'dash' });
-    }
-    else if (inp.pulo && f.pos.y <= 0.01) { f.vy = f.esp.impulso; emitir({ tipo: 'pulo' }); }
-    else if (inp.supremo) tentaSupremo(b, f, emitir);
-    else if (inp.golpe != null) tentaGolpe(f, inp, emitir);
   }
   f.vy -= GRAVIDADE * dt;
   f.pos.y = Math.max(0, f.pos.y + f.vy * dt);
-  if (f.pos.y === 0) f.vy = Math.max(0, f.vy);
+  if (f.pos.y === 0) { f.vy = Math.max(0, f.vy); f.pulosAr = 0; }
   const r = Math.hypot(f.pos.x, f.pos.z);
   if (r > ARENA.raio) {
     f.pos.x *= ARENA.raio / r; f.pos.z *= ARENA.raio / r;
@@ -258,14 +313,20 @@ function iaSelvagem(b, dt, rnd) {
   b.aiT -= dt;
   const dist = distXZ(e.pos, p.pos);
   const dir = normXZ(sub(p.pos, e.pos));
+  // sem ki e longe do perigo: a IA para e CARREGA, como um jogador faria
+  if (b.iaCarrega) {
+    if (e.energia >= 85 || dist < 3.2) b.iaCarrega = false;
+    else { inp.carregar = true; return inp; }
+  }
   // fúria: quanto mais machucada, mais rápida e agressiva a fera fica
   const furia = 1 - e.hp / e.max;
   if (b.aiT <= 0) {
+    if (e.energia < 15 && dist > 5 && rnd() < 0.6) { b.iaCarrega = true; return inp; }
     b.aiT = (0.55 + rnd() * 0.5) * (1 - 0.45 * furia);
     if (dist > 4.5) b.iaMov = rnd() < 0.55 + 0.3 * furia ? escala(dir, 0.65 + 0.3 * furia) : null;
     else if (dist > 2.2) b.iaMov = rnd() < 0.75 ? escala(dir, 0.8) : null;
-    else if ((e.energia || 0) >= 100 && rnd() < 0.6) {
-      // barra cheia: a IA também solta o golpe supremo
+    else if (b.supremos && (e.energia || 0) >= 100 && furia > 0.12 && rnd() < 0.6) {
+      // barra cheia (e já apanhou um pouco): a IA solta o golpe supremo
       inp.supremo = true;
       b.iaMov = null;
     }
@@ -306,7 +367,10 @@ function iaSelvagem(b, dt, rnd) {
 }
 
 export function lancaCristal(b, emitir) {
-  b.captura = { fase: 'voo', t: 0, wob: 0, pos: soma(copia(b.p.pos), vec(0, 1.2, 0)) };
+  // o cristal sai de TRÁS da fera (do lado do treinador/câmera), não dela
+  const dir = normXZ(sub(b.e.pos, b.p.pos));
+  b.captura = { fase: 'voo', t: 0, wob: 0,
+    pos: soma(copia(b.p.pos), vec(-dir.x * 1.8, 2.1, -dir.z * 1.8)) };
   emitir({ tipo: 'cristalVoa' });
 }
 
@@ -330,7 +394,7 @@ function passoCaptura(b, dt, emitir, rnd) {
     c.pos.x = alvo.x + Math.sin(c.t * 16) * 0.15;
     if (c.t > (c.wob + 1) * 0.5) { c.wob++; if (c.wob < 3) emitir({ tipo: 'cristalTreme' }); }
     if (c.wob >= 3) {
-      const chance = Math.min(0.88, (1 - b.e.hp / b.e.max) * 1.15);
+      const chance = chanceCaptura(b);
       if (rnd() < chance) {
         b.fim = true; b.fimT = 1.4; b.resultado = 'captura';
         emitir({ tipo: 'capturado' });
@@ -358,15 +422,18 @@ export function passoBatalha(b, inpP, dt, emitir, rnd = Math.random) {
   if (b.captura) { passoCaptura(b, dt, emitir, rnd); return null; }
   passoProjeteis(b, dt, emitir);
 
-  // converte o input relativo (frente/trás/lados) em direção no mundo
+  // converte o input relativo (frente/trás/lados) em direção no mundo;
+  // orbitar perto do alvo fica mais lento (o giro angular ficava frenético)
   const fw = normXZ(sub(b.e.pos, b.p.pos));
   const rt = perpXZ(fw);
-  const mov = soma(escala(fw, -inpP.mov.z), escala(rt, inpP.mov.x)); // ↑ = aproximar
+  const distPE = distXZ(b.p.pos, b.e.pos);
+  const freioOrbita = Math.max(0.45, Math.min(1, distPE / 4.5));
+  const mov = soma(escala(fw, -inpP.mov.z), escala(rt, inpP.mov.x * freioOrbita));
   const dash = inpP.dash
     ? soma(escala(fw, -inpP.dash.z), escala(rt, inpP.dash.x))
     : null;
   passoLutador(b, b.p, { mov, pulo: inpP.pulo, golpe: inpP.golpe, forte: inpP.forte,
-    supremo: inpP.supremo, dash, dashRel: inpP.dash }, b.e, dt, emitir);
+    supremo: inpP.supremo, carregar: inpP.carregar, dash, dashRel: inpP.dash }, b.e, dt, emitir);
   passoLutador(b, b.e, iaSelvagem(b, dt, rnd), b.p, dt, emitir);
   if (inpP.capturar && podeCapturar(b)) lancaCristal(b, emitir);
   return null;

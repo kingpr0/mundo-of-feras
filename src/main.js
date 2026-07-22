@@ -3,14 +3,14 @@
 // som, partículas e HUD. Nenhuma regra de jogo vive aqui.
 import * as THREE from 'three';
 import { criarMundo, passoMundo, daImunidade, entradaDoMapa } from './sim/mundo.js';
-import { criarBatalha, passoBatalha, podeCapturar, fugirBatalha, trocaFera, continuaComOutraFera } from './sim/batalha.js';
+import { criarBatalha, passoBatalha, podeCapturar, fugirBatalha, trocaFera, continuaComOutraFera, proximaFeraTreinador, custoEnergia } from './sim/batalha.js';
 import { ganhaXp, xpParaSubir, xpPorVitoria, nivelSelvagem, vidaMaxima, NIVEL_INICIAL } from './sim/progressao.js';
 import { criarFera, aprendeGolpe, lembraGolpe, montaSlots, aprendizadosDoNivel, curaTotal, bonusNivel, paraBatalha } from './sim/equipe.js';
 import { criarCena, poof, jato, passoParticulas, passoAmbiente, passoCamera, mostraArena, temaArena, montaMapa, passoOclusores } from './render/cena.js';
 import { criarEfeitos } from './render/efeitos.js';
 import * as MD from './render/modelos.js';
 import { criarHUD } from './render/hud.js';
-import { audioInit, sfx, musica } from './render/audio.js';
+import { audioInit, sfx, musica, alternaSom, somLigado } from './render/audio.js';
 
 const especies = await (await fetch('./src/dados/especies.json')).json();
 const dadosMapas = await (await fetch('./src/dados/mapas.json')).json();
@@ -48,9 +48,13 @@ const projMeshes = new Map();
 let modo = 'titulo'; // titulo | explorar | encontro | batalha
 const chavesSelvagens = Object.keys(especies).filter((k) => especies[k].selvagem);
 let chaveMapa = dadosMapas.inicial;
+// treinadores derrotados valem para a sessão inteira (não voltam ao trocar de mapa)
+const vencidosGlobais = new Set();
 function novoMundo(chave) {
   const mapa = dadosMapas.mapas[chave];
-  return criarMundo(mapa, mapa.selvagens || chavesSelvagens);
+  const m = criarMundo(mapa, mapa.selvagens || chavesSelvagens);
+  m.vencidos = vencidosGlobais;
+  return m;
 }
 let mundo = novoMundo(chaveMapa);
 montaMapa(cena, mundo.mapa);
@@ -74,6 +78,7 @@ let batalha = null;
 let playerM = null;
 let feraAtual = null;
 let escolha = 0;
+let desafio = null; // duelo de treinador em andamento: { nome, equipe, idx }
 // menu lateral: SEMPRE visível na exploração; "ativo" = navegando nele
 let menu = { tipo: 'exploracao', sel: 0, fera: 0, especie: null, ativo: false };
 let retornoPorta = null;
@@ -186,6 +191,9 @@ function aoEvento(evt) {
     case 'projetil': sfx.swing();
       poof(cena, evt.pos, CORES_TIPO[evt.elemento] || 0xffffff, 12, 3.2); break;
     case 'semUsos': hud.toast(`Sem usos de ${evt.nome}! Descanse no Centro de Curas.`, 1600); break;
+    case 'semEnergia': hud.toast(`Sem energia para ${evt.nome}! Segure \\ para carregar.`, 1600); break;
+    case 'feixe': sfx.especial(); cena.shake = 0.35;
+      fx.raio(evt.de, evt.para, evt.elemento, evt.visual); break;
     case 'golpeUsado': hud.golpesPainel(linhasGolpes()); break;
     case 'cristalVoa': sfx.cristalVoa(); MD.mostra(cristal, true); break;
     case 'cristalSuga': poof(cena, evt.pos, 0x59e0d0, 14, 4); break;
@@ -193,6 +201,9 @@ function aoEvento(evt) {
     case 'capturado': sfx.capturado(); hitstop = 0.15;
       hud.toast(`${batalha.e.esp.nome} foi capturado! ${premiaXp()}`); break;
     case 'escapou': MD.mostra(cristal, false);
+      // a fera tinha sido "sugada" (escala 0) — volta ao tamanho normal
+      MD.setEscala(feraAtual, 1);
+      poof(cena, { ...batalha.e.pos, y: 0.9 }, 0x59e0d0, 10, 3.5);
       hud.toast(`Ah, quase! O ${batalha.e.esp.nome} escapou do cristal!`); break;
     case 'vitoria': sfx.vitoria(); hitstop = 0.22;
       hud.toast(`${batalha.e.esp.nome} desmaiou! ${premiaXp()}`); break;
@@ -212,7 +223,9 @@ function avisaEficacia(ef) {
 function linhasGolpes() {
   if (!batalha) return [];
   const f = batalha.p;
-  const usosTxt = (id, def) => def.usos == null ? '∞' : `${f.usos[id] || 0}/${def.usos}`;
+  const custoTxt = (def) => { const c = custoEnergia(def); return c ? ` · ${c}⚡` : ''; };
+  const usosTxt = (id, def) =>
+    (def.usos == null ? '∞' : `${f.usos[id] || 0}/${def.usos}`) + custoTxt(def);
   const linhas = [];
   f.slots.forEach((s, i) => {
     linhas.push({ tecla: TECLAS_GOLPE[i], nome: s.def.nome, usos: usosTxt(s.id, s.def) });
@@ -220,7 +233,8 @@ function linhasGolpes() {
       linhas.push({ tecla: `Shift+${TECLAS_GOLPE[i]}`, nome: s.forte.def.nome, usos: usosTxt(s.forte.id, s.forte.def) });
   });
   const sup = supremos[f.esp.tipo] || supremos.comum;
-  if (sup) linhas.push({ tecla: 'E', nome: sup.nome, usos: 'barra ⚡' });
+  if (sup) linhas.push({ tecla: 'E', nome: sup.nome, usos: '100⚡' });
+  linhas.push({ tecla: '\\', nome: 'Carregar energia', usos: 'segure' });
   return linhas;
 }
 
@@ -280,6 +294,11 @@ function itensDoMenu() {
     { txt: 'Itens', acao: () => hud.toast('Itens: em breve!') },
     { txt: 'Carteira', acao: () => hud.toast('Carteira: 0 moedas (economia em breve)') },
     { txt: 'Insígnias', acao: () => hud.toast('Insígnias: nenhuma ainda') },
+    { txt: `Som: ${somLigado() ? 'ligado' : 'mudo'}`, acao: () => {
+      alternaSom();
+      hud.toast(somLigado() ? '🔊 Som ligado' : '🔇 Som desligado', 1400);
+      renderMenu();
+    } },
     { txt: 'Fechar', acao: fechaMenu },
   ];
   if (t === 'batalha') return [
@@ -469,6 +488,16 @@ function selecionaFera(i) {
   hud.toast(`Vai, ${nomeDe(f)}!`);
   fechaMenu();
 }
+// no duelo de treinador, a fera derrotada dá lugar à próxima da equipe dele
+function trocaModeloInimigo(chave) {
+  if (feraAtual) MD.mostra(feraAtual, false);
+  feraAtual = modelosIni[chave];
+  MD.setOpacidade(feraAtual, 1); MD.setEscala(feraAtual, 1);
+  MD.flashCor(feraAtual, 0); feraAtual.g.rotation.x = 0;
+  MD.setPos(feraAtual, batalha.e.pos);
+  MD.mostra(feraAtual, true);
+  poof(cena, { ...batalha.e.pos, y: 0.9 }, 0xffffff, 14, 4);
+}
 function trocaModeloJogador(f) {
   if (playerM) MD.mostra(playerM, false);
   playerM = modelosJog[f.especie];
@@ -492,6 +521,12 @@ function iniciaEncontro() {
   temaArena(cena, mundo.mapa.chao || 'grama'); // ringue com a cara do bioma
   mostraArena(cena, true);
   MD.mostra(domador, false);
+  // duelo de treinador usa a equipe DELE; selvagem usa o sorteio + nível
+  if (desafio) {
+    const f0 = desafio.equipe[desafio.idx];
+    mundo.selvagem.especie = f0.especie;
+    mundo.selvagem.nivel = f0.nivel;
+  } else mundo.selvagem.nivel = nivelSelvagem(equipe[ativa].nivel);
   feraAtual = modelosIni[mundo.selvagem.especie];
   MD.setOpacidade(feraAtual, 1); MD.setEscala(feraAtual, 1);
   MD.flashCor(feraAtual, 0); feraAtual.g.rotation.x = 0;
@@ -500,11 +535,12 @@ function iniciaEncontro() {
   feraAtual.g.rotation.y = feraAtual.giro;
   MD.mostra(feraAtual, true);
   poof(cena, { ...RINGUE.fera, y: 0.9 }, 0xffffff, 14, 4);
-  mundo.selvagem.nivel = nivelSelvagem(equipe[ativa].nivel);
   hud.nomeInimigo(especies[mundo.selvagem.especie].nome.toUpperCase(), mundo.selvagem.nivel);
   hud.escolha(true, escolha);
   hud.dica('↑/↓ escolhe · Z confirma');
-  hud.toast(`Um ${especies[mundo.selvagem.especie].nome} selvagem apareceu!`);
+  hud.toast(desafio
+    ? `⚔ ${desafio.nome} manda ${especies[mundo.selvagem.especie].nome}!`
+    : `Um ${especies[mundo.selvagem.especie].nome} selvagem apareceu!`);
 }
 function confirmaEscolha() {
   hud.escolha(false);
@@ -518,15 +554,16 @@ function iniciaBatalha() {
     paraBatalha(fera, especies, golpesCat),
     paraBatalha(inimigo, especies, golpesCat),
     RINGUE.dom, RINGUE.fera,
-    { tipos, supremos, bioma: mundo.mapa.chao || 'grama' });
+    { tipos, supremos, bioma: mundo.mapa.chao || 'grama', treinador: !!desafio });
   modo = 'batalha';
   trocaModeloJogador(fera);
   hud.batalhaVisivel(true); hud.atualizaHP(batalha);
   hud.golpesPainel(linhasGolpes());
-  hud.dica('Z/X/C/V golpe · SHIFT+botão = forte · E = SUPREMO (barra cheia) · 2 toques na direção = cambalhota · ESPAÇO pula · F captura · ESC menu');
+  hud.dica('Z/X/C/V golpe · SHIFT+botão = forte · E = SUPREMO · segure \\ = carregar energia · 2 toques = cambalhota · ESPAÇO pula · F captura · ESC menu');
   hud.toast(`${nomeDe(fera)}, eu escolho você!`);
 }
 function fugir() {
+  if (desafio) { hud.toast(`${desafio.nome}: "Volte quando tiver coragem!"`); desafio = null; }
   hud.flash();
   musica('explorar');
   mostraArena(cena, false);
@@ -541,6 +578,18 @@ function fugir() {
   hud.toast('Você fugiu em segurança!');
 }
 function encerraBatalha() {
+  // duelo de treinador: caiu uma fera dele mas ainda tem outra? continua!
+  if (batalha.resultado === 'vitoria' && desafio && desafio.idx < desafio.equipe.length - 1) {
+    desafio.idx++;
+    const prox = desafio.equipe[desafio.idx];
+    const inim = criarFera(especies, golpesCat, prox.especie, prox.nivel);
+    proximaFeraTreinador(batalha, paraBatalha(inim, especies, golpesCat), especies, RINGUE.fera);
+    trocaModeloInimigo(prox.especie);
+    hud.nomeInimigo(especies[prox.especie].nome.toUpperCase(), prox.nivel);
+    hud.atualizaHP(batalha);
+    hud.toast(`${desafio.nome}: "Vai, ${especies[prox.especie].nome}!"`, 2000);
+    return;
+  }
   const resultado = batalha.resultado;
   const fera = equipe[ativa];
   if (fera && resultado !== 'derrota') fera.hpAtual = Math.max(1, batalha.p.hp);
@@ -581,6 +630,15 @@ function encerraBatalha() {
     equipe.push(nova);
   }
   if (resultado === 'fuga') hud.toast('Você recuou da batalha!');
+  // fecha o duelo de treinador: vitória sobre a última fera dele = troféu
+  if (desafio) {
+    if (resultado === 'vitoria') {
+      vencidosGlobais.add(desafio.nome);
+      const nome = desafio.nome;
+      setTimeout(() => hud.toast(`🏆 Você venceu ${nome}!`, 3200), 1500);
+    }
+    desafio = null;
+  }
   daImunidade(mundo);
   hud.exploracaoVisivel(true);
   hud.dica(DICA_EXPLORAR);
@@ -662,6 +720,13 @@ function sincronizaVisual(dt) {
     if (batalha.p.estado === 'dash' && Math.random() < 0.7)
       poof(cena, { ...batalha.p.pos, y: 0.3 }, 0xcbd0d8, 2, 2);
 
+    // aura de CARGA de energia (estilo ki): fagulhas douradas sobem
+    for (const f of [batalha.p, batalha.e])
+      if (f.carregando && Math.random() < 0.85)
+        poof(cena, { x: f.pos.x + (Math.random() - 0.5) * 1.2, y: f.pos.y + 0.15,
+                     z: f.pos.z + (Math.random() - 0.5) * 1.2 },
+          Math.random() < 0.5 ? 0xffd23f : 0xfff6df, 2, 3);
+
     // projéteis em 2.5D: bola elemental animada + rastro de fagulhas; ao
     // sumir (acertou, caiu ou passou longe) estoura um impacto no lugar
     const vivos = new Set();
@@ -669,7 +734,7 @@ function sincronizaVisual(dt) {
       vivos.add(pr.id);
       let e = projMeshes.get(pr.id);
       if (!e) {
-        e = fx.projetil(pr.tipo, pr.rajada, pr.raio);
+        e = fx.projetil(pr.tipo, pr.rajada, pr.raio, pr.visual);
         projMeshes.set(pr.id, e);
       }
       fx.posiciona(e, pr.pos);
@@ -694,9 +759,20 @@ function limpaProjeteis() {
 function efeitoSopro(M, f, alvoPos) {
   if (f.estado !== 'atk' || !f.golpe) return;
   const g = f.golpe;
-  if (!g.rajada && !g.projetil) return;
+  if (!g.rajada && !g.projetil && !g.feixe) return;
   const cor = CORES_TIPO[g.tipo || f.esp.tipo] || 0xffffff;
   const boca = MD.posBoca(M);
+  if (g.feixe) {
+    // trovão/energia: aura amarela-branca ENVOLVE a fera durante a carga
+    if (f.t < g.prep && Math.random() < 0.9) {
+      const a = Math.random() * 6.284;
+      poof(cena, { x: f.pos.x + Math.cos(a) * 0.9,
+                   y: f.pos.y + 0.2 + Math.random() * 1.3,
+                   z: f.pos.z + Math.sin(a) * 0.9 },
+        Math.random() < 0.45 ? 0xffffff : cor, 2, 1.4);
+    }
+    return;
+  }
   if (f.t < g.prep) {
     if (Math.random() < 0.85)
       poof(cena, { x: boca.x, y: boca.y, z: boca.z }, cor, 2, 0.9);
@@ -705,7 +781,7 @@ function efeitoSopro(M, f, alvoPos) {
     const dx = alvoPos.x - boca.x, dy = (alvoPos.y + 0.6) - boca.y, dz = alvoPos.z - boca.z;
     const L = Math.hypot(dx, dy, dz) || 1;
     const dir = { x: dx / L, y: dy / L, z: dz / L };
-    if (Math.random() < 0.8) fx.sopro(boca, dir, g.tipo || f.esp.tipo, 11);
+    if (Math.random() < 0.8) fx.sopro(boca, dir, g.tipo || f.esp.tipo, 11, g.visual);
     if (Math.random() < 0.35) jato(cena, boca, dir, cor, 2, 11);
   }
 }
@@ -772,6 +848,11 @@ function loop(agora) {
       if (mundo.domador.correndo && Math.random() < 0.25)
         poof(cena, { ...mundo.domador.pos, y: mundo.domador.pos.y + 0.15 }, 0xcbb28a, 1, 1.2);
       if (evt === 'encontro') iniciaEncontro();
+      else if (evt && evt.tipo === 'treinador') {
+        desafio = { nome: evt.treinador.nome, equipe: evt.treinador.equipe, idx: 0 };
+        hud.toast(`⚔ ${evt.treinador.nome} quer duelar!`, 2000);
+        iniciaEncontro();
+      }
       else if (evt === 'caverna')
         hud.toast('Uma caverna sombria... escura demais para entrar agora. (em breve!)', 3000);
       else if (evt === 'cura') {
@@ -808,6 +889,7 @@ function loop(agora) {
         mov: { x: eixo(['ArrowLeft','KeyA'], ['ArrowRight','KeyD']),
                z: eixo(['ArrowUp','KeyW'], ['ArrowDown','KeyS']) },
         pulo: spE, golpe: golpeIdx, forte, supremo: eE, dash, capturar: fE,
+        carregar: !!keys.Backslash, // segurar \ = carregar energia (ki)
       };
       const fim = passoBatalha(batalha, inpP, dt, aoEvento);
       hud.atualizaHP(batalha);

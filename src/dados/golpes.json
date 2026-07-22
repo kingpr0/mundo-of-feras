@@ -39,28 +39,40 @@
     "rajada": { "tiros": 3, "intervalo": 0.12, "vel": 14, "raio": 0.65 }
   },
   "folha_navalha": {
-    "nome": "Folha Navalha", "tipo": "planta",
+    "nome": "Folha Navalha", "tipo": "planta", "visual": "folhas",
     "dano": 13, "alcance": 2.6, "empurrao": 5.5,
     "prep": 0.26, "ativo": 0.18, "recup": 0.38, "forte": true, "usos": 70,
     "projetil": { "vel": 12, "raio": 0.8 }
   },
   "tempestade_folhas": {
-    "nome": "Tempestade de Folhas", "tipo": "planta", "base": "folha_navalha",
+    "nome": "Tempestade de Folhas", "tipo": "planta", "base": "folha_navalha", "visual": "folhas",
     "dano": 7, "alcance": 2.8, "empurrao": 3.0,
     "prep": 0.26, "ativo": 0.44, "recup": 0.42, "forte": true, "usos": 30,
     "rajada": { "tiros": 4, "intervalo": 0.12, "vel": 12, "raio": 0.7 }
   },
+  "raio_esmeralda": {
+    "nome": "Raio Esmeralda", "tipo": "planta", "base": "folha_navalha",
+    "dano": 16, "alcance": 8, "empurrao": 5,
+    "prep": 0.5, "ativo": 0.15, "recup": 0.5, "forte": true, "usos": 25,
+    "feixe": { "alcance": 8 }
+  },
   "jato_agua": {
-    "nome": "Jato d'Água", "tipo": "agua",
+    "nome": "Jato d'Água", "tipo": "agua", "visual": "bolha",
     "dano": 13, "alcance": 2.6, "empurrao": 6.0,
     "prep": 0.26, "ativo": 0.18, "recup": 0.40, "forte": true, "usos": 70,
-    "projetil": { "vel": 12, "raio": 0.8 }
+    "projetil": { "vel": 8, "raio": 0.85 }
   },
   "rajada_bolhas": {
-    "nome": "Rajada de Bolhas", "tipo": "agua", "base": "jato_agua",
+    "nome": "Rajada de Bolhas", "tipo": "agua", "base": "jato_agua", "visual": "bolha",
     "dano": 7, "alcance": 2.6, "empurrao": 2.8,
-    "prep": 0.26, "ativo": 0.44, "recup": 0.42, "forte": true, "usos": 30,
-    "rajada": { "tiros": 3, "intervalo": 0.13, "vel": 11, "raio": 0.75 }
+    "prep": 0.26, "ativo": 0.5, "recup": 0.42, "forte": true, "usos": 30,
+    "rajada": { "tiros": 3, "intervalo": 0.16, "vel": 6.5, "raio": 0.8 }
+  },
+  "trovao": {
+    "nome": "Trovão", "tipo": "eletrico", "base": "esfera_voltaica",
+    "dano": 18, "alcance": 8, "empurrao": 6,
+    "prep": 0.55, "ativo": 0.15, "recup": 0.5, "forte": true, "usos": 25,
+    "feixe": { "alcance": 8 }
   },
   "supremo_comum": {
     "nome": "Impacto Colossal", "tipo": "comum", "fisico": true, "supremo": true,
