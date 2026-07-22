@@ -514,8 +514,13 @@ export function criarFeraGltf(scene, url, alturaAlvo = 1.1, giroGraus = 0) {
           // troca o material PBR (escuro sob nossa luz estilizada) por
           // Lambert, o mesmo das outras feras — cores vivas e flash ok
           const troca = (mt) => {
+            // texturas glTF vêm marcadas como sRGB; sem correção de gama no
+            // renderer isso ESCURECE tudo (feras quase pretas). Tratamos a
+            // textura como linear: as cores aparecem como foram pintadas.
+            if (mt.map) mt.map.encoding = THREE.LinearEncoding;
             const novo = new THREE.MeshLambertMaterial({
-              color: mt.color ? mt.color.clone() : 0xffffff,
+              // com textura, a cor deve ser branca (senão multiplica e escurece)
+              color: mt.map ? 0xffffff : (mt.color ? mt.color.clone() : 0xffffff),
               map: mt.map || null,
             });
             novo.skinning = o.isSkinnedMesh === true;
@@ -595,8 +600,13 @@ export function criarCristal(scene) {
   const M = novoModelo(scene, 0.55);
   const mat = new THREE.MeshLambertMaterial({
     color: COR.cristal, emissive: 0x1f9b8e, transparent: true, opacity: 0.95 });
-  const m = new THREE.Mesh(new THREE.IcosahedronGeometry(0.26), mat);
+  // esfera lisa (era um icosaedro "poligonal" demais) com um aro equatorial
+  const m = new THREE.Mesh(new THREE.SphereGeometry(0.27, 18, 14), mat);
   m.castShadow = true; M.materiais.push(mat); M.g.add(m);
+  const aroMat = new THREE.MeshLambertMaterial({ color: 0xfff6df, emissive: 0x445555 });
+  const aro = new THREE.Mesh(new THREE.TorusGeometry(0.27, 0.035, 8, 24), aroMat);
+  aro.rotation.x = Math.PI / 2;
+  M.materiais.push(aroMat); M.g.add(aro);
   return M;
 }
 
@@ -763,14 +773,20 @@ export function animaLuta(M, f) {
         M.g.position.y += Math.sin(k * Math.PI) * 0.2; // pulinho do disparo
         if (cab) cab.rotation.x = 0.45;
       } else if (cab) cab.rotation.x = 0;
-    } else if (g.forte) {
-      // físico FORTE: giro completo de 360° durante o bote (impacto visual)
+    } else if (g.forte && f.esp.velocidade >= 4.5) {
+      // físico FORTE de fera RÁPIDA: giro completo de 360° durante o bote
       const total = g.prep + g.ativo;
       const k = Math.min(1, f.t / total);
       M.g.rotation.y += k * Math.PI * 2;
       if (f.t < g.prep) rx = -0.4 * (f.t / g.prep);
       else if (f.t < total) { rx = 0.7; if (cab) cab.rotation.x = 0.25; }
       else { rx = 0.5 * (1 - Math.min(1, (f.t - total) / g.recup)); if (cab) cab.rotation.x = 0; }
+    } else if (g.forte) {
+      // fera pesada: sem pirueta — bote troncudo, mergulhando com o corpo
+      const total = g.prep + g.ativo;
+      if (f.t < g.prep) rx = -0.55 * (f.t / g.prep);
+      else if (f.t < total) { rx = 0.85; if (cab) cab.rotation.x = 0.35; }
+      else { rx = 0.6 * (1 - Math.min(1, (f.t - total) / g.recup)); if (cab) cab.rotation.x = 0; }
     } else {
       // físico normal: bote com pulinho
       if (f.t < g.prep) rx = -0.4 * (f.t / g.prep);
@@ -785,6 +801,12 @@ export function animaLuta(M, f) {
   } else if (f.estado === 'hurt') {
     rx = -0.55 * (1 - Math.min(1, f.t / 0.26));
     if (M.cabeca) M.cabeca.rotation.x = -0.3;
+  } else if (f.pos.y > 0.05 && f.esp.velocidade >= 4.8) {
+    // fera ágil dá um MORTAL no salto: a fração do voo vem da velocidade
+    // vertical (decola +impulso, ápice 0, pousa -impulso)
+    const imp = f.esp.impulso || 7;
+    const frac = Math.max(0, Math.min(1, (imp - f.vy) / (2 * imp)));
+    rx = -frac * Math.PI * 2;
   }
   M.g.rotation.x = rx;
 }

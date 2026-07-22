@@ -124,23 +124,72 @@ function montaChao(scene, tam = 70, tipo = 'grama', mapa = null) {
   ch.receiveShadow = true; scene.add(ch);
 }
 
-/* casinha estilo Pokémon: corpo claro, telhado piramidal colorido, porta e janelas */
+/* casinha caprichada: paredes de reboco com VIGAS de madeira (enxaimel),
+   telhado com fileiras de telhas, chaminé e fundação de pedra */
 const COR_TELHADO = { vermelho: 0xd1462f, azul: 0x3a6bc9, verde: 0x2f8a4a };
+function texturaParede() {
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#f2e2c4'; ctx.fillRect(0, 0, 128, 128);
+  // manchinhas do reboco
+  let sem = 41;
+  const rnd = () => (sem = (sem * 1103515245 + 12345) % 2147483648) / 2147483648;
+  ctx.fillStyle = 'rgba(180,150,110,0.25)';
+  for (let i = 0; i < 26; i++) ctx.fillRect(rnd() * 124, rnd() * 124, 3 + rnd() * 4, 2 + rnd() * 3);
+  // vigas de madeira: moldura + prumos + uma diagonal
+  ctx.fillStyle = '#8a6a50';
+  ctx.fillRect(0, 0, 128, 9); ctx.fillRect(0, 119, 128, 9);
+  ctx.fillRect(0, 0, 8, 128); ctx.fillRect(120, 0, 8, 128);
+  ctx.fillRect(42, 0, 7, 128); ctx.fillRect(84, 0, 7, 128);
+  ctx.save(); ctx.translate(64, 64); ctx.rotate(0.6);
+  ctx.fillRect(-64, -4, 86, 8); ctx.restore();
+  return new THREE.CanvasTexture(c);
+}
+function texturaTelhado(corCss) {
+  const c = document.createElement('canvas'); c.width = c.height = 64;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = corCss; ctx.fillRect(0, 0, 64, 64);
+  ctx.fillStyle = 'rgba(0,0,0,0.22)';
+  for (let yy = 6; yy < 64; yy += 10) {
+    ctx.fillRect(0, yy, 64, 2.4);
+    // meias-juntas alternadas dão o desenho de telha
+    const off = (yy / 10) % 2 ? 0 : 8;
+    for (let xx = off; xx < 64; xx += 16) ctx.fillRect(xx, yy - 8, 2, 8);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(3, 2);
+  return t;
+}
 function casa(g, x, z, corNome) {
   const grupo = new THREE.Group();
   const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
-  const corpo = new THREE.Mesh(new THREE.BoxGeometry(3.6, 2.2, 3.2), lamb(0xf2e2c4));
-  corpo.position.y = 1.1; corpo.castShadow = true; corpo.userData.oclusor = true; grupo.add(corpo);
+  const corHex = COR_TELHADO[corNome] || COR_TELHADO.vermelho;
+  // fundação de pedra
+  const fund = new THREE.Mesh(new THREE.BoxGeometry(3.85, 0.35, 3.45), lamb(0x8d939c));
+  fund.position.y = 0.17; fund.receiveShadow = true; grupo.add(fund);
+  const corpo = new THREE.Mesh(new THREE.BoxGeometry(3.6, 2.2, 3.2),
+    new THREE.MeshLambertMaterial({ map: texturaParede() }));
+  corpo.position.y = 1.35; corpo.castShadow = true; corpo.userData.oclusor = true; grupo.add(corpo);
   const telhado = new THREE.Mesh(new THREE.ConeGeometry(2.9, 1.6, 4),
-    lamb(COR_TELHADO[corNome] || COR_TELHADO.vermelho));
-  telhado.position.y = 3.0; telhado.rotation.y = Math.PI / 4; telhado.castShadow = true;
+    new THREE.MeshLambertMaterial({
+      map: texturaTelhado('#' + corHex.toString(16).padStart(6, '0')) }));
+  telhado.position.y = 3.28; telhado.rotation.y = Math.PI / 4; telhado.castShadow = true;
   telhado.userData.oclusor = true;
   grupo.add(telhado);
+  // chaminé de pedra com boca escura
+  const cham = new THREE.Mesh(new THREE.BoxGeometry(0.42, 1.1, 0.42), lamb(0x8d939c));
+  cham.position.set(1.05, 3.35, -0.7); cham.castShadow = true; grupo.add(cham);
+  const boca = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.14, 0.48), lamb(0x4a4a52));
+  boca.position.set(1.05, 3.95, -0.7); grupo.add(boca);
   const porta = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.2, 0.1), lamb(0x6b4a2f));
-  porta.position.set(0, 0.6, 1.62); grupo.add(porta);
+  porta.position.set(0, 0.85, 1.62); grupo.add(porta);
+  const lintel = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.12, 0.14), lamb(0x8a6a50));
+  lintel.position.set(0, 1.5, 1.63); grupo.add(lintel);
   for (const lado of [-1, 1]) {
     const jan = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.6, 0.1), lamb(0xbfe3ff));
-    jan.position.set(lado * 1.1, 1.4, 1.62); grupo.add(jan);
+    jan.position.set(lado * 1.1, 1.62, 1.62); grupo.add(jan);
+    const moldura = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.08, 0.12), lamb(0x8a6a50));
+    moldura.position.set(lado * 1.1, 1.28, 1.63); grupo.add(moldura);
   }
   grupo.position.set(x, 0, z);
   g.add(grupo);
@@ -174,6 +223,16 @@ function centroCura(g, ct) {
 /* decorações de vila (fogueira, poço, banca de feira) e escadas */
 function fogueira(g, x, z, y = 0) {
   const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
+  // plataforma circular de pedra em degradê: a fogueira é um MARCO da vila
+  let topo = y;
+  for (const [r, h, cor] of [[1.7, 0.12, 0x6e7680], [1.45, 0.12, 0x8d939c], [1.22, 0.1, 0xa8adb5]]) {
+    const c = new THREE.Mesh(new THREE.CylinderGeometry(r, r + 0.14, h, 22), lamb(cor));
+    c.position.set(x, topo + h / 2, z);
+    c.castShadow = c.receiveShadow = true;
+    g.add(c);
+    topo += h;
+  }
+  y = topo; // tudo daqui para baixo assenta sobre a plataforma
   for (let i = 0; i < 7; i++) {
     const a = (i / 7) * Math.PI * 2;
     const pedra = new THREE.Mesh(new THREE.DodecahedronGeometry(0.14), lamb(0x8d939c));
@@ -372,12 +431,33 @@ function arvore(scene, x, z, pinheiro) {
 function montaGrama(scene, G) {
   const mats = [0x3d8a35, 0x46983c, 0x51a746]
     .map((c) => new THREE.MeshLambertMaterial({ color: c }));
-  const base = new THREE.Mesh(
-    new THREE.PlaneGeometry(G.x1 - G.x0 + 1, G.z1 - G.z0 + 1),
-    new THREE.MeshLambertMaterial({ color: 0x357a2e }));
-  base.rotation.x = -Math.PI / 2;
-  base.position.set((G.x0 + G.x1) / 2, 0.012, (G.z0 + G.z1) / 2);
-  base.receiveShadow = true; scene.add(base);
+  // no lugar do tapete verde, um ANEL de canteiro elevado com degradê
+  // (estilo platô): os arbustos ficam plantados dentro da moldura
+  const wG = G.x1 - G.x0 + 2.2, dG = G.z1 - G.z0 + 2.2;
+  const cxG = (G.x0 + G.x1) / 2, czG = (G.z0 + G.z1) / 2;
+  const c0 = new THREE.Color(0x7d5f3e), c1 = new THREE.Color(0xbc9668);
+  const LARG = 1.8; // espessura do anel (borda externa - interna)
+  for (let i = 0; i < 2; i++) {
+    const folga = (1 - i) * 0.4;
+    const ext = formaArredondada(wG + folga, dG + folga, 1.3);
+    ext.holes.push(formaArredondada(wG - LARG + folga, dG - LARG + folga, 0.9));
+    const geo = new THREE.ExtrudeGeometry(ext, { depth: 0.11, bevelEnabled: false });
+    const m = new THREE.Mesh(geo,
+      new THREE.MeshLambertMaterial({ color: c0.clone().lerp(c1, i) }));
+    m.rotation.x = -Math.PI / 2;
+    m.position.set(cxG, i * 0.11, czG);
+    m.castShadow = m.receiveShadow = true;
+    scene.add(m);
+  }
+  const tampa = formaArredondada(wG - 0.12, dG - 0.12, 1.3);
+  tampa.holes.push(formaArredondada(wG - LARG + 0.12, dG - LARG + 0.12, 0.9));
+  const cap = new THREE.Mesh(
+    new THREE.ExtrudeGeometry(tampa, { depth: 0.05, bevelEnabled: false }),
+    new THREE.MeshLambertMaterial({ color: 0x67b34f }));
+  cap.rotation.x = -Math.PI / 2;
+  cap.position.set(cxG, 0.22, czG);
+  cap.receiveShadow = true;
+  scene.add(cap);
   const geoArb = new THREE.SphereGeometry(0.78, 10, 7);
   const passo = 1.05;
   let i = 0;
@@ -649,6 +729,12 @@ export function montaMapa(cena, mapa) {
     const npc = criarNPC(g, tipo);
     npc.g.position.set(x, alturaTerreno(mapa, { x, z }), z);
     npc.g.rotation.y = rot || 0;
+  });
+  // treinadores desafiantes (dados do mapa: x, z, tipo do visual, equipe)
+  (mapa.treinadores || []).forEach((t) => {
+    const npc = criarNPC(g, t.tipo || 'aldeao');
+    npc.g.position.set(t.x, alturaTerreno(mapa, t), t.z);
+    npc.g.rotation.y = t.rot || 0;
   });
   for (const G of mapa.gramas || (mapa.grama ? [mapa.grama] : [])) montaGrama(g, G);
   if (mapa.agua) montaAgua(g, mapa.agua);

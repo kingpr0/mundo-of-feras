@@ -100,6 +100,47 @@ function pintaPlanta(ctx, k, s) {
   }
 }
 
+function pintaBolha(ctx, k, s) {
+  // bolhas de verdade: contorno azul marcado, miolo quase transparente,
+  // brilho no canto — SEM clarão aditivo (a bolha é um objeto, não luz)
+  for (let i = 0; i < 4; i++) {
+    const fase = (k + i * 0.23) % 1;
+    const a = i * 1.7 + k * 4;
+    const x = s / 2 + Math.cos(a) * s * 0.16 * fase;
+    const y = s / 2 + Math.sin(a) * s * 0.16 * fase;
+    const r = s * (0.13 + 0.09 * Math.sin((fase + i) * 3.1));
+    ctx.fillStyle = 'rgba(170,220,255,0.18)';
+    ctx.beginPath(); ctx.arc(x, y, r, 0, 6.284); ctx.fill();
+    ctx.strokeStyle = '#2e7fd4'; ctx.lineWidth = Math.max(2.5, s * 0.035);
+    ctx.beginPath(); ctx.arc(x, y, r, 0, 6.284); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.beginPath(); ctx.arc(x - r * 0.38, y - r * 0.38, r * 0.2, 0, 6.284); ctx.fill();
+  }
+}
+
+function pintaFolhas(ctx, k, s) {
+  // folhas soltas voando: verde-claro, com talo — sem nenhum brilho de fundo
+  const cores = ['#9fe888', '#b7f2a0', '#8ad973', '#c8f7b0'];
+  for (let i = 0; i < 6; i++) {
+    const fase = (k + i * 0.17) % 1;
+    const a = i * 1.05 + k * 6.284;
+    const x = s / 2 + Math.cos(a) * s * (0.08 + 0.26 * fase);
+    const y = s / 2 + Math.sin(a) * s * (0.08 + 0.26 * fase);
+    ctx.save(); ctx.translate(x, y); ctx.rotate(a + k * 12 + i * 2);
+    ctx.fillStyle = cores[i % cores.length];
+    // folha: duas curvas fechando numa ponta
+    const L = s * 0.11, W = s * 0.045;
+    ctx.beginPath();
+    ctx.moveTo(-L, 0);
+    ctx.quadraticCurveTo(0, -W, L, 0);
+    ctx.quadraticCurveTo(0, W, -L, 0);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(60,130,50,0.7)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(-L, 0); ctx.lineTo(L, 0); ctx.stroke();
+    ctx.restore();
+  }
+}
+
 function pintaImpacto(ctx, k, s) {
   // estouro estilo jogo de luta: clarão, anel que expande e lascas em estrela
   // (aqui k é a LINHA DO TEMPO do efeito: quadro 0 = nasce, último = some)
@@ -153,12 +194,18 @@ export function texturaChamaAnimada() {
   return { tex: fazTex(desenhaSheet(pintaFogo)), quadros: QUADROS };
 }
 
+// folhas "sólidas" (bolha, folhas) usam blending normal — contornos e cores
+// escuras aparecem; as de LUZ (fogo, raio...) somam brilho (aditivo)
+const SHEET_SOLIDA = { bolha: true, folhas: true };
+
 export function criarEfeitos(scene) {
   const canvases = {
     fogo: desenhaSheet(pintaFogo),
     eletrico: desenhaSheet(pintaEletrico),
     agua: desenhaSheet(pintaAgua),
     planta: desenhaSheet(pintaPlanta),
+    bolha: desenhaSheet(pintaBolha),
+    folhas: desenhaSheet(pintaFolhas),
     impacto: desenhaSheet(pintaImpacto),
   };
   // POOL de efeitos inteiros (sprite+material+textura): reciclar em vez de
@@ -171,7 +218,7 @@ export function criarEfeitos(scene) {
     const tex = fazTex(canvases[nome]);
     const mat = new THREE.SpriteMaterial({
       map: tex, transparent: true, depthWrite: false,
-      blending: THREE.AdditiveBlending,
+      blending: SHEET_SOLIDA[nome] ? THREE.NormalBlending : THREE.AdditiveBlending,
     });
     const sp = new THREE.Sprite(mat);
     scene.add(sp);
@@ -202,12 +249,33 @@ export function criarEfeitos(scene) {
 
   return {
     // bola elemental em loop; quem chama posiciona a cada frame e remove no
-    // fim — o tamanho acompanha o raio do golpe (supremos são enormes)
-    projetil(tipo, rajada, raio = 0.85) {
-      return novo(FOLHA_DO_TIPO[tipo] || 'fogo', {
+    // fim — o tamanho acompanha o raio do golpe (supremos são enormes) e o
+    // golpe pode pedir uma folha específica ("visual" nos dados)
+    projetil(tipo, rajada, raio = 0.85, visual = null) {
+      const nome = visual && canvases[visual] ? visual : (FOLHA_DO_TIPO[tipo] || 'fogo');
+      return novo(nome, {
         escala: rajada ? 1.25 : raio * 2, fps: 18, loop: true,
         rot: Math.random() * 6.284, gira: rajada ? 0 : 2.2,
       });
+    },
+
+    // FEIXE instantâneo (trovão, raio de energia): linha de clarões entre
+    // dois pontos + estouro no destino
+    raio(de, para, tipo, visual = null) {
+      const nome = visual && canvases[visual] ? visual : (FOLHA_DO_TIPO[tipo] || 'eletrico');
+      const n = 9;
+      for (let i = 0; i <= n; i++) {
+        const t = i / n;
+        const e = novo(nome, {
+          escala: 1.0 + Math.random() * 0.6, dur: 0.22 + t * 0.06,
+          rot: Math.random() * 6.284,
+        });
+        e.sp.position.set(
+          de.x + (para.x - de.x) * t + (Math.random() - 0.5) * 0.3,
+          de.y + (para.y - de.y) * t + (Math.random() - 0.5) * 0.3,
+          de.z + (para.z - de.z) * t + (Math.random() - 0.5) * 0.3);
+      }
+      this.impacto({ ...para, y: para.y - 0.9 }, true);
     },
     posiciona(e, pos) { e.sp.position.set(pos.x, pos.y, pos.z); },
     removeProjetil(e) { mata(e); },
@@ -222,9 +290,9 @@ export function criarEfeitos(scene) {
     },
 
     // língua de chama/raio/água que voa da boca na direção do alvo
-    sopro(origem, dir, tipo, vel = 10) {
+    sopro(origem, dir, tipo, vel = 10, visual = null) {
       const v = vel * (0.75 + Math.random() * 0.5);
-      const e = novo(FOLHA_DO_TIPO[tipo] || 'fogo', {
+      const e = novo(visual && canvases[visual] ? visual : (FOLHA_DO_TIPO[tipo] || 'fogo'), {
         escala: 0.8 + Math.random() * 0.5, dur: 0.32, fps: 20,
         rot: Math.random() * 6.284, cresce: 2.4,
         vel: { x: dir.x * v, y: dir.y * v, z: dir.z * v },

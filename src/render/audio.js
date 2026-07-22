@@ -1,11 +1,20 @@
 // ÁUDIO — sintetizado via WebAudio, sem arquivos. Mapeia eventos da simulação em sons.
 let AC = null;
+// mudo persistido: o jogador escolhe no menu e a escolha sobrevive ao F5
+let mudo = false;
+try { mudo = localStorage.getItem('duelo_mudo') === '1'; } catch (e) {}
+export const somLigado = () => !mudo;
+export function alternaSom() {
+  mudo = !mudo;
+  try { localStorage.setItem('duelo_mudo', mudo ? '1' : '0'); } catch (e) {}
+  return !mudo;
+}
 export function audioInit() {
   if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
   if (AC && AC.state === 'suspended') AC.resume();
 }
 function beep(f, d, t = 'square', v = 0.11, s = 0) {
-  if (!AC) return;
+  if (!AC || mudo) return;
   const o = AC.createOscillator(), g = AC.createGain();
   o.type = t; o.frequency.setValueAtTime(f, AC.currentTime);
   if (s) o.frequency.exponentialRampToValueAtTime(Math.max(30, f + s), AC.currentTime + d);
