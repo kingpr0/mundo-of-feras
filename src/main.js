@@ -6,7 +6,7 @@ import { criarMundo, passoMundo, daImunidade, entradaDoMapa } from './sim/mundo.
 import { criarBatalha, passoBatalha, podeCapturar, fugirBatalha, trocaFera, continuaComOutraFera } from './sim/batalha.js';
 import { ganhaXp, xpParaSubir, xpPorVitoria, nivelSelvagem, vidaMaxima, NIVEL_INICIAL } from './sim/progressao.js';
 import { criarFera, aprendeGolpe, lembraGolpe, montaSlots, aprendizadosDoNivel, curaTotal, bonusNivel, paraBatalha } from './sim/equipe.js';
-import { criarCena, poof, jato, passoParticulas, passoAmbiente, passoCamera, mostraArena, montaMapa, passoOclusores } from './render/cena.js';
+import { criarCena, poof, jato, passoParticulas, passoAmbiente, passoCamera, mostraArena, temaArena, montaMapa, passoOclusores } from './render/cena.js';
 import { criarEfeitos } from './render/efeitos.js';
 import * as MD from './render/modelos.js';
 import { criarHUD } from './render/hud.js';
@@ -15,6 +15,10 @@ import { audioInit, sfx, musica } from './render/audio.js';
 const especies = await (await fetch('./src/dados/especies.json')).json();
 const dadosMapas = await (await fetch('./src/dados/mapas.json')).json();
 const golpesCat = await (await fetch('./src/dados/golpes.json')).json();
+const tipos = await (await fetch('./src/dados/tipos.json')).json();
+// golpes supremos por tipo elemental (barra de energia cheia + tecla E)
+const supremos = {};
+for (const g of Object.values(golpesCat)) if (g.supremo) supremos[g.tipo] = g;
 
 const cv = document.getElementById('cv');
 const cena = criarCena(cv);
@@ -81,6 +85,7 @@ let jE = false, kE = false, cE = false, vE = false, fE = false, spE = false;
 let pJ = false, pK = false, pC = false, pV = false, pF = false, pS = false;
 let cimaE = false, baixoE = false, pCima = false, pBaixo = false;
 let mE = false, escE = false, pM = false, pEsc = false;
+let eE = false, pE = false;
 addEventListener('keydown', (e) => {
   audioInit(); keys[e.code] = true;
   if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
@@ -105,6 +110,8 @@ function edges() {
   const M = keys.KeyM, ESC = keys.Escape;
   mE = M && !pM; escE = ESC && !pEsc;
   pM = M; pEsc = ESC;
+  const E = keys.KeyE;
+  eE = E && !pE; pE = E;
 }
 const eixo = (neg, pos) => (keys[pos[0]] || keys[pos[1]] ? 1 : 0) - (keys[neg[0]] || keys[neg[1]] ? 1 : 0);
 
@@ -153,11 +160,19 @@ function aoEvento(evt) {
     case 'hit': sfx.hit(); cena.shake = 0.28; hitstop = 0.05;
       fx.impacto(evt.pos, false);
       poof(cena, { ...evt.pos, y: evt.pos.y + 1 }, 0xffd23f, 8, 4.5);
-      hud.dano(evt.pos, evt.dano, false); break;
+      hud.dano(evt.pos, evt.dano, false, evt.eficaz);
+      avisaEficacia(evt.eficaz); break;
     case 'hitForte': sfx.hitForte(); cena.shake = 0.5; hitstop = 0.09;
       fx.impacto(evt.pos, true);
       poof(cena, { ...evt.pos, y: evt.pos.y + 1 }, 0xff6b4a, 8, 4.5);
-      hud.dano(evt.pos, evt.dano, true); break;
+      hud.dano(evt.pos, evt.dano, true, evt.eficaz);
+      avisaEficacia(evt.eficaz); break;
+    case 'supremo': sfx.hitForte(); hud.flash(); cena.shake = 0.7; hitstop = 0.12;
+      poof(cena, { ...evt.pos, y: 1 }, 0xffd23f, 20, 6);
+      hud.toast(`☄ GOLPE SUPREMO: ${evt.nome}!`, 1600); break;
+    case 'espinho': sfx.hit(); cena.shake = 0.2;
+      poof(cena, { ...evt.pos, y: 0.5 }, 0x5fd35a, 6, 3);
+      hud.dano(evt.pos, evt.dano, false); break;
     case 'rastroFogo': if (Math.random() < 0.5)
       poof(cena, evt.pos, Math.random() < 0.5 ? 0xff8a3d : 0xffd93b, 2, 2.5); break;
     case 'pulo': sfx.pulo(); break;
@@ -185,6 +200,14 @@ function aoEvento(evt) {
   }
 }
 
+// aviso de vantagem de tipo (com trégua para não virar spam)
+let eficaciaT = 0;
+function avisaEficacia(ef) {
+  if (!ef || tempo - eficaciaT < 1.6) return;
+  eficaciaT = tempo;
+  hud.toast(ef === 'super' ? '⚡ Super efetivo!' : 'Pouco efetivo...', 900);
+}
+
 /* ---------- golpes no HUD da luta ---------- */
 function linhasGolpes() {
   if (!batalha) return [];
@@ -196,6 +219,8 @@ function linhasGolpes() {
     if (s.forte)
       linhas.push({ tecla: `Shift+${TECLAS_GOLPE[i]}`, nome: s.forte.def.nome, usos: usosTxt(s.forte.id, s.forte.def) });
   });
+  const sup = supremos[f.esp.tipo] || supremos.comum;
+  if (sup) linhas.push({ tecla: 'E', nome: sup.nome, usos: 'barra ⚡' });
   return linhas;
 }
 
@@ -275,22 +300,17 @@ function itensDoMenu() {
     { txt: 'Voltar', acao: () => abreMenu('exploracao') },
   ];
   if (t === 'statusFera') {
+    // os dados da fera vivem na FICHA grande ao lado do holograma;
+    // aqui ficam só as ações
     const f = equipe[menu.fera];
-    const max = vidaMaxima(especies[f.especie].vida, f.nivel);
-    const usosTxt = (id) => golpesCat[id].usos == null ? '∞' : `${f.usos[id] || 0}/${golpesCat[id].usos}`;
-    const linhas = [{ txt: `HP ${f.hpAtual}/${max} · XP ${f.xp}/${xpParaSubir(f.nivel)}`, acao: nada }];
-    for (const id of f.golpes)
-      linhas.push({ txt: `• ${golpesCat[id].nome} (${usosTxt(id)})`, acao: nada });
-    for (const id of f.conhecidos)
-      if (golpesCat[id].base && f.golpes.includes(golpesCat[id].base))
-        linhas.push({ txt: `• combo: ${golpesCat[id].nome} (${usosTxt(id)})`, acao: nada });
-    linhas.push({ txt: 'Renomear', acao: () => {
-      const n = prompt('Novo nome da fera:', nomeDe(f));
-      if (n && n.trim()) { f.apelido = n.trim().slice(0, 12); atualizaPainel(); abreMenu('statusFera'); }
-    } });
-    linhas.push({ txt: 'Lembrar golpe', acao: () => abreMenu('lembrar') });
-    linhas.push({ txt: 'Voltar', acao: () => abreMenu('statusLista') });
-    return linhas;
+    return [
+      { txt: 'Renomear', acao: () => {
+        const n = prompt('Novo nome da fera:', nomeDe(f));
+        if (n && n.trim()) { f.apelido = n.trim().slice(0, 12); atualizaPainel(); abreMenu('statusFera'); }
+      } },
+      { txt: 'Lembrar golpe', acao: () => abreMenu('lembrar') },
+      { txt: 'Voltar', acao: () => abreMenu('statusLista') },
+    ];
   }
   if (t === 'lembrar') {
     const f = equipe[menu.fera];
@@ -319,18 +339,42 @@ function itensDoMenu() {
     })),
     { txt: 'Voltar', acao: () => abreMenu('exploracao') },
   ];
-  if (t === 'compendioFera') {
-    const k = menu.especie, e2 = especies[k];
-    const locais = Object.values(dadosMapas.mapas)
-      .filter((mp) => (mp.selvagens || []).includes(k))
-      .map((mp) => mp.nome);
-    return [
-      { txt: `Tipo: ${e2.tipo} · ${e2.raridade.replace('_', ' ')}`, acao: nada },
-      { txt: locais.length ? `Habitat: ${locais.join(', ')}` : 'Habitat: ainda não avistada', acao: nada },
-      { txt: 'Voltar', acao: () => abreMenu('compendio') },
-    ];
-  }
+  if (t === 'compendioFera') return [
+    { txt: 'Voltar', acao: () => abreMenu('compendio') },
+  ];
   return [];
+}
+
+/* ---------- ficha grande (ao lado do holograma) ---------- */
+const corCss = (tipo) => '#' + (CORES_TIPO[tipo] || 0xcbd0d8).toString(16).padStart(6, '0');
+function fichaFera(f) {
+  const esp = especies[f.especie];
+  const max = vidaMaxima(esp.vida, f.nivel);
+  const usosTxt = (id) => golpesCat[id].usos == null ? '∞' : `${f.usos[id] || 0}/${golpesCat[id].usos}`;
+  const golpes = f.golpes.map((id) => `${golpesCat[id].nome} <span>${usosTxt(id)}</span>`);
+  for (const id of f.conhecidos)
+    if (golpesCat[id].base && f.golpes.includes(golpesCat[id].base))
+      golpes.push(`forte: ${golpesCat[id].nome} <span>${usosTxt(id)}</span>`);
+  return {
+    nome: nomeDe(f), sub: `${esp.nome} · Nível ${f.nivel}`,
+    tipo: esp.tipo, raridade: esp.raridade.replace('_', ' '), corTipo: corCss(esp.tipo),
+    linhas: [`<b>HP</b> ${f.hpAtual}/${max}`, `<b>XP</b> ${f.xp}/${xpParaSubir(f.nivel)}`],
+    golpes,
+  };
+}
+function fichaEspecie(k) {
+  const e2 = especies[k];
+  const locais = Object.values(dadosMapas.mapas)
+    .filter((mp) => (mp.selvagens || []).includes(k)).map((mp) => mp.nome);
+  return {
+    nome: e2.nome, sub: 'Compêndio de Feras',
+    tipo: e2.tipo, raridade: e2.raridade.replace('_', ' '), corTipo: corCss(e2.tipo),
+    linhas: [
+      `<b>Vida</b> ${e2.vida} · <b>Velocidade</b> ${e2.velocidade}`,
+      `<b>Habitat:</b> ${locais.length ? locais.join(', ') : 'ainda não avistada'}`,
+    ],
+    golpes: (e2.aprendizado || []).map((a) => `Lv.${a.nivel}: ${golpesCat[a.golpe].nome}`),
+  };
 }
 /* holograma GIGANTE: a fera aparece girando no centro da tela */
 function mostraHoloEspecie(chave) {
@@ -351,6 +395,7 @@ function mostraHoloEspecie(chave) {
   MD.mostra(discoHolo, true);
 }
 function escondeHolo() {
+  hud.ficha(null);
   if (!holoM) return;
   MD.setOpacidade(holoM, 1);
   MD.flashCor(holoM, 0);
@@ -368,9 +413,13 @@ function renderMenu() {
 function abreMenu(tipo) {
   menu = { tipo, sel: 0, fera: menu.fera, especie: menu.especie, ativo: true };
   renderMenu();
-  if (tipo === 'statusFera' || tipo === 'lembrar') mostraHoloEspecie(equipe[menu.fera].especie);
-  else if (tipo === 'compendioFera') mostraHoloEspecie(menu.especie);
-  else escondeHolo();
+  if (tipo === 'statusFera' || tipo === 'lembrar') {
+    mostraHoloEspecie(equipe[menu.fera].especie);
+    hud.ficha(fichaFera(equipe[menu.fera]));
+  } else if (tipo === 'compendioFera') {
+    mostraHoloEspecie(menu.especie);
+    hud.ficha(fichaEspecie(menu.especie));
+  } else escondeHolo();
 }
 // "fechar": na exploração o menu continua na lateral, só desativa a navegação
 function fechaMenu() {
@@ -440,6 +489,7 @@ function iniciaEncontro() {
   modo = 'encontro'; escolha = 0;
   menu.ativo = false; escondeHolo(); hud.menu(false);
   hud.exploracaoVisivel(false);
+  temaArena(cena, mundo.mapa.chao || 'grama'); // ringue com a cara do bioma
   mostraArena(cena, true);
   MD.mostra(domador, false);
   feraAtual = modelosIni[mundo.selvagem.especie];
@@ -467,12 +517,13 @@ function iniciaBatalha() {
   batalha = criarBatalha(especies,
     paraBatalha(fera, especies, golpesCat),
     paraBatalha(inimigo, especies, golpesCat),
-    RINGUE.dom, RINGUE.fera);
+    RINGUE.dom, RINGUE.fera,
+    { tipos, supremos, bioma: mundo.mapa.chao || 'grama' });
   modo = 'batalha';
   trocaModeloJogador(fera);
   hud.batalhaVisivel(true); hud.atualizaHP(batalha);
   hud.golpesPainel(linhasGolpes());
-  hud.dica('Z/X/C/V = golpe · SHIFT + botão = golpe forte · 2 toques na direção = cambalhota · ESPAÇO pula · F captura · ESC menu');
+  hud.dica('Z/X/C/V golpe · SHIFT+botão = forte · E = SUPREMO (barra cheia) · 2 toques na direção = cambalhota · ESPAÇO pula · F captura · ESC menu');
   hud.toast(`${nomeDe(fera)}, eu escolho você!`);
 }
 function fugir() {
@@ -618,7 +669,7 @@ function sincronizaVisual(dt) {
       vivos.add(pr.id);
       let e = projMeshes.get(pr.id);
       if (!e) {
-        e = fx.projetil(pr.tipo, pr.rajada);
+        e = fx.projetil(pr.tipo, pr.rajada, pr.raio);
         projMeshes.set(pr.id, e);
       }
       fx.posiciona(e, pr.pos);
@@ -756,7 +807,7 @@ function loop(agora) {
       const inpP = {
         mov: { x: eixo(['ArrowLeft','KeyA'], ['ArrowRight','KeyD']),
                z: eixo(['ArrowUp','KeyW'], ['ArrowDown','KeyS']) },
-        pulo: spE, golpe: golpeIdx, forte, dash, capturar: fE,
+        pulo: spE, golpe: golpeIdx, forte, supremo: eE, dash, capturar: fE,
       };
       const fim = passoBatalha(batalha, inpP, dt, aoEvento);
       hud.atualizaHP(batalha);

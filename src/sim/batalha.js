@@ -21,10 +21,13 @@ function novoLutador(l, esp, pos) {
     max: vida,
     estado: 'idle', t: 0, golpe: null, acertou: false, tiros: 0,
     invuln: 0, flash: 0, kb: vec(),
+    energia: 0, espinhoT: 0, // barra do golpe supremo · cooldown de perigo da arena
   };
 }
 
-export function criarBatalha(especies, jogador, selvagem, posDomador, posSelvagem) {
+// extras = { tipos (tabela de vantagens), bioma (perigos da arena),
+//            supremos (golpes de barra cheia, por tipo elemental) }
+export function criarBatalha(especies, jogador, selvagem, posDomador, posSelvagem, extras = {}) {
   const dirE = normXZ(sub(posSelvagem, posDomador));
   const posBra = soma(posDomador, escala(dirE, 1.4));
   return {
@@ -36,8 +39,23 @@ export function criarBatalha(especies, jogador, selvagem, posDomador, posSelvage
     projeteis: [], projId: 0,
     domadorAlvo: soma(posDomador, escala(perpXZ(dirE), 3.5)),
     fimT: 0,
+    tipos: extras.tipos || null,
+    bioma: extras.bioma || null,
+    supremos: extras.supremos || null,
   };
 }
+
+// vantagem elemental: golpe do tipo forte contra o alvo = mais dano;
+// golpe "na contramão" (alvo é forte contra o elemento) = menos dano
+function eficacia(tipos, tipoGolpe, tipoAlvo) {
+  if (!tipos || !tipoGolpe || !tipoAlvo) return { m: 1, ef: null };
+  if ((tipos.vantagens[tipoGolpe] || []).includes(tipoAlvo))
+    return { m: tipos.bonus || 1.5, ef: 'super' };
+  if ((tipos.vantagens[tipoAlvo] || []).includes(tipoGolpe))
+    return { m: tipos.penalidade || 0.75, ef: 'fraco' };
+  return { m: 1, ef: null };
+}
+const ganhaEnergia = (f, n) => { f.energia = Math.min(100, (f.energia || 0) + n); };
 
 // a fera caiu mas a equipe tem outra: o duelo continua contra o mesmo inimigo
 export function continuaComOutraFera(b, jogador, especies) {
@@ -62,12 +80,12 @@ export function podeCapturar(b) {
   return !b.fim && !b.captura && b.e.estado !== 'ko' && b.e.hp / b.e.max <= 0.35;
 }
 
-function aplicaDano(b, vitima, dano, dirKb, empurrao, forte, emitir, invulnT = 0.5) {
+function aplicaDano(b, vitima, dano, dirKb, empurrao, forte, emitir, invulnT = 0.5, eficaz = null) {
   vitima.hp = Math.max(0, vitima.hp - dano);
   vitima.estado = 'hurt'; vitima.t = 0;
   vitima.invuln = invulnT; vitima.flash = 1;
   vitima.kb = escala(dirKb, empurrao);
-  emitir({ tipo: forte ? 'hitForte' : 'hit', pos: copia(vitima.pos), dano, forte });
+  emitir({ tipo: forte ? 'hitForte' : 'hit', pos: copia(vitima.pos), dano, forte, eficaz });
   if (vitima.hp <= 0) {
     vitima.estado = 'ko'; vitima.t = 0;
     b.fim = true; b.fimT = 1.4;
@@ -76,8 +94,10 @@ function aplicaDano(b, vitima, dano, dirKb, empurrao, forte, emitir, invulnT = 0
   }
 }
 function acerta(b, vitima, atacante, g, emitir) {
-  aplicaDano(b, vitima, Math.round(g.dano * atacante.forca),
-    normXZ(sub(vitima.pos, atacante.pos)), g.empurrao, g.forte, emitir);
+  const { m, ef } = eficacia(b.tipos, g.tipo || atacante.esp.tipo, vitima.esp.tipo);
+  aplicaDano(b, vitima, Math.round(g.dano * atacante.forca * m),
+    normXZ(sub(vitima.pos, atacante.pos)), g.empurrao, g.forte, emitir, 0.5, ef);
+  ganhaEnergia(atacante, 12); ganhaEnergia(vitima, 8);
 }
 
 /* projéteis: golpes elementais voam até o alvo — inclusive disparados do
@@ -107,8 +127,11 @@ function passoProjeteis(b, dt, emitir) {
     const centroY = alvo.pos.y + 0.6;
     if (alvo.estado !== 'ko' && alvo.invuln <= 0 &&
         distXZ(pr.pos, alvo.pos) < pr.raio && Math.abs(pr.pos.y - centroY) < 0.8) {
-      aplicaDano(b, alvo, Math.round(pr.dano * pr.dono.forca),
-        normXZ(pr.vel), pr.empurrao, true, emitir, pr.rajada ? 0.08 : 0.5);
+      const { m, ef } = eficacia(b.tipos, pr.tipo, alvo.esp.tipo);
+      aplicaDano(b, alvo, Math.round(pr.dano * pr.dono.forca * m),
+        normXZ(pr.vel), pr.empurrao, true, emitir, pr.rajada ? 0.08 : 0.5, ef);
+      ganhaEnergia(pr.dono, pr.rajada ? 5 : 12);
+      ganhaEnergia(alvo, pr.rajada ? 3 : 8);
       b.projeteis.splice(i, 1);
     } else if (pr.vida <= 0 || Math.hypot(pr.pos.x, pr.pos.z) > ARENA.raio + 4) {
       b.projeteis.splice(i, 1);
@@ -134,6 +157,17 @@ function tentaGolpe(f, inp, emitir) {
   else if (podeNoAr) emitir({ tipo: 'especial' });
   else emitir({ tipo: 'swing' });
   emitir({ tipo: 'golpeUsado' });
+}
+
+// golpe SUPREMO: barra de energia cheia libera o golpe máximo do tipo
+function tentaSupremo(b, f, emitir) {
+  if ((f.energia || 0) < 100 || !b.supremos) return;
+  const g = b.supremos[f.esp.tipo] || b.supremos.comum;
+  if (!g) return;
+  if (f.pos.y > 0.01 && !(g.projetil || g.rajada)) return;
+  f.energia = 0;
+  f.estado = 'atk'; f.golpe = g; f.t = 0; f.acertou = false; f.tiros = 0;
+  emitir({ tipo: 'supremo', nome: g.nome, pos: copia(f.pos) });
 }
 
 function passoLutador(b, f, inp, outro, dt, emitir) {
@@ -188,13 +222,31 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
       emitir({ tipo: 'dash' });
     }
     else if (inp.pulo && f.pos.y <= 0.01) { f.vy = f.esp.impulso; emitir({ tipo: 'pulo' }); }
+    else if (inp.supremo) tentaSupremo(b, f, emitir);
     else if (inp.golpe != null) tentaGolpe(f, inp, emitir);
   }
   f.vy -= GRAVIDADE * dt;
   f.pos.y = Math.max(0, f.pos.y + f.vy * dt);
   if (f.pos.y === 0) f.vy = Math.max(0, f.vy);
   const r = Math.hypot(f.pos.x, f.pos.z);
-  if (r > ARENA.raio) { f.pos.x *= ARENA.raio / r; f.pos.z *= ARENA.raio / r; }
+  if (r > ARENA.raio) {
+    f.pos.x *= ARENA.raio / r; f.pos.z *= ARENA.raio / r;
+    // perigo da arena: no deserto, a beirada tem cactos que espetam
+    if (b.bioma === 'deserto' && f.estado !== 'ko' && f.espinhoT <= 0) {
+      f.espinhoT = 0.7;
+      f.hp = Math.max(0, f.hp - 2);
+      f.estado = 'hurt'; f.t = 0; f.flash = 1;
+      f.kb = escala(normXZ(vec(-f.pos.x, 0, -f.pos.z)), 5);
+      emitir({ tipo: 'espinho', pos: copia(f.pos), dano: 2 });
+      if (f.hp <= 0) {
+        f.estado = 'ko'; f.t = 0;
+        b.fim = true; b.fimT = 1.4;
+        b.resultado = (f === b.e) ? 'vitoria' : 'derrota';
+        emitir({ tipo: b.resultado });
+      }
+    }
+  }
+  if (f.espinhoT > 0) f.espinhoT -= dt;
   if (f.invuln > 0) f.invuln -= dt;
   if (f.flash > 0) f.flash -= dt * 4;
 }
@@ -212,6 +264,11 @@ function iaSelvagem(b, dt, rnd) {
     b.aiT = (0.55 + rnd() * 0.5) * (1 - 0.45 * furia);
     if (dist > 4.5) b.iaMov = rnd() < 0.55 + 0.3 * furia ? escala(dir, 0.65 + 0.3 * furia) : null;
     else if (dist > 2.2) b.iaMov = rnd() < 0.75 ? escala(dir, 0.8) : null;
+    else if ((e.energia || 0) >= 100 && rnd() < 0.6) {
+      // barra cheia: a IA também solta o golpe supremo
+      inp.supremo = true;
+      b.iaMov = null;
+    }
     else {
       // a IA gera os mesmos inputs abstratos que um jogador (GDD §9.6/§12)
       const r = rnd();
@@ -308,7 +365,8 @@ export function passoBatalha(b, inpP, dt, emitir, rnd = Math.random) {
   const dash = inpP.dash
     ? soma(escala(fw, -inpP.dash.z), escala(rt, inpP.dash.x))
     : null;
-  passoLutador(b, b.p, { mov, pulo: inpP.pulo, golpe: inpP.golpe, forte: inpP.forte, dash, dashRel: inpP.dash }, b.e, dt, emitir);
+  passoLutador(b, b.p, { mov, pulo: inpP.pulo, golpe: inpP.golpe, forte: inpP.forte,
+    supremo: inpP.supremo, dash, dashRel: inpP.dash }, b.e, dt, emitir);
   passoLutador(b, b.e, iaSelvagem(b, dt, rnd), b.p, dt, emitir);
   if (inpP.capturar && podeCapturar(b)) lancaCristal(b, emitir);
   return null;

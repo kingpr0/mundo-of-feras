@@ -1,0 +1,10 @@
+{
+  "vantagens": {
+    "fogo": ["planta"],
+    "agua": ["fogo"],
+    "planta": ["agua"],
+    "eletrico": ["agua"]
+  },
+  "bonus": 1.5,
+  "penalidade": 0.75
+}

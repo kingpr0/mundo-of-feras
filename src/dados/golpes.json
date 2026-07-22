@@ -61,5 +61,34 @@
     "dano": 7, "alcance": 2.6, "empurrao": 2.8,
     "prep": 0.26, "ativo": 0.44, "recup": 0.42, "forte": true, "usos": 30,
     "rajada": { "tiros": 3, "intervalo": 0.13, "vel": 11, "raio": 0.75 }
+  },
+  "supremo_comum": {
+    "nome": "Impacto Colossal", "tipo": "comum", "fisico": true, "supremo": true,
+    "dano": 30, "alcance": 2.8, "empurrao": 12,
+    "prep": 0.5, "ativo": 0.25, "recup": 0.6, "forte": true, "usos": null
+  },
+  "supremo_fogo": {
+    "nome": "Cometa Ígneo", "tipo": "fogo", "supremo": true,
+    "dano": 30, "alcance": 2.7, "empurrao": 10,
+    "prep": 0.55, "ativo": 0.2, "recup": 0.6, "forte": true, "usos": null,
+    "projetil": { "vel": 10, "raio": 1.6 }
+  },
+  "supremo_agua": {
+    "nome": "Onda Colossal", "tipo": "agua", "supremo": true,
+    "dano": 30, "alcance": 2.7, "empurrao": 10,
+    "prep": 0.55, "ativo": 0.2, "recup": 0.6, "forte": true, "usos": null,
+    "projetil": { "vel": 10, "raio": 1.6 }
+  },
+  "supremo_eletrico": {
+    "nome": "Trovão Máximo", "tipo": "eletrico", "supremo": true,
+    "dano": 30, "alcance": 2.7, "empurrao": 10,
+    "prep": 0.5, "ativo": 0.2, "recup": 0.6, "forte": true, "usos": null,
+    "projetil": { "vel": 12, "raio": 1.5 }
+  },
+  "supremo_planta": {
+    "nome": "Fúria da Selva", "tipo": "planta", "supremo": true,
+    "dano": 30, "alcance": 2.7, "empurrao": 10,
+    "prep": 0.55, "ativo": 0.2, "recup": 0.6, "forte": true, "usos": null,
+    "projetil": { "vel": 10, "raio": 1.5 }
   }
 }
