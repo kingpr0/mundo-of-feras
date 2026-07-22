@@ -161,45 +161,51 @@ export function criarEfeitos(scene) {
     planta: desenhaSheet(pintaPlanta),
     impacto: desenhaSheet(pintaImpacto),
   };
-  // cada sprite ativo precisa da SUA textura (quadro independente); um pool
-  // reaproveita as já enviadas à GPU para não engasgar criando novas
+  // POOL de efeitos inteiros (sprite+material+textura): reciclar em vez de
+  // criar/destruir evita picos de coletor de lixo e uploads à GPU
   const pools = {};
   for (const nome of Object.keys(canvases)) pools[nome] = [];
-  const pegaTex = (nome) => pools[nome].pop() || fazTex(canvases[nome]);
-  const soltaTex = (nome, t) => {
-    if (pools[nome].length < POOL_MAX) pools[nome].push(t); else t.dispose();
-  };
-
-  let ativos = [];
-  function novo(nome, o) {
-    const tex = pegaTex(nome);
+  function pegaEfeito(nome) {
+    const usado = pools[nome].pop();
+    if (usado) return usado;
+    const tex = fazTex(canvases[nome]);
     const mat = new THREE.SpriteMaterial({
       map: tex, transparent: true, depthWrite: false,
       blending: THREE.AdditiveBlending,
-      rotation: o.rot || 0, opacity: o.op == null ? 1 : o.op,
     });
     const sp = new THREE.Sprite(mat);
-    sp.scale.set(o.escala, o.escala, 1);
     scene.add(sp);
-    const e = { nome, tex, mat, sp, t: 0, fps: o.fps || 16, dur: o.dur,
-                loop: !!o.loop, vel: o.vel, cresce: o.cresce || 0,
-                gira: o.gira || 0, op0: o.op == null ? 1 : o.op, escala0: o.escala };
+    return { nome, tex, mat, sp };
+  }
+
+  let ativos = [];
+  function novo(nome, o) {
+    const e = pegaEfeito(nome);
+    e.mat.rotation = o.rot || 0;
+    e.mat.opacity = o.op == null ? 1 : o.op;
+    e.sp.scale.set(o.escala, o.escala, 1);
+    e.sp.visible = true;
+    e.morto = false;
+    e.t = 0; e.fps = o.fps || 16; e.dur = o.dur; e.loop = !!o.loop;
+    e.vel = o.vel; e.cresce = o.cresce || 0; e.gira = o.gira || 0;
+    e.op0 = o.op == null ? 1 : o.op; e.escala0 = o.escala;
     ativos.push(e);
     return e;
   }
   function mata(e) {
     if (e.morto) return;
     e.morto = true;
-    scene.remove(e.sp);
-    e.mat.dispose();
-    soltaTex(e.nome, e.tex);
+    e.sp.visible = false;
+    if (pools[e.nome].length < POOL_MAX) pools[e.nome].push(e);
+    else { scene.remove(e.sp); e.mat.dispose(); e.tex.dispose(); }
   }
 
   return {
-    // bola elemental em loop; quem chama posiciona a cada frame e remove no fim
-    projetil(tipo, rajada) {
+    // bola elemental em loop; quem chama posiciona a cada frame e remove no
+    // fim — o tamanho acompanha o raio do golpe (supremos são enormes)
+    projetil(tipo, rajada, raio = 0.85) {
       return novo(FOLHA_DO_TIPO[tipo] || 'fogo', {
-        escala: rajada ? 1.25 : 1.7, fps: 18, loop: true,
+        escala: rajada ? 1.25 : raio * 2, fps: 18, loop: true,
         rot: Math.random() * 6.284, gira: rajada ? 0 : 2.2,
       });
     },

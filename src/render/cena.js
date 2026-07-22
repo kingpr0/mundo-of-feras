@@ -36,10 +36,19 @@ export function criarCena(canvas) {
     camAlvo: new THREE.Vector3(),
     shake: 0,
     parts: [],
+    partPool: [],
     oclusores: [],
     oclusoresArena: [],
     anims: [], // animações de ambiente do mapa atual (fogueira, água...)
   };
+  // POOL de partículas: malhas recicladas — criar/destruir objetos toda hora
+  // acorda o coletor de lixo e causa micro-travamentos
+  for (let i = 0; i < 240; i++) {
+    const m = new THREE.Mesh(geoP, new THREE.MeshBasicMaterial({ transparent: true }));
+    m.visible = false;
+    scene.add(m);
+    estado.partPool.push(m);
+  }
   arenaG.traverse((o) => { if (o.isMesh && o.userData.oclusor) estado.oclusoresArena.push(o); });
   const resize = () => {
     camera.aspect = innerWidth / innerHeight;
@@ -276,11 +285,16 @@ function montaBorda(g, mapa) {
       const pedra = new THREE.Mesh(new THREE.DodecahedronGeometry(r),
         new THREE.MeshLambertMaterial({ color: (i % 2) ? 0x7d838c : 0x6e7680 }));
       pedra.position.set(x + (Math.random() - 0.5), r * 0.7, z + (Math.random() - 0.5));
-      pedra.castShadow = true; pedra.userData.oclusor = true; g.add(pedra);
+      pedra.castShadow = esc === 1; // só a fila da frente projeta sombra
+      pedra.userData.oclusor = true; g.add(pedra);
       return;
     }
     const arv = arvore(g, x + (Math.random() - 0.5), z + (Math.random() - 0.5), i % 2);
-    if (arv && esc !== 1) arv.scale.setScalar(esc);
+    if (arv && esc !== 1) {
+      arv.scale.setScalar(esc);
+      // filas de trás são cenário distante: sem sombra (alivia a GPU)
+      arv.traverse((o) => { if (o.isMesh) o.castShadow = false; });
+    }
   };
   const passo = 2.4;
   let i = 0;
@@ -645,21 +659,33 @@ export function montaMapa(cena, mapa) {
   g.traverse((o) => { if (o.isMesh && o.userData.oclusor) cena.oclusores.push(o); });
 }
 
-/* arena de batalha — ringue de floresta centrado na origem (a sim luta em
-   torno de 0,0, então basta esconder o mundo e mostrar a arena) */
+/* arena de batalha — ringue centrado na origem, TEMATIZADO pelo bioma do
+   mapa onde o duelo começou (floresta, deserto com cactos, rochas...) */
+function cacto(g, x, z, esc = 1) {
+  const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
+  const grupo = new THREE.Group();
+  const corpo = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.34, 1.5, 8), lamb(0x3f8f3f));
+  corpo.position.y = 0.75; corpo.castShadow = true; grupo.add(corpo);
+  const topo = new THREE.Mesh(new THREE.SphereGeometry(0.28, 8, 6), lamb(0x3f8f3f));
+  topo.position.y = 1.5; grupo.add(topo);
+  for (const lado of [-1, 1]) {
+    const braco = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.15, 0.6, 6), lamb(0x4a9c48));
+    braco.position.set(lado * 0.45, 1.0, 0); braco.rotation.z = lado * 0.5; grupo.add(braco);
+  }
+  const flor = new THREE.Mesh(new THREE.SphereGeometry(0.09, 6, 5), lamb(0xff7fa8));
+  flor.position.y = 1.78; grupo.add(flor);
+  grupo.position.set(x, 0, z); grupo.scale.setScalar(esc);
+  g.add(grupo);
+}
 function montaArena(scene) {
   const g = new THREE.Group(); g.visible = false; scene.add(g);
   const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
-  // clareira de grama + platô de terra batida
-  const base = new THREE.Mesh(new THREE.CircleGeometry(34, 24), lamb(0x578f43));
-  base.rotation.x = -Math.PI / 2; base.position.y = 0.004; base.receiveShadow = true; g.add(base);
-  // tablado de AREIA elevado: as feras afundam levemente os pés (nada de flutuar)
+  // tablado de AREIA elevado + cerca: fixos em qualquer bioma
   const areia = new THREE.Mesh(new THREE.CylinderGeometry(10.5, 11.3, 0.5, 28), lamb(0xd0b183));
   areia.position.y = -0.13; // topo em y ≈ 0.12
   areia.receiveShadow = true; g.add(areia);
   const borda = new THREE.Mesh(new THREE.TorusGeometry(10.6, 0.2, 8, 28), lamb(0x8a6a50));
   borda.rotation.x = -Math.PI / 2; borda.position.y = 0.14; g.add(borda);
-  // cerca de troncos: postes + travessão
   for (let i = 0; i < 20; i++) {
     const a = (i / 20) * Math.PI * 2;
     const poste = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.16, 0.95, 6), lamb(0x7a5233));
@@ -668,17 +694,47 @@ function montaArena(scene) {
   }
   const trave = new THREE.Mesh(new THREE.TorusGeometry(11.8, 0.07, 6, 28), lamb(0x9a7243));
   trave.rotation.x = -Math.PI / 2; trave.position.y = 0.8; g.add(trave);
-  // mata fechando a arena (fora da cerca) e pedras decorando a beirada
+  g.tema = new THREE.Group(); g.add(g.tema);
+  return g;
+}
+// (re)veste a arena com o bioma do mapa atual
+export function temaArena(cena, bioma = 'grama') {
+  const g = cena.arenaG;
+  descarta(g.tema); g.remove(g.tema);
+  const tema = new THREE.Group(); g.add(tema); g.tema = tema;
+  const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
+  const CORES = { grama: 0x578f43, vila: 0x578f43, terra: 0xa67f50,
+                  penhasco: 0x9c5242, deserto: 0xdcc084 };
+  const base = new THREE.Mesh(new THREE.CircleGeometry(34, 24), lamb(CORES[bioma] || 0x578f43));
+  base.rotation.x = -Math.PI / 2; base.position.y = 0.004; base.receiveShadow = true; tema.add(base);
+  // moldura externa do ringue conforme o bioma
   for (let i = 0; i < 18; i++) {
     const a = (i / 18) * Math.PI * 2 + 0.17;
     const r = 15 + (i % 3) * 2.2;
-    arvore(g, Math.cos(a) * r, Math.sin(a) * r, i % 2 === 0 ? 1 : 0);
+    const x = Math.cos(a) * r, z = Math.sin(a) * r;
+    if (bioma === 'deserto') cacto(tema, x, z, 1.1 + (i % 3) * 0.4);
+    else if (bioma === 'penhasco' || bioma === 'terra') {
+      const rr = 1.0 + (i % 3) * 0.6;
+      const pedra = new THREE.Mesh(new THREE.DodecahedronGeometry(rr),
+        lamb((i % 2) ? 0x7d838c : 0x6e7680));
+      pedra.position.set(x, rr * 0.7, z);
+      pedra.castShadow = true; pedra.userData.oclusor = true; tema.add(pedra);
+    } else arvore(tema, x, z, i % 2 === 0 ? 1 : 0);
   }
-  [[8.6, 2.6], [-7.9, -4.4], [1.8, -9.3]].forEach(([x, z], i) => {
-    const pedra = new THREE.Mesh(new THREE.DodecahedronGeometry(0.4 + i * 0.12), lamb(0x8d939c));
-    pedra.position.set(x, 0.3, z); pedra.castShadow = true; g.add(pedra);
-  });
-  return g;
+  if (bioma === 'deserto') {
+    // PERIGO: cactos pequenos na beirada interna — encostou, espetou (sim)
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2 + 0.3;
+      cacto(tema, Math.cos(a) * 10.1, Math.sin(a) * 10.1, 0.5);
+    }
+  } else {
+    [[8.6, 2.6], [-7.9, -4.4], [1.8, -9.3]].forEach(([x, z], i) => {
+      const pedra = new THREE.Mesh(new THREE.DodecahedronGeometry(0.4 + i * 0.12), lamb(0x8d939c));
+      pedra.position.set(x, 0.3, z); pedra.castShadow = true; tema.add(pedra);
+    });
+  }
+  cena.oclusoresArena = [];
+  g.traverse((o) => { if (o.isMesh && o.userData.oclusor) cena.oclusoresArena.push(o); });
 }
 
 // alterna entre o mapa de exploração e o ringue de batalha
@@ -687,13 +743,24 @@ export function mostraArena(cena, ligar) {
   cena.mundoG.visible = !ligar;
 }
 
+/* partículas saem do POOL (sem alocação); esgotou, simplesmente não nasce */
+const geoP = new THREE.PlaneGeometry(0.085, 0.085);
+function nascePart(cena, pos, cor, escala) {
+  const m = cena.partPool.pop();
+  if (!m) return null;
+  m.material.color.setHex(cor);
+  m.material.opacity = 1;
+  m.position.set(pos.x, pos.y, pos.z);
+  m.scale.setScalar(escala);
+  m.visible = true;
+  return m;
+}
+
 /* jato direcionado: fagulhas que voam da boca da fera até o alvo (sopros) */
 export function jato(cena, pos, dir, cor, n = 4, vel = 8) {
   for (let i = 0; i < n; i++) {
-    const m = new THREE.Mesh(geoP, new THREE.MeshBasicMaterial({ color: cor, transparent: true }));
-    m.position.set(pos.x, pos.y, pos.z);
-    m.scale.setScalar(0.6 + Math.random() * 0.9);
-    cena.scene.add(m);
+    const m = nascePart(cena, pos, cor, 0.6 + Math.random() * 0.9);
+    if (!m) return;
     cena.parts.push({ m,
       vx: dir.x * vel + (Math.random() - 0.5) * 2.4,
       vy: dir.y * vel + (Math.random() - 0.5) * 1.8 + 0.6,
@@ -702,14 +769,10 @@ export function jato(cena, pos, dir, cor, n = 4, vel = 8) {
   }
 }
 
-/* partículas (pequenas, com variação de tamanho) */
-const geoP = new THREE.PlaneGeometry(0.085, 0.085);
 export function poof(cena, pos, cor, n = 10, vel = 3) {
   for (let i = 0; i < n; i++) {
-    const m = new THREE.Mesh(geoP, new THREE.MeshBasicMaterial({ color: cor, transparent: true }));
-    m.position.set(pos.x, pos.y, pos.z);
-    m.scale.setScalar(0.5 + Math.random() * 0.9);
-    cena.scene.add(m);
+    const m = nascePart(cena, pos, cor, 0.5 + Math.random() * 0.9);
+    if (!m) return;
     cena.parts.push({ m, vx: (Math.random()-.5)*vel, vy: Math.random()*vel,
       vz: (Math.random()-.5)*vel, vida: 0.5 + Math.random() * 0.3 });
   }
@@ -727,7 +790,11 @@ export function passoParticulas(cena, dt) {
     p.vy -= 6 * dt;
     p.m.material.opacity = Math.max(0, p.vida * 2);
     p.m.lookAt(cena.camera.position);
-    if (p.vida <= 0) { cena.scene.remove(p.m); cena.parts.splice(i, 1); }
+    if (p.vida <= 0) { // devolve ao pool em vez de destruir
+      p.m.visible = false;
+      cena.partPool.push(p.m);
+      cena.parts.splice(i, 1);
+    }
   }
 }
 
