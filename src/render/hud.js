@@ -129,6 +129,13 @@ export function criarHUD() {
       $('fillE').style.width = (b.e.hp / b.e.max * 100) + '%';
       $('fillP').style.background = cor(b.p);
       $('fillE').style.background = cor(b.e);
+      // barra laranja de energia do golpe supremo (pisca quando cheia)
+      const en = (id, f) => {
+        const el = $(id);
+        el.style.width = Math.min(100, f.energia || 0) + '%';
+        el.className = 'enfill' + ((f.energia || 0) >= 100 ? ' pronto' : '');
+      };
+      en('fillEnP', b.p); en('fillEnE', b.e);
     },
     capDisponivel(v) { $('cap').style.display = v ? 'block' : 'none'; },
     nomeInimigo(n, nivel) { $('nomeE').textContent = n + (nivel ? ` Lv.${nivel}` : ''); },
@@ -139,7 +146,8 @@ export function criarHUD() {
     // barra de evolução (XP) sob a barra de vida do jogador
     xp(fracao) { $('fillXp').style.width = Math.min(100, fracao * 100) + '%'; },
     dica(txt) { $('dica').textContent = txt; },
-    // menu genérico (exploração e batalha): título + lista com seleção
+    // menu genérico (exploração e batalha): título + lista com seleção;
+    // o item selecionado fica sempre CENTRALIZADO na janela de rolagem
     menu(v, titulo = '', itens = [], sel = 0) {
       const m = $('menu');
       m.style.display = v ? 'block' : 'none';
@@ -153,6 +161,23 @@ export function criarHUD() {
         d.textContent = txt;
         lista.appendChild(d);
       });
+      const el = lista.children[sel];
+      if (el) m.scrollTop = el.offsetTop - m.offsetTop - m.clientHeight / 2 + el.offsetHeight / 2;
+    },
+    // ficha GRANDE da fera: aparece ao lado do holograma no centro da tela
+    ficha(d) {
+      const f = $('ficha');
+      if (!d) { f.style.display = 'none'; return; }
+      const golpes = (d.golpes || [])
+        .map((g) => `<div class="fgolpe">• ${g}</div>`).join('');
+      f.innerHTML = `
+        <h2>${d.nome}</h2>
+        <div class="fsub">${d.sub || ''}</div>
+        <span class="ftag" style="background:${d.corTipo || '#cbd0d8'}">${d.tipo}</span>
+        <span class="ftag">${d.raridade}</span>
+        ${d.linhas.map((l) => `<div class="flin">${l}</div>`).join('')}
+        ${golpes}`;
+      f.style.display = 'block';
     },
     escolha(v, sel = 0) {
       $('escolha').style.display = v ? 'flex' : 'none';
@@ -163,10 +188,10 @@ export function criarHUD() {
     },
     equipe(n) { $('nCap').textContent = n; },
     escondeTitulo() { $('titulo').style.display = 'none'; },
-    dano(pos, valor, forte) {
+    dano(pos, valor, forte, eficaz) {
       const d = document.createElement('div');
-      d.className = 'dmg' + (forte ? ' forte' : '');
-      d.textContent = valor;
+      d.className = 'dmg' + (forte ? ' forte' : '') + (eficaz === 'super' ? ' super' : '');
+      d.textContent = valor + (eficaz === 'super' ? '!' : '');
       $('hud').appendChild(d);
       dmgs.push({ pos: { ...pos, y: pos.y + 2 }, el: d, vida: 0.85 });
     },
