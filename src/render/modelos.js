@@ -656,6 +656,9 @@ export function criarFeraGltf(scene, url, alturaAlvo = 1.1, giroGraus = 0) {
       gltf.scene.traverse((o) => {
         if (o.isMesh) {
           o.castShadow = true;
+          // alguns modelos (a raposa!) vêm SEM normais — o Lambert precisa
+          // delas para iluminar; sem isso a malha some/fica preta
+          if (!o.geometry.attributes.normal) o.geometry.computeVertexNormals();
           // troca o material PBR (escuro sob nossa luz estilizada) por
           // Lambert, o mesmo das outras feras — cores vivas e flash ok
           const troca = (mt) => {

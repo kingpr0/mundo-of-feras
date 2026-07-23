@@ -42,6 +42,7 @@ export function alturaMorros(mapa, pos) {
 // a grama alta vive sobre uma PLATAFORMA verde baixa (canteiro): sobe-se
 // andando (rampa suave na borda)
 export function alturaGrama(mapa, pos) {
+  if (mapa.tipo === 'interior') return 0; // dentro de caverna o chão é plano
   let h = 0;
   for (const G of zonasGrama(mapa)) {
     const m = 1.2; // a plataforma se estende além da grama (moldura)
@@ -76,8 +77,9 @@ function colideDecor(mapa, pos) {
     if (dx * dx + dz * dz < r * r) return true;
   }
   for (const n of mapa.npcs || []) {
+    // raio folgado: o domador no máximo ENCOSTA no morador, nunca o invade
     const dx = pos.x - n[0], dz = pos.z - n[1];
-    if (dx * dx + dz * dz < 0.45 * 0.45) return true;
+    if (dx * dx + dz * dz < 0.72 * 0.72) return true;
   }
   return false;
 }
@@ -135,7 +137,7 @@ function colide(mapa, pos) {
   if (colideDecor(mapa, pos)) return true;
   for (const t of mapa.treinadores || []) {
     const dx = pos.x - t.x, dz = pos.z - t.z;
-    if (dx * dx + dz * dz < 0.55 * 0.55) return true;
+    if (dx * dx + dz * dz < 0.8 * 0.8) return true;
   }
   return false;
 }
@@ -232,12 +234,13 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
         d.pos.z > m.mapa.limite.z - 0.5 && Math.abs(d.pos.x) < 1.2)
       return { tipo: 'porta', destino: 'retorno' };
 
-    // boca da caverna: chegar perto avisa (interior dela vem no futuro)
+    // boca da caverna: entrar leva ao interior dela
     const cav = m.mapa.caverna;
     if (cav && m.cavernaT <= 0 &&
-        Math.hypot(d.pos.x - cav.x, d.pos.z - cav.z) < 2.6) {
+        Math.hypot(d.pos.x - cav.x, d.pos.z - cav.z) < 2.0) {
       m.cavernaT = 4;
-      return 'caverna';
+      return { tipo: 'porta', destino: 'interior_caverna',
+               retorno: { x: cav.x, z: cav.z + 3.0 } };
     }
     // encontro à moda clássica: chance por tempo andado dentro da grama alta
     const naGrama = zonasGrama(m.mapa).some((G) =>

@@ -198,7 +198,8 @@ function casa(g, x, z, corNome) {
   cham.position.set(1.05, 3.35, -0.7); cham.castShadow = true; grupo.add(cham);
   const boca = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.14, 0.48), lamb(0x4a4a52));
   boca.position.set(1.05, 3.95, -0.7); grupo.add(boca);
-  const porta = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.2, 0.1), lamb(0x6b4a2f));
+  // porta PRETA = "dá para entrar" (linguagem visual das construções)
+  const porta = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.2, 0.1), lamb(0x16121c));
   porta.position.set(0, 0.85, 1.62); grupo.add(porta);
   const lintel = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.12, 0.14), lamb(0x8a6a50));
   lintel.position.set(0, 1.5, 1.63); grupo.add(lintel);
@@ -228,7 +229,7 @@ function centroCura(g, ct) {
   telhado.userData.oclusor = true;
   grupo.add(telhado);
   beiral(grupo, 5.8, 2.92, 0xd1462f);
-  const porta = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.4, 0.1), lamb(0x9ad4e8));
+  const porta = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.4, 0.1), lamb(0x16121c));
   porta.position.set(0, 0.95, 1.92); grupo.add(porta);
   // cruz branca sobre a porta
   const cr1 = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.22, 0.08), lamb(0xffffff));
@@ -498,8 +499,9 @@ function montaGrama(scene, G) {
   const geoArb = new THREE.SphereGeometry(0.78, 10, 7);
   const passo = 1.05;
   let i = 0;
-  for (let px = G.x0 + 0.6; px <= G.x1 - 0.3; px += passo) {
-    for (let pz = G.z0 + 0.6; pz <= G.z1 - 0.3; pz += passo, i++) {
+  // os arbustos vão ATÉ a borda da plataforma, sem faixa verde sobrando
+  for (let px = G.x0 - 0.3; px <= G.x1 + 0.3; px += passo) {
+    for (let pz = G.z0 - 0.3; pz <= G.z1 + 0.3; pz += passo, i++) {
       const m = new THREE.Mesh(geoArb, mats[(i * 7) % mats.length]);
       const esc = 0.9 + ((i * 13) % 10) / 45;
       m.scale.set(esc, 0.62 * esc, esc);
@@ -626,13 +628,39 @@ function bocaCaverna(g, c) {
 }
 
 /* interior de casa: piso de madeira, paredes com porta ao sul e móveis */
+// piso xadrez creme do Centro (estilo clássico)
+function texturaXadrez() {
+  const c = document.createElement('canvas'); c.width = c.height = 64;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#efe3c0'; ctx.fillRect(0, 0, 64, 64);
+  ctx.fillStyle = '#e0d0a4';
+  for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++)
+    if ((i + j) % 2) ctx.fillRect(i * 16, j * 16, 16, 16);
+  ctx.strokeStyle = 'rgba(160,140,100,0.5)'; ctx.lineWidth = 1;
+  for (let k = 0; k <= 64; k += 16) {
+    ctx.beginPath(); ctx.moveTo(k, 0); ctx.lineTo(k, 64); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, k); ctx.lineTo(64, k); ctx.stroke();
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  return t;
+}
 function montaInterior(g, mapa) {
   const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
   const L = mapa.limite;
-  const piso = new THREE.Mesh(new THREE.BoxGeometry(L.x * 2 + 0.8, 0.1, L.z * 2 + 0.8), lamb(0xa8734a));
+  const caverna = mapa.estilo === 'caverna';
+  const centro = mapa.estilo === 'centro';
+  let matPiso;
+  if (centro) {
+    const tx = texturaXadrez();
+    tx.repeat.set(L.x, L.z);
+    matPiso = new THREE.MeshLambertMaterial({ map: tx });
+  } else matPiso = lamb(caverna ? 0x474254 : 0xa8734a);
+  const piso = new THREE.Mesh(new THREE.BoxGeometry(L.x * 2 + 0.8, 0.1, L.z * 2 + 0.8), matPiso);
   piso.position.y = -0.05; piso.receiveShadow = true; g.add(piso);
+  const corParede = caverna ? 0x555068 : 0xe8d3b0;
   const parede = (w, d, x, z) => {
-    const m = new THREE.Mesh(new THREE.BoxGeometry(w, 2.6, d), lamb(0xe8d3b0));
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, 2.6, d), lamb(corParede));
     m.position.set(x, 1.3, z); m.castShadow = true; g.add(m);
   };
   parede(L.x * 2 + 0.8, 0.4, 0, -L.z - 0.2);           // fundo
@@ -641,16 +669,83 @@ function montaInterior(g, mapa) {
   const seg = L.x - 1;                                  // frente com vão da porta
   parede(seg, 0.4, -(1 + seg / 2), L.z + 0.2);
   parede(seg, 0.4, 1 + seg / 2, L.z + 0.2);
-  if (mapa.estilo === 'centro') {
-    // balcão de atendimento, máquina de cura e tapete
+  if (caverna) {
+    // CAVERNA: estalagmites, pedras e cristais que brilham no escuro
+    for (const [x, z, esc] of [[-7, 4, 1.2], [6, -4, 1.5], [8, 3, 1.0], [3, -5.5, 0.8], [-4, 5.2, 0.9]]) {
+      const est = new THREE.Mesh(new THREE.ConeGeometry(0.35 * esc, 1.4 * esc, 7), lamb(0x605a75));
+      est.position.set(x, 0.7 * esc, z); est.castShadow = true; est.userData.oclusor = true; g.add(est);
+    }
+    for (const [x, z] of [[-8.5, -6], [1, 1.5], [8.5, -6], [-1.5, -6]]) {
+      const pedra = new THREE.Mesh(new THREE.DodecahedronGeometry(0.5), lamb(0x4d4860));
+      pedra.position.set(x, 0.3, z); pedra.castShadow = true; g.add(pedra);
+    }
+    // cristais luminosos — um aglomerado marca o covil das feras (a "grama")
+    const cristal = (x, z, esc, cor) => {
+      const cr = new THREE.Mesh(new THREE.OctahedronGeometry(0.3 * esc),
+        new THREE.MeshLambertMaterial({ color: cor, emissive: 0x1f9b8e }));
+      cr.position.set(x, 0.3 * esc, z);
+      cr.rotation.y = x * 2.1; g.add(cr);
+    };
+    const G = mapa.grama;
+    if (G) for (let i = 0; i < 8; i++) {
+      const gx = G.x0 + ((i * 37) % 10) / 10 * (G.x1 - G.x0);
+      const gz = G.z0 + ((i * 53) % 10) / 10 * (G.z1 - G.z0);
+      cristal(gx, gz, 0.8 + (i % 3) * 0.35, i % 2 ? 0x59e0d0 : 0x7a6fd0);
+    }
+    cristal(7, 5, 1.4, 0x59e0d0);
+    cristal(-9, -2, 1.1, 0x7a6fd0);
+    return;
+  }
+  if (centro) {
+    // CENTRO estilo clássico: balcão vermelho, máquina de cura, TV,
+    // estante de produtos, vasos de flores e tapetes
     const balcao = new THREE.Mesh(new THREE.BoxGeometry(L.x * 1.2, 1.0, 0.9), lamb(0xe0685a));
     balcao.position.set(0, 0.5, -L.z + 1.3); balcao.castShadow = true; g.add(balcao);
     const tampo = new THREE.Mesh(new THREE.BoxGeometry(L.x * 1.2 + 0.2, 0.12, 1.1), lamb(0xfff3da));
     tampo.position.set(0, 1.06, -L.z + 1.3); g.add(tampo);
-    const maquina = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.5, 0.8), lamb(0x9ad4e8));
-    maquina.position.set(1.8, 1.35, -L.z + 1.3); g.add(maquina);
+    // máquina de cura sobre o balcão: base branca, painel verde e luzes
+    const maq = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.45, 0.9), lamb(0xf7f3ea));
+    maq.position.set(-1.6, 1.35, -L.z + 1.25); maq.castShadow = true; g.add(maq);
+    const painel = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.1, 0.55),
+      new THREE.MeshLambertMaterial({ color: 0x5fd35a, emissive: 0x1a4a1a }));
+    painel.position.set(-1.6, 1.63, -L.z + 1.25); g.add(painel);
+    for (let i = 0; i < 3; i++) {
+      const luz = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 5),
+        new THREE.MeshLambertMaterial({ color: 0xffd23f, emissive: 0x996600 }));
+      luz.position.set(-2.1 + i * 0.5, 1.62, -L.z + 1.62); g.add(luz);
+    }
+    // TV na parede do fundo + cruz vermelha
+    const tv = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.9, 0.1), lamb(0x2b2836));
+    tv.position.set(2.6, 1.9, -L.z + 0.06); g.add(tv);
+    const tela = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.7, 0.06),
+      new THREE.MeshLambertMaterial({ color: 0x9ad4e8, emissive: 0x123a4a }));
+    tela.position.set(2.6, 1.9, -L.z + 0.12); g.add(tela);
+    const cr1 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.16, 0.06), lamb(0xd1462f));
+    cr1.position.set(-2.6, 2.0, -L.z + 0.06); g.add(cr1);
+    const cr2 = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.5, 0.06), lamb(0xd1462f));
+    cr2.position.set(-2.6, 2.0, -L.z + 0.06); g.add(cr2);
+    // estante de produtos na parede esquerda
+    const estante = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.7, 2.4), lamb(0x8a6a50));
+    estante.position.set(-L.x + 0.55, 0.85, -0.6); estante.castShadow = true; g.add(estante);
+    for (let p = 0; p < 3; p++) for (let q = 0; q < 3; q++) {
+      const prod = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.22, 0.5),
+        lamb([0xd1462f, 0x3a6bc9, 0xffd23f][(p + q) % 3]));
+      prod.position.set(-L.x + 0.62, 0.5 + p * 0.5, -1.4 + q * 0.8); g.add(prod);
+    }
+    // vasos de flores nos cantos
+    for (const [vx, vz] of [[L.x - 0.9, -L.z + 0.9], [L.x - 0.9, L.z - 0.9], [-L.x + 0.9, L.z - 0.9]]) {
+      const vaso = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.18, 0.4, 8), lamb(0xc9563f));
+      vaso.position.set(vx, 0.2, vz); vaso.castShadow = true; g.add(vaso);
+      const folha = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 6), lamb(0x4e9a3f));
+      folha.position.set(vx, 0.62, vz); g.add(folha);
+      const flor = new THREE.Mesh(new THREE.SphereGeometry(0.08, 6, 5), lamb(0xff7fa8));
+      flor.position.set(vx + 0.12, 0.82, vz); g.add(flor);
+    }
+    // tapetes: o azul central e o vermelho da entrada
     const tapete = new THREE.Mesh(new THREE.CircleGeometry(1.3, 16), lamb(0x9ad4e8));
-    tapete.rotation.x = -Math.PI / 2; tapete.position.y = 0.02; tapete.position.z = 0.8; g.add(tapete);
+    tapete.rotation.x = -Math.PI / 2; tapete.position.y = 0.02; tapete.position.z = 0.4; g.add(tapete);
+    const capacho = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.03, 1.0), lamb(0xd1462f));
+    capacho.position.set(0, 0.02, L.z - 0.6); g.add(capacho);
   } else {
     // móveis: cama, travesseiro, mesa e tapete
     const cama = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.5, 2.4), lamb(0xd9553f));
@@ -757,7 +852,8 @@ export function montaMapa(cena, mapa) {
     });
     return;
   }
-  montaChao(g, Math.max(mapa.limite.x, mapa.limite.z) * 2 + 24, mapa.chao || 'grama', mapa);
+  // chão bem maior que o mapa: os cantos da câmera nunca mostram o vazio
+  montaChao(g, Math.max(mapa.limite.x, mapa.limite.z) * 2 + 64, mapa.chao || 'grama', mapa);
   montaCaminhos(g, mapa);
   montaPedras(g, mapa);
   (mapa.arvores || []).forEach(([x, z, p]) => {

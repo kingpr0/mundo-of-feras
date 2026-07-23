@@ -1348,6 +1348,31 @@
       },
       "arvores": [],
       "saidas": []
+    },
+    "interior_caverna": {
+      "nome": "Caverna Sombria",
+      "tipo": "interior",
+      "estilo": "caverna",
+      "limite": {
+        "x": 10,
+        "z": 7
+      },
+      "grama": {
+        "x0": -8,
+        "z0": -5,
+        "x1": -2,
+        "z1": 0
+      },
+      "spawn": {
+        "x": 0,
+        "z": 5.5
+      },
+      "selvagens": [
+        "cascorro",
+        "assombrim",
+        "diabrim"
+      ],
+      "saidas": []
     }
   }
 }

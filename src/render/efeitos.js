@@ -236,6 +236,7 @@ export function criarEfeitos(scene) {
     e.t = 0; e.fps = o.fps || 16; e.dur = o.dur; e.loop = !!o.loop;
     e.vel = o.vel; e.cresce = o.cresce || 0; e.gira = o.gira || 0;
     e.op0 = o.op == null ? 1 : o.op; e.escala0 = o.escala;
+    e.engorda = false; // (setado por quem cria, ex.: projétil)
     ativos.push(e);
     return e;
   }
@@ -250,13 +251,16 @@ export function criarEfeitos(scene) {
   return {
     // bola elemental em loop; quem chama posiciona a cada frame e remove no
     // fim — o tamanho acompanha o raio do golpe (supremos são enormes) e o
-    // golpe pode pedir uma folha específica ("visual" nos dados)
+    // golpe pode pedir uma folha específica ("visual" nos dados).
+    // Nasce FINA na boca e engorda ao longo do voo.
     projetil(tipo, rajada, raio = 0.85, visual = null) {
       const nome = visual && canvases[visual] ? visual : (FOLHA_DO_TIPO[tipo] || 'fogo');
-      return novo(nome, {
+      const e = novo(nome, {
         escala: rajada ? 1.25 : raio * 2, fps: 18, loop: true,
         rot: Math.random() * 6.284, gira: rajada ? 0 : 2.2,
       });
+      e.engorda = true;
+      return e;
     },
 
     // FEIXE instantâneo (trovão, raio de energia): linha de clarões entre
@@ -289,12 +293,13 @@ export function criarEfeitos(scene) {
       e.sp.position.set(pos.x, pos.y + 0.9, pos.z);
     },
 
-    // língua de chama/raio/água que voa da boca na direção do alvo
+    // língua de chama/raio/água que voa da boca na direção do alvo —
+    // nasce FININHA junto da boca e vai engrossando pelo caminho
     sopro(origem, dir, tipo, vel = 10, visual = null) {
       const v = vel * (0.75 + Math.random() * 0.5);
       const e = novo(visual && canvases[visual] ? visual : (FOLHA_DO_TIPO[tipo] || 'fogo'), {
-        escala: 0.8 + Math.random() * 0.5, dur: 0.32, fps: 20,
-        rot: Math.random() * 6.284, cresce: 2.4,
+        escala: 0.22 + Math.random() * 0.15, dur: 0.34, fps: 20,
+        rot: Math.random() * 6.284, cresce: 4.2,
         vel: { x: dir.x * v, y: dir.y * v, z: dir.z * v },
       });
       e.sp.position.set(origem.x, origem.y, origem.z);
@@ -317,6 +322,8 @@ export function criarEfeitos(scene) {
         }
         if (e.gira) e.mat.rotation += e.gira * dt;
         let s = e.escala0 + e.cresce * e.t;
+        // projétil nasce fino na boca e incha até o tamanho cheio
+        if (e.engorda) s *= Math.min(1, 0.2 + (e.t / 0.3) * 0.8);
         if (e.loop) s *= 0.92 + Math.random() * 0.16; // tremeluz
         e.sp.scale.set(s, s, 1);
         if (!e.loop) {

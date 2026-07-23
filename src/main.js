@@ -421,6 +421,8 @@ function mostraHoloEspecie(chave) {
   MD.setOpacidade(holoM, 1);
   MD.flashCor(holoM, 0x06222a);
   holoM.g.rotation.x = 0;
+  // projeção de luz não faz sombra
+  holoM.g.traverse((o) => { if (o.isMesh) o.castShadow = false; });
   MD.mostra(holoM, true);
   MD.setPos(discoHolo, base);
   MD.setEscala(discoHolo, 3.6);
@@ -429,6 +431,7 @@ function mostraHoloEspecie(chave) {
 function escondeHolo() {
   hud.ficha(null);
   if (!holoM) return;
+  holoM.g.traverse((o) => { if (o.isMesh) o.castShadow = true; });
   MD.setOpacidade(holoM, 1);
   MD.flashCor(holoM, 0);
   MD.setEscala(holoM, 1);
@@ -442,8 +445,11 @@ function escondeHolo() {
 function renderMenu() {
   hud.menu(true, tituloMenu(), itensDoMenu().map((i) => i.txt), menu.ativo ? menu.sel : -1);
 }
+// cada lista lembra onde o cursor estava (voltar da ficha não recomeça do topo)
+const selLembrado = {};
 function abreMenu(tipo) {
-  menu = { tipo, sel: 0, fera: menu.fera, especie: menu.especie, ativo: true };
+  menu = { tipo, sel: selLembrado[tipo] || 0, fera: menu.fera, especie: menu.especie, ativo: true };
+  menu.sel = Math.min(menu.sel, Math.max(0, itensDoMenu().length - 1));
   renderMenu();
   if (tipo === 'statusFera' || tipo === 'lembrar') {
     mostraHoloEspecie(equipe[menu.fera].especie);
@@ -473,11 +479,12 @@ function navegaMenu() {
   const itens = itensDoMenu();
   if (baixoE || cimaE) {
     menu.sel = (menu.sel + (baixoE ? 1 : -1) + itens.length) % itens.length;
+    selLembrado[menu.tipo] = menu.sel;
     sfx.swing();
     renderMenu();
   }
   if (kE || escE) { voltaMenu(); return; }
-  if (jE) itens[menu.sel].acao();
+  if (jE) { selLembrado[menu.tipo] = menu.sel; itens[menu.sel].acao(); }
 }
 function selecionaFera(i) {
   const f = equipe[i];
@@ -873,8 +880,6 @@ function loop(agora) {
         sfx.swing();
         hud.toast(evt.placa ? `🪧 ${evt.texto}` : `💬 ${evt.texto}`, 3800);
       }
-      else if (evt === 'caverna')
-        hud.toast('Uma caverna sombria... escura demais para entrar agora. (em breve!)', 3000);
       else if (evt === 'cura') {
         sfx.capturado(); hud.flash();
         for (const f of equipe) curaTotal(f, especies, golpesCat);
