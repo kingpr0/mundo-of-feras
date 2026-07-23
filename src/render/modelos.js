@@ -486,7 +486,151 @@ function criarRaiozim(scene) {
   return M;
 }
 
-const FABRICAS = { brasinha: criarBrasinha, cascorro: criarCascorro, voltim: criarVoltim, gotim: criarGotim, salamandro: criarSalamandro, folhito: criarFolhito, assombrim: criarAssombrim, raiozim: criarRaiozim };
+/* Dragolim — dragãozinho chibi coral: barriga creme, orelhas-nadadeira,
+   crista de chamas nas costas (tremula!), cauda com espinho claro */
+function criarDragolim(scene) {
+  const M = novoModelo(scene, 1.25);
+  const g = M.g;
+  const CORAL = 0xd96a52, CREME = 0xf5e6c0, CHIFRE = 0xbfe8dd;
+  const corpo = parte(M, g, new THREE.SphereGeometry(0.34, 16, 12), CORAL, 0, 0.46, -0.02);
+  corpo.scale.set(0.95, 1.05, 0.9);
+  M.corpo = corpo; corpo.userData.s0 = corpo.scale.clone();
+  const barriga = parte(M, g, new THREE.SphereGeometry(0.26, 12, 10), CREME, 0, 0.42, 0.16);
+  barriga.scale.set(0.85, 0.95, 0.55);
+  // cabeça grande com focinho, olhos verde-água e chifrinhos
+  const cab = grupoEm(M, 0, 0.98, 0.1);
+  M.cabeca = cab;
+  parte(M, cab, new THREE.SphereGeometry(0.3, 16, 12), CORAL, 0, 0, 0);
+  const foc = parte(M, cab, new THREE.SphereGeometry(0.16, 10, 8), CORAL, 0, -0.08, 0.24);
+  foc.scale.set(1.1, 0.7, 1);
+  for (const lado of [-1, 1]) {
+    parte(M, cab, new THREE.SphereGeometry(0.06, 8, 6), 0x2e8f96, lado * 0.14, 0.06, 0.24);
+    // orelhas-NADADEIRA (cones achatados, marca do dragolim)
+    const asa = parte(M, cab, new THREE.ConeGeometry(0.13, 0.42, 6), 0xc9553f, lado * 0.24, 0.2, -0.06);
+    asa.rotation.z = lado * -0.9; asa.scale.z = 0.3;
+    parte(M, cab, new THREE.ConeGeometry(0.035, 0.1, 6), CHIFRE, lado * 0.07, 0.29, 0.06);
+  }
+  marcaBoca(M, cab, 0, -0.1, 0.38);
+  // CRISTA de chamas nas costas (usa o tremeluzir da "chama" do idle)
+  const crista = grupoEm(M, 0, 0.62, -0.28);
+  M.chama = crista;
+  parte(M, crista, new THREE.ConeGeometry(0.11, 0.34, 6), 0xff8a3d, 0, 0.1, 0);
+  parte(M, crista, new THREE.ConeGeometry(0.08, 0.26, 6), 0xffd93b, -0.09, 0.02, 0.02).rotation.z = 0.5;
+  parte(M, crista, new THREE.ConeGeometry(0.08, 0.26, 6), 0xff6b3d, 0.09, 0.02, 0.02).rotation.z = -0.5;
+  M.materiais.splice(-3, 3); // a crista não pisca no flash de dano
+  // bracinhos com garras + pernas
+  for (const lado of [-1, 1]) {
+    const braco = grupoEm(M, lado * 0.3, 0.52, 0.06);
+    parte(M, braco, new THREE.SphereGeometry(0.09, 8, 6), CORAL, lado * 0.04, -0.06, 0.02).scale.set(0.7, 1.1, 0.7);
+    parte(M, braco, new THREE.ConeGeometry(0.025, 0.07, 5), CHIFRE, lado * 0.05, -0.16, 0.05);
+    M.bracos.push(braco);
+    const perna = grupoEm(M, lado * 0.16, 0.22, 0);
+    parte(M, perna, new THREE.SphereGeometry(0.12, 8, 6), CORAL, 0, -0.06, 0).scale.set(0.9, 1, 1);
+    parte(M, perna, new THREE.BoxGeometry(0.14, 0.06, 0.2), 0xc9553f, 0, -0.16, 0.05);
+    M.pernas.push(perna);
+  }
+  // cauda com espinho claro na ponta
+  const cauda = grupoEm(M, 0, 0.4, -0.28);
+  M.cauda = cauda;
+  parte(M, cauda, new THREE.SphereGeometry(0.11, 8, 6), CORAL, 0, -0.02, -0.14);
+  parte(M, cauda, new THREE.SphereGeometry(0.08, 8, 6), CORAL, 0, 0.02, -0.28);
+  const esp = parte(M, cauda, new THREE.ConeGeometry(0.06, 0.18, 6), CHIFRE, 0, 0.08, -0.4);
+  esp.rotation.x = -0.7;
+  return M;
+}
+
+/* Faiscat — felino elétrico: pelagem noturna, juba de picos, orelhas
+   grandes de miolo amarelo, cauda fina com estrela na ponta */
+function criarFaiscat(scene) {
+  const M = novoModelo(scene, 1.05);
+  const g = M.g;
+  const NOITE = 0x2e2a3d, AMARELO = 0xffc93d;
+  const corpo = parte(M, g, new THREE.SphereGeometry(0.3, 14, 10), NOITE, 0, 0.44, -0.08);
+  corpo.scale.set(0.9, 0.9, 1.35);
+  M.corpo = corpo; corpo.userData.s0 = corpo.scale.clone();
+  // cabeça com juba de picos (estilo tempestade)
+  const cab = grupoEm(M, 0, 0.72, 0.3);
+  M.cabeca = cab;
+  parte(M, cab, new THREE.SphereGeometry(0.22, 14, 10), NOITE, 0, 0, 0);
+  const focinho = parte(M, cab, new THREE.SphereGeometry(0.1, 8, 6), 0x3d3852, 0, -0.06, 0.16);
+  focinho.scale.set(1.1, 0.8, 0.9);
+  parte(M, cab, new THREE.SphereGeometry(0.035, 6, 5), 0xd94a3d, 0, -0.02, 0.26);
+  for (const [x, y, rz] of [[-0.14, 0.16, 0.8], [0, 0.2, 0], [0.14, 0.16, -0.8], [-0.2, 0.02, 1.3], [0.2, 0.02, -1.3]]) {
+    const pico = parte(M, cab, new THREE.ConeGeometry(0.06, 0.22, 5), NOITE, x, y, -0.08);
+    pico.rotation.z = rz; pico.rotation.x = -0.4;
+  }
+  for (const lado of [-1, 1]) {
+    // orelhões redondos com miolo amarelo
+    parte(M, cab, new THREE.SphereGeometry(0.09, 8, 6), NOITE, lado * 0.18, 0.18, -0.02).scale.set(1, 1.1, 0.4);
+    parte(M, cab, new THREE.SphereGeometry(0.06, 8, 6), AMARELO, lado * 0.18, 0.18, 0.01).scale.set(0.9, 1, 0.3);
+    parte(M, cab, new THREE.SphereGeometry(0.045, 8, 6), AMARELO, lado * 0.1, 0.05, 0.19);
+  }
+  marcaBoca(M, cab, 0, -0.08, 0.24);
+  // quatro patas com "meias" amarelas
+  for (const [lx, lz] of [[-0.16, 0.22], [0.16, 0.22], [-0.16, -0.24], [0.16, -0.24]]) {
+    const p = grupoEm(M, lx, 0.3, lz);
+    parte(M, p, new THREE.CylinderGeometry(0.06, 0.07, 0.26, 8), NOITE, 0, -0.12, 0);
+    parte(M, p, new THREE.SphereGeometry(0.065, 8, 6), AMARELO, 0, -0.25, 0.01);
+    M.pernas.push(p);
+  }
+  // cauda fina com ESTRELA
+  const cauda = grupoEm(M, 0, 0.52, -0.42);
+  M.cauda = cauda;
+  parte(M, cauda, new THREE.CylinderGeometry(0.03, 0.035, 0.4, 6), NOITE, 0, 0.12, -0.1).rotation.x = 0.9;
+  parte(M, cauda, new THREE.OctahedronGeometry(0.09), AMARELO, 0, 0.28, -0.28).scale.set(1, 1, 0.45);
+  return M;
+}
+
+/* Fofim — roedor rechonchudo laranja de orelhas-chama azul-marinho,
+   bracinhos erguidos e topete arrepiado */
+function criarFofim(scene) {
+  const M = novoModelo(scene, 0.95);
+  const g = M.g;
+  const LARANJA = 0xf08030, MARINHO = 0x2b3050;
+  // corpo-pêra rechonchudo (cabeça e corpo são um só, estilo do print)
+  const corpo = parte(M, g, new THREE.SphereGeometry(0.36, 16, 12), LARANJA, 0, 0.44, 0);
+  corpo.scale.set(1, 1.15, 0.92);
+  M.corpo = corpo; corpo.userData.s0 = corpo.scale.clone();
+  const peito = parte(M, g, new THREE.SphereGeometry(0.24, 12, 10), MARINHO, 0, 0.34, 0.18);
+  peito.scale.set(0.8, 0.9, 0.5);
+  const cab = grupoEm(M, 0, 0.82, 0.06);
+  M.cabeca = cab;
+  parte(M, cab, new THREE.SphereGeometry(0.24, 14, 10), LARANJA, 0, 0, 0.02);
+  for (const lado of [-1, 1]) {
+    parte(M, cab, new THREE.SphereGeometry(0.055, 8, 6), 0x4a3220, lado * 0.1, 0.04, 0.2);
+    // orelhas-CHAMA marinho (dois gomos inclinados)
+    const o1 = parte(M, cab, new THREE.ConeGeometry(0.1, 0.3, 6), MARINHO, lado * 0.17, 0.24, -0.02);
+    o1.rotation.z = lado * -0.55; o1.scale.z = 0.5;
+    const o2 = parte(M, cab, new THREE.ConeGeometry(0.06, 0.2, 6), LARANJA, lado * 0.24, 0.16, -0.02);
+    o2.rotation.z = lado * -0.9; o2.scale.z = 0.5;
+  }
+  // topete arrepiado marinho
+  const topete = parte(M, cab, new THREE.ConeGeometry(0.07, 0.24, 6), MARINHO, 0, 0.26, 0.04);
+  topete.rotation.z = 0.3;
+  // boquinha aberta de espanto
+  parte(M, cab, new THREE.SphereGeometry(0.045, 8, 6), 0x5a2a1a, 0, -0.08, 0.22);
+  marcaBoca(M, cab, 0, -0.08, 0.26);
+  // bracinhos erguidos + pezinhos
+  for (const lado of [-1, 1]) {
+    const braco = grupoEm(M, lado * 0.3, 0.56, 0.1);
+    parte(M, braco, new THREE.SphereGeometry(0.08, 8, 6), LARANJA, lado * 0.03, 0.04, 0.02).scale.set(0.7, 1.1, 0.7);
+    braco.rotation.z = lado * 0.7;
+    M.bracos.push(braco);
+    const pe = grupoEm(M, lado * 0.13, 0.14, 0.02);
+    parte(M, pe, new THREE.SphereGeometry(0.09, 8, 6), LARANJA, 0, -0.05, 0.02).scale.set(0.9, 0.6, 1.2);
+    M.pernas.push(pe);
+  }
+  // cauda-tufo marinho
+  const cauda = grupoEm(M, 0, 0.34, -0.3);
+  M.cauda = cauda;
+  const t1 = parte(M, cauda, new THREE.ConeGeometry(0.09, 0.3, 6), MARINHO, 0, 0.08, -0.1);
+  t1.rotation.x = -1.1; t1.scale.z = 0.55;
+  const t2 = parte(M, cauda, new THREE.ConeGeometry(0.06, 0.22, 6), MARINHO, 0.07, 0.02, -0.16);
+  t2.rotation.x = -1.3; t2.scale.z = 0.55;
+  return M;
+}
+
+const FABRICAS = { brasinha: criarBrasinha, cascorro: criarCascorro, voltim: criarVoltim, gotim: criarGotim, salamandro: criarSalamandro, folhito: criarFolhito, assombrim: criarAssombrim, raiozim: criarRaiozim, dragolim: criarDragolim, faiscat: criarFaiscat, fofim: criarFofim };
 
 /* pipeline glTF: carrega modelo com esqueleto/animações, normaliza a escala
    pela altura desejada e apoia os pés no chão. Clipes viram ações nomeadas. */

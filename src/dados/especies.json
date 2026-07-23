@@ -486,5 +486,91 @@
         "golpe": "rajada_bolhas"
       }
     ]
+  },
+  "dragolim": {
+    "nome": "Dragolim",
+    "tipo": "fogo",
+    "raridade": "muito_rara",
+    "selvagem": true,
+    "vida": 78,
+    "velocidade": 4.7,
+    "ataque": 1.2,
+    "impulso": 7.6,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "bola_fogo"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 9,
+        "golpe": "lanca_chamas"
+      }
+    ]
+  },
+  "faiscat": {
+    "nome": "Faiscat",
+    "tipo": "eletrico",
+    "raridade": "rara",
+    "selvagem": true,
+    "vida": 68,
+    "velocidade": 5.5,
+    "ataque": 1.1,
+    "impulso": 8,
+    "sequencia": [
+      "frente"
+    ],
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "esfera_voltaica"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "trovao"
+      }
+    ]
+  },
+  "fofim": {
+    "nome": "Fofim",
+    "tipo": "comum",
+    "raridade": "comum",
+    "selvagem": true,
+    "vida": 62,
+    "velocidade": 4.9,
+    "ataque": 1,
+    "impulso": 7.4,
+    "sequencia": [
+      "baixo"
+    ],
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 7,
+        "golpe": "investida_feroz"
+      }
+    ]
   }
 }

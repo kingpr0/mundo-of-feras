@@ -151,12 +151,13 @@ function texturaParede(base = '#f2e2c4', vigas = true) {
   }
   return new THREE.CanvasTexture(c);
 }
-// beiral: aba grossa na base do telhado piramidal (dá peso ao canto)
-function beiral(grupo, raio, y, corHex) {
-  const cor = new THREE.Color(corHex).multiplyScalar(0.78);
-  const aba = new THREE.Mesh(new THREE.ConeGeometry(raio, 0.5, 4),
+// beiral: LAJE sólida sob a base do telhado — preenche o vão entre a
+// parede e a aba do telhado, engrossando o canto
+function beiral(grupo, lado, y, corHex) {
+  const cor = new THREE.Color(corHex).multiplyScalar(0.72);
+  const aba = new THREE.Mesh(new THREE.BoxGeometry(lado, 0.26, lado),
     new THREE.MeshLambertMaterial({ color: cor }));
-  aba.position.y = y; aba.rotation.y = Math.PI / 4;
+  aba.position.y = y;
   aba.castShadow = true; aba.userData.oclusor = true;
   grupo.add(aba);
 }
@@ -191,7 +192,7 @@ function casa(g, x, z, corNome) {
   telhado.position.y = 3.28; telhado.rotation.y = Math.PI / 4; telhado.castShadow = true;
   telhado.userData.oclusor = true;
   grupo.add(telhado);
-  beiral(grupo, 3.15, 2.62, corHex);
+  beiral(grupo, 4.25, 2.52, corHex);
   // chaminé de pedra com boca escura
   const cham = new THREE.Mesh(new THREE.BoxGeometry(0.42, 1.1, 0.42), lamb(0x8d939c));
   cham.position.set(1.05, 3.35, -0.7); cham.castShadow = true; grupo.add(cham);
@@ -226,7 +227,7 @@ function centroCura(g, ct) {
   telhado.position.y = 3.7; telhado.rotation.y = Math.PI / 4; telhado.castShadow = true;
   telhado.userData.oclusor = true;
   grupo.add(telhado);
-  beiral(grupo, 4.3, 3.0, 0xd1462f);
+  beiral(grupo, 5.8, 2.92, 0xd1462f);
   const porta = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.4, 0.1), lamb(0x9ad4e8));
   porta.position.set(0, 0.95, 1.92); grupo.add(porta);
   // cruz branca sobre a porta
@@ -467,17 +468,16 @@ function arvore(scene, x, z, pinheiro) {
 function montaGrama(scene, G) {
   const mats = [0x3d8a35, 0x46983c, 0x51a746]
     .map((c) => new THREE.MeshLambertMaterial({ color: c }));
-  // ANEL de canteiro elevado ABRAÇANDO os arbustos (sem vão entre eles),
-  // com o tapete verde de volta por baixo da grama
+  // PLATAFORMA verde contínua (canteiro elevado de cantos redondos, com
+  // laterais em degradê) — os arbustos ficam plantados EM CIMA dela
   const wG = G.x1 - G.x0 + 2.4, dG = G.z1 - G.z0 + 2.4;
   const cxG = (G.x0 + G.x1) / 2, czG = (G.z0 + G.z1) / 2;
   const c0 = new THREE.Color(0x7d5f3e), c1 = new THREE.Color(0xbc9668);
-  const LARG = 1.6; // espessura total do anel: interna encosta nos arbustos
   for (let i = 0; i < 2; i++) {
     const folga = (1 - i) * 0.4;
-    const ext = formaArredondada(wG + folga, dG + folga, 1.3);
-    ext.holes.push(formaArredondada(wG - LARG + folga, dG - LARG + folga, 0.9));
-    const geo = new THREE.ExtrudeGeometry(ext, { depth: 0.11, bevelEnabled: false });
+    const geo = new THREE.ExtrudeGeometry(
+      formaArredondada(wG + folga, dG + folga, 1.3),
+      { depth: 0.11, bevelEnabled: false });
     const m = new THREE.Mesh(geo,
       new THREE.MeshLambertMaterial({ color: c0.clone().lerp(c1, i) }));
     m.rotation.x = -Math.PI / 2;
@@ -485,23 +485,16 @@ function montaGrama(scene, G) {
     m.castShadow = m.receiveShadow = true;
     scene.add(m);
   }
-  const tampa = formaArredondada(wG - 0.12, dG - 0.12, 1.3);
-  tampa.holes.push(formaArredondada(wG - LARG + 0.12, dG - LARG + 0.12, 0.9));
+  // topo verde CONTÍNUO cobrindo a plataforma inteira
   const cap = new THREE.Mesh(
-    new THREE.ExtrudeGeometry(tampa, { depth: 0.05, bevelEnabled: false }),
-    new THREE.MeshLambertMaterial({ color: 0x67b34f }));
+    new THREE.ExtrudeGeometry(formaArredondada(wG - 0.12, dG - 0.12, 1.3),
+      { depth: 0.05, bevelEnabled: false }),
+    new THREE.MeshLambertMaterial({ color: 0x57a441 }));
   cap.rotation.x = -Math.PI / 2;
   cap.position.set(cxG, 0.22, czG);
   cap.receiveShadow = true;
   scene.add(cap);
-  // tapete verde sob os arbustos, preenchendo o interior do anel
-  const base = new THREE.Mesh(
-    new THREE.PlaneGeometry(G.x1 - G.x0 + 1.2, G.z1 - G.z0 + 1.2),
-    new THREE.MeshLambertMaterial({ color: 0x357a2e }));
-  base.rotation.x = -Math.PI / 2;
-  base.position.set(cxG, 0.014, czG);
-  base.receiveShadow = true;
-  scene.add(base);
+  const TOPO = 0.27; // altura do topo (a sim sobe junto: alturaGrama)
   const geoArb = new THREE.SphereGeometry(0.78, 10, 7);
   const passo = 1.05;
   let i = 0;
@@ -510,7 +503,7 @@ function montaGrama(scene, G) {
       const m = new THREE.Mesh(geoArb, mats[(i * 7) % mats.length]);
       const esc = 0.9 + ((i * 13) % 10) / 45;
       m.scale.set(esc, 0.62 * esc, esc);
-      m.position.set(px + (((i * 31) % 7) - 3) * 0.06, 0.34,
+      m.position.set(px + (((i * 31) % 7) - 3) * 0.06, TOPO + 0.34,
                      pz + (((i * 17) % 7) - 3) * 0.06);
       m.castShadow = true;
       scene.add(m);

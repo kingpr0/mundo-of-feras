@@ -3,270 +3,1322 @@
   "mapas": {
     "clareira": {
       "nome": "Vila Clareira",
-      "regiao": { "x": 0, "y": 0 },
+      "regiao": {
+        "x": 0,
+        "y": 0
+      },
       "chao": "vila",
       "decor": [
-        ["fogueira", -11, 12.5], ["poco", -13.5, 18], ["banca", -4, 15],
-        ["placa", 3, 8, "Vila Clareira — trate suas feras no Centro de Curas. Ao norte, o Campo; ao sul, as Dunas."]
+        [
+          "fogueira",
+          -11,
+          12.5
+        ],
+        [
+          "poco",
+          -13.5,
+          18
+        ],
+        [
+          "banca",
+          -4,
+          15
+        ],
+        [
+          "placa",
+          3,
+          8,
+          "Vila Clareira — trate suas feras no Centro de Curas. Ao norte, o Campo; ao sul, as Dunas."
+        ]
       ],
       "npcs": [
-        [-12.5, 11, "maga", 2.6, "Sinto uma energia estranha vinda do Penhasco do Vento... feras muito raras vivem lá."],
-        [-9, 17, "aldeao", 3.4, "Dizem que um DRAGÃO ronda as Colinas Rochosas. Eu? Eu nunca saí da vila."],
-        [-3.2, 13.4, "mercador", 0.4, "Minha banca em breve terá cristais e poções! Volte quando a economia chegar ao jogo."],
-        [-16.5, 9.5, "aldea", 1.4, "A grama alta esconde feras selvagens. Nunca entre lá sem as suas!"]
+        [
+          -12.5,
+          11,
+          "maga",
+          2.6,
+          "Sinto uma energia estranha vinda do Penhasco do Vento... feras muito raras vivem lá."
+        ],
+        [
+          -9,
+          17,
+          "aldeao",
+          3.4,
+          "Dizem que um DRAGÃO ronda as Colinas Rochosas. Eu? Eu nunca saí da vila."
+        ],
+        [
+          -3.2,
+          13.4,
+          "mercador",
+          0.4,
+          "Minha banca em breve terá cristais e poções! Volte quando a economia chegar ao jogo."
+        ],
+        [
+          -16.5,
+          9.5,
+          "aldea",
+          1.4,
+          "A grama alta esconde feras selvagens. Nunca entre lá sem as suas!"
+        ]
       ],
-      "limite": { "x": 24, "z": 24 },
+      "limite": {
+        "x": 24,
+        "z": 24
+      },
       "arvores": [
-        [-4, -8, 0], [3, -14, 1], [14, 2, 0], [-8, -16, 1], [0, 6, 0], [-18, -4, 1],
-        [10, 12, 0], [18, -14, 1], [-6, 20, 0], [8, 20, 1], [16, 16, 0], [-20, -12, 0],
-        [-2, 13, 1], [20, 8, 0]
+        [
+          -4,
+          -8,
+          0
+        ],
+        [
+          3,
+          -14,
+          1
+        ],
+        [
+          14,
+          2,
+          0
+        ],
+        [
+          -8,
+          -16,
+          1
+        ],
+        [
+          0,
+          6,
+          0
+        ],
+        [
+          -18,
+          -4,
+          1
+        ],
+        [
+          10,
+          12,
+          0
+        ],
+        [
+          18,
+          -14,
+          1
+        ],
+        [
+          -6,
+          20,
+          0
+        ],
+        [
+          8,
+          20,
+          1
+        ],
+        [
+          16,
+          16,
+          0
+        ],
+        [
+          -20,
+          -12,
+          0
+        ],
+        [
+          -2,
+          13,
+          1
+        ],
+        [
+          20,
+          8,
+          0
+        ]
       ],
       "casas": [
-        [-15, 14, "vermelho"], [-7, 16, "azul"], [-17, 6, "vermelho"]
+        [
+          -15,
+          14,
+          "vermelho"
+        ],
+        [
+          -7,
+          16,
+          "azul"
+        ],
+        [
+          -17,
+          6,
+          "vermelho"
+        ]
       ],
-      "centro": { "x": -1, "z": 17 },
+      "centro": {
+        "x": -1,
+        "z": 17
+      },
       "morros": [
-        { "x": -11, "z": 12.5, "r": 3.5, "h": 0.55 },
-        { "x": 14, "z": 8, "r": 5, "h": 0.5 }
+        {
+          "x": -11,
+          "z": 12.5,
+          "r": 3.5,
+          "h": 0.55
+        },
+        {
+          "x": 14,
+          "z": 8,
+          "r": 5,
+          "h": 0.5
+        }
       ],
-      "grama": { "x0": 8, "z0": -18, "x1": 20, "z1": -4 },
-      "spawn": { "x": -11, "z": 10 },
-      "selvagens": ["cascorro"],
+      "grama": {
+        "x0": 8,
+        "z0": -18,
+        "x1": 20,
+        "z1": -4
+      },
+      "spawn": {
+        "x": -11,
+        "z": 10
+      },
+      "selvagens": [
+        "cascorro"
+      ],
       "saidas": [
-        { "borda": "leste", "de": -2, "ate": 2, "destino": "trilha" },
-        { "borda": "norte", "de": -2, "ate": 2, "destino": "campo" },
-        { "borda": "sul", "de": -2, "ate": 2, "destino": "deserto" }
+        {
+          "borda": "leste",
+          "de": -2,
+          "ate": 2,
+          "destino": "trilha"
+        },
+        {
+          "borda": "norte",
+          "de": -2,
+          "ate": 2,
+          "destino": "campo"
+        },
+        {
+          "borda": "sul",
+          "de": -2,
+          "ate": 2,
+          "destino": "deserto"
+        },
+        {
+          "borda": "oeste",
+          "de": -2,
+          "ate": 2,
+          "destino": "verdejante"
+        }
+      ]
+    },
+    "verdejante": {
+      "nome": "Cidade Verdejante",
+      "regiao": {
+        "x": -1,
+        "y": 0
+      },
+      "chao": "vila",
+      "limite": {
+        "x": 24,
+        "z": 24
+      },
+      "morros": [
+        {
+          "x": -15,
+          "z": -13,
+          "r": 6,
+          "h": 0.8
+        }
+      ],
+      "caminhos": [
+        {
+          "x0": -2,
+          "z0": -24,
+          "x1": 2,
+          "z1": 24
+        },
+        {
+          "x0": -24,
+          "z0": -2,
+          "x1": 24,
+          "z1": 2
+        },
+        {
+          "x0": -8,
+          "z0": 2,
+          "x1": -2,
+          "z1": 8
+        }
+      ],
+      "casas": [
+        [
+          8,
+          -14,
+          "verde"
+        ],
+        [
+          17,
+          -14,
+          "azul"
+        ],
+        [
+          8,
+          -5,
+          "verde"
+        ],
+        [
+          17,
+          -5,
+          "vermelho"
+        ]
+      ],
+      "centro": {
+        "x": -7,
+        "z": 10
+      },
+      "decor": [
+        [
+          "banca",
+          14,
+          -20.5
+        ],
+        [
+          "poco",
+          -8,
+          -7
+        ],
+        [
+          "placa",
+          -1,
+          20,
+          "Cidade Verdejante — Vila Clareira fica a leste. Cuidado com a grama do jardim!"
+        ]
+      ],
+      "npcs": [
+        [
+          -4,
+          4,
+          "aldea",
+          0.9,
+          "Bem-vinda à Cidade Verdejante! O lago do sul é um charme, não é?"
+        ],
+        [
+          11,
+          1,
+          "aldeao",
+          3,
+          "As casas de telhado verde são as mais antigas da cidade."
+        ],
+        [
+          13,
+          -19,
+          "mercador",
+          2.2,
+          "A feira do norte um dia venderá de tudo. Um dia..."
+        ]
+      ],
+      "arvores": [
+        [
+          -4,
+          -17,
+          0
+        ],
+        [
+          4,
+          -21,
+          1
+        ],
+        [
+          -12,
+          3,
+          0
+        ],
+        [
+          -21,
+          3,
+          1
+        ],
+        [
+          12,
+          20,
+          0
+        ],
+        [
+          21,
+          12,
+          1
+        ],
+        [
+          5,
+          12,
+          0
+        ],
+        [
+          -4,
+          -8,
+          1
+        ]
+      ],
+      "agua": {
+        "x0": -20,
+        "z0": 10,
+        "x1": -11,
+        "z1": 18
+      },
+      "grama": {
+        "x0": 10,
+        "z0": 8,
+        "x1": 20,
+        "z1": 16
+      },
+      "spawn": {
+        "x": 20,
+        "z": 0
+      },
+      "selvagens": [
+        "voltim",
+        "folhito",
+        "fofim",
+        "faiscat"
+      ],
+      "saidas": [
+        {
+          "borda": "leste",
+          "de": -2,
+          "ate": 2,
+          "destino": "clareira"
+        }
       ]
     },
     "deserto": {
       "nome": "Dunas Escaldantes",
-      "regiao": { "x": 0, "y": 1 },
+      "regiao": {
+        "x": 0,
+        "y": 1
+      },
       "chao": "deserto",
       "borda": "montanha",
-      "limite": { "x": 22, "z": 22 },
+      "limite": {
+        "x": 22,
+        "z": 22
+      },
       "morros": [
-        { "x": -10, "z": 2, "r": 6, "h": 0.8 },
-        { "x": 8, "z": 4, "r": 7, "h": 1.0 },
-        { "x": -2, "z": 14, "r": 6, "h": 0.6 },
-        { "x": 14, "z": -12, "r": 5, "h": 0.7 }
+        {
+          "x": -10,
+          "z": 2,
+          "r": 6,
+          "h": 0.8
+        },
+        {
+          "x": 8,
+          "z": 4,
+          "r": 7,
+          "h": 1
+        },
+        {
+          "x": -2,
+          "z": 14,
+          "r": 6,
+          "h": 0.6
+        },
+        {
+          "x": 14,
+          "z": -12,
+          "r": 5,
+          "h": 0.7
+        }
       ],
       "pedras": [
-        [-16, 6, 1.3], [18, -4, 1.5], [4, -16, 1.0], [-8, 16, 1.1], [-14, -12, 1.2]
+        [
+          -16,
+          6,
+          1.3
+        ],
+        [
+          18,
+          -4,
+          1.5
+        ],
+        [
+          4,
+          -16,
+          1
+        ],
+        [
+          -8,
+          16,
+          1.1
+        ],
+        [
+          -14,
+          -12,
+          1.2
+        ]
       ],
       "decor": [
-        ["placa", 3, -18, "Dunas Escaldantes — cuidado: na arena daqui, os cactos ESPETAM. Um oásis brilha a sudeste."]
+        [
+          "placa",
+          3,
+          -18,
+          "Dunas Escaldantes — cuidado: na arena daqui, os cactos ESPETAM. Um oásis brilha a sudeste."
+        ]
       ],
-      "agua": { "x0": 12, "z0": 12, "x1": 20, "z1": 20 },
-      "grama": { "x0": -18, "z0": -18, "x1": -6, "z1": -8 },
-      "spawn": { "x": 0, "z": -19 },
-      "selvagens": ["cascorro", "raposa", "espinhim"],
+      "agua": {
+        "x0": 12,
+        "z0": 12,
+        "x1": 20,
+        "z1": 20
+      },
+      "grama": {
+        "x0": -18,
+        "z0": -18,
+        "x1": -6,
+        "z1": -8
+      },
+      "spawn": {
+        "x": 0,
+        "z": -19
+      },
+      "selvagens": [
+        "cascorro",
+        "raposa",
+        "espinhim"
+      ],
       "saidas": [
-        { "borda": "norte", "de": -2, "ate": 2, "destino": "clareira" }
+        {
+          "borda": "norte",
+          "de": -2,
+          "ate": 2,
+          "destino": "clareira"
+        }
       ]
     },
     "trilha": {
       "nome": "Trilha dos Pinheiros",
-      "regiao": { "x": 1, "y": 0 },
-      "limite": { "x": 20, "z": 7 },
+      "regiao": {
+        "x": 1,
+        "y": 0
+      },
+      "limite": {
+        "x": 20,
+        "z": 7
+      },
       "arvores": [
-        [-6, -2, 0], [4, 3, 1], [12, -3, 0]
+        [
+          -6,
+          -2,
+          0
+        ],
+        [
+          4,
+          3,
+          1
+        ],
+        [
+          12,
+          -3,
+          0
+        ]
       ],
       "decor": [
-        ["placa", -15, 3, "Trilha dos Pinheiros — Vila Clareira a oeste · Beira do Lago a leste"]
+        [
+          "placa",
+          -15,
+          3,
+          "Trilha dos Pinheiros — Vila Clareira a oeste · Beira do Lago a leste"
+        ]
       ],
-      "grama": { "x0": -10, "z0": -3, "x1": 0, "z1": 3 },
-      "spawn": { "x": -18, "z": 0 },
+      "grama": {
+        "x0": -10,
+        "z0": -3,
+        "x1": 0,
+        "z1": 3
+      },
+      "spawn": {
+        "x": -18,
+        "z": 0
+      },
       "treinadores": [
-        { "x": 8, "z": -4, "tipo": "aldeao", "rot": 2.4, "nome": "Rui Andarilho",
+        {
+          "x": 7,
+          "z": -5,
+          "tipo": "aldeao",
+          "rot": 2.4,
+          "nome": "Rui Andarilho",
           "fala": "Você aí! Minhas feras estão coçando por um DUELO — e você não pode recusar!",
           "equipe": [
-            { "especie": "cascorro", "nivel": 6 },
-            { "especie": "voltim", "nivel": 6 }
-          ] }
+            {
+              "especie": "cascorro",
+              "nivel": 6
+            },
+            {
+              "especie": "voltim",
+              "nivel": 6
+            }
+          ]
+        }
       ],
-      "selvagens": ["cascorro", "voltim"],
+      "selvagens": [
+        "cascorro",
+        "voltim"
+      ],
       "saidas": [
-        { "borda": "oeste", "de": -2, "ate": 2, "destino": "clareira" },
-        { "borda": "leste", "de": -2, "ate": 2, "destino": "lago" }
+        {
+          "borda": "oeste",
+          "de": -2,
+          "ate": 2,
+          "destino": "clareira"
+        },
+        {
+          "borda": "leste",
+          "de": -2,
+          "ate": 2,
+          "destino": "lago"
+        }
       ]
     },
     "lago": {
       "nome": "Beira do Lago",
-      "regiao": { "x": 2, "y": 0 },
-      "limite": { "x": 22, "z": 22 },
-      "agua": { "x0": 2, "z0": -22, "x1": 22, "z1": 22 },
+      "regiao": {
+        "x": 2,
+        "y": 0
+      },
+      "limite": {
+        "x": 22,
+        "z": 22
+      },
+      "agua": {
+        "x0": 2,
+        "z0": -22,
+        "x1": 22,
+        "z1": 22
+      },
       "arvores": [
-        [-16, -12, 1], [-18, -2, 0], [-16, 8, 1], [-10, -16, 0], [-8, 14, 1],
-        [-14, 18, 0], [-4, -6, 1]
+        [
+          -16,
+          -12,
+          1
+        ],
+        [
+          -18,
+          -2,
+          0
+        ],
+        [
+          -16,
+          8,
+          1
+        ],
+        [
+          -10,
+          -16,
+          0
+        ],
+        [
+          -8,
+          14,
+          1
+        ],
+        [
+          -14,
+          18,
+          0
+        ],
+        [
+          -4,
+          -6,
+          1
+        ]
       ],
-      "grama": { "x0": -18, "z0": -8, "x1": -8, "z1": 6 },
-      "spawn": { "x": -19, "z": 14 },
-      "selvagens": ["voltim", "gotim", "sapum"],
+      "grama": {
+        "x0": -18,
+        "z0": -8,
+        "x1": -8,
+        "z1": 6
+      },
+      "spawn": {
+        "x": -19,
+        "z": 14
+      },
+      "selvagens": [
+        "voltim",
+        "gotim",
+        "sapum"
+      ],
       "saidas": [
-        { "borda": "oeste", "de": -2, "ate": 2, "destino": "trilha" },
-        { "borda": "norte", "de": -6, "ate": -2, "destino": "encosta" }
+        {
+          "borda": "oeste",
+          "de": -2,
+          "ate": 2,
+          "destino": "trilha"
+        },
+        {
+          "borda": "norte",
+          "de": -6,
+          "ate": -2,
+          "destino": "encosta"
+        }
       ]
     },
     "campo": {
       "nome": "Campo Norte",
-      "regiao": { "x": 0, "y": -1 },
-      "limite": { "x": 22, "z": 22 },
+      "regiao": {
+        "x": 0,
+        "y": -1
+      },
+      "limite": {
+        "x": 22,
+        "z": 22
+      },
       "arvores": [
-        [-16, 12, 0], [14, 14, 1], [-6, 2, 0], [16, -6, 1], [-18, -14, 1], [6, 8, 0]
+        [
+          -16,
+          12,
+          0
+        ],
+        [
+          14,
+          14,
+          1
+        ],
+        [
+          -6,
+          2,
+          0
+        ],
+        [
+          16,
+          -6,
+          1
+        ],
+        [
+          -18,
+          -14,
+          1
+        ],
+        [
+          6,
+          8,
+          0
+        ]
       ],
       "platos": [
-        { "x0": -14, "z0": -8, "x1": -2, "z1": 4, "h": 0.9 }
+        {
+          "x0": -14,
+          "z0": -8,
+          "x1": -2,
+          "z1": 4,
+          "h": 0.9
+        }
       ],
       "escadas": [
-        { "x": -8, "z": 4, "w": 2.6, "dir": "norte", "h": 0.9 },
-        { "x": -6, "z": -8, "w": 2.4, "dir": "sul", "h": 0.9 },
-        { "x": -2, "z": 0, "w": 2.4, "dir": "oeste", "h": 0.9 }
+        {
+          "x": -8,
+          "z": 4,
+          "w": 2.6,
+          "dir": "norte",
+          "h": 0.9
+        },
+        {
+          "x": -6,
+          "z": -8,
+          "w": 2.4,
+          "dir": "sul",
+          "h": 0.9
+        },
+        {
+          "x": -2,
+          "z": 0,
+          "w": 2.4,
+          "dir": "oeste",
+          "h": 0.9
+        }
       ],
       "morros": [
-        { "x": 10, "z": 10, "r": 6, "h": 0.7 }
+        {
+          "x": 10,
+          "z": 10,
+          "r": 6,
+          "h": 0.7
+        }
       ],
       "treinadores": [
-        { "x": 10, "z": 4, "tipo": "mercador", "rot": 3.1, "nome": "Beto das Rotas",
+        {
+          "x": 0,
+          "z": 6,
+          "tipo": "mercador",
+          "rot": 3.1,
+          "nome": "Beto das Rotas",
           "fala": "Ninguém cruza o Campo Norte sem me enfrentar. Regra minha!",
           "equipe": [
-            { "especie": "salamandro", "nivel": 9 },
-            { "especie": "gotim", "nivel": 9 }
-          ] }
+            {
+              "especie": "salamandro",
+              "nivel": 9
+            },
+            {
+              "especie": "gotim",
+              "nivel": 9
+            }
+          ]
+        }
       ],
-      "grama": { "x0": 4, "z0": -18, "x1": 18, "z1": -6 },
-      "spawn": { "x": 0, "z": 18 },
-      "selvagens": ["cascorro", "voltim", "folhito"],
+      "grama": {
+        "x0": 4,
+        "z0": -18,
+        "x1": 18,
+        "z1": -6
+      },
+      "spawn": {
+        "x": 0,
+        "z": 18
+      },
+      "selvagens": [
+        "cascorro",
+        "voltim",
+        "folhito",
+        "fofim"
+      ],
       "saidas": [
-        { "borda": "sul", "de": -2, "ate": 2, "destino": "clareira" },
-        { "borda": "norte", "de": -2, "ate": 2, "destino": "colinas" },
-        { "borda": "oeste", "de": 8, "ate": 12, "destino": "rota" }
+        {
+          "borda": "sul",
+          "de": -2,
+          "ate": 2,
+          "destino": "clareira"
+        },
+        {
+          "borda": "norte",
+          "de": -2,
+          "ate": 2,
+          "destino": "colinas"
+        },
+        {
+          "borda": "oeste",
+          "de": 8,
+          "ate": 12,
+          "destino": "rota"
+        }
       ]
     },
     "rota": {
       "nome": "Rota das Lajes",
-      "regiao": { "x": -1, "y": -1 },
-      "limite": { "x": 20, "z": 16 },
+      "regiao": {
+        "x": -1,
+        "y": -1
+      },
+      "limite": {
+        "x": 20,
+        "z": 16
+      },
       "arvores": [
-        [-14, -13, 1], [-6, -14, 0], [2, -13, 1], [10, -14, 1], [16, -12, 0],
-        [-16, 12, 1], [6, 13, 0], [14, 10, 1]
+        [
+          -14,
+          -13,
+          1
+        ],
+        [
+          -6,
+          -14,
+          0
+        ],
+        [
+          2,
+          -13,
+          1
+        ],
+        [
+          10,
+          -14,
+          1
+        ],
+        [
+          16,
+          -12,
+          0
+        ],
+        [
+          -16,
+          12,
+          1
+        ],
+        [
+          6,
+          13,
+          0
+        ],
+        [
+          14,
+          10,
+          1
+        ]
       ],
       "caminhos": [
-        { "x0": -20, "z0": -2, "x1": 20, "z1": 3 },
-        { "x0": -6, "z0": -16, "x1": 0, "z1": -2 }
+        {
+          "x0": -20,
+          "z0": -2,
+          "x1": 20,
+          "z1": 3
+        },
+        {
+          "x0": -6,
+          "z0": -16,
+          "x1": 0,
+          "z1": -2
+        }
       ],
       "pedras": [
-        [4, -5, 1.5], [-11, 6, 1.2], [12, 7, 1.7], [-16, -7, 1.0]
+        [
+          4,
+          -5,
+          1.5
+        ],
+        [
+          -11,
+          6,
+          1.2
+        ],
+        [
+          12,
+          7,
+          1.7
+        ],
+        [
+          -16,
+          -7,
+          1
+        ]
       ],
       "gramas": [
-        { "x0": 5, "z0": -12, "x1": 16, "z1": -5 },
-        { "x0": -16, "z0": 6, "x1": -5, "z1": 13 }
+        {
+          "x0": 5,
+          "z0": -12,
+          "x1": 16,
+          "z1": -5
+        },
+        {
+          "x0": -16,
+          "z0": 6,
+          "x1": -5,
+          "z1": 13
+        }
       ],
-      "spawn": { "x": 18, "z": 0 },
+      "spawn": {
+        "x": 18,
+        "z": 0
+      },
       "treinadores": [
-        { "x": -2, "z": 5, "tipo": "maga", "rot": 0.2, "nome": "Maga Vilma",
+        {
+          "x": 7,
+          "z": 6,
+          "tipo": "maga",
+          "rot": 0.2,
+          "nome": "Maga Vilma",
           "fala": "Minha magia forjou três feras imbatíveis. Prove que estou errada... se conseguir!",
           "equipe": [
-            { "especie": "voltim", "nivel": 11 },
-            { "especie": "folhito", "nivel": 11 },
-            { "especie": "cascorro", "nivel": 12 }
-          ] }
+            {
+              "especie": "voltim",
+              "nivel": 11
+            },
+            {
+              "especie": "folhito",
+              "nivel": 11
+            },
+            {
+              "especie": "cascorro",
+              "nivel": 12
+            }
+          ]
+        }
       ],
-      "selvagens": ["cascorro", "voltim", "salamandro", "raposa"],
+      "selvagens": [
+        "cascorro",
+        "voltim",
+        "salamandro",
+        "raposa"
+      ],
       "saidas": [
-        { "borda": "leste", "de": 8, "ate": 12, "destino": "campo" }
+        {
+          "borda": "leste",
+          "de": 8,
+          "ate": 12,
+          "destino": "campo"
+        }
       ]
     },
     "colinas": {
       "nome": "Colinas Rochosas",
-      "regiao": { "x": 0, "y": -2 },
-      "limite": { "x": 20, "z": 16 },
+      "regiao": {
+        "x": 0,
+        "y": -2
+      },
+      "limite": {
+        "x": 20,
+        "z": 16
+      },
       "borda": "montanha",
       "chao": "terra",
       "arvores": [
-        [-12, 10, 1], [14, 8, 1]
+        [
+          -12,
+          10,
+          1
+        ],
+        [
+          14,
+          8,
+          1
+        ]
       ],
       "platos": [
-        { "x0": -16, "z0": -12, "x1": -4, "z1": -2, "h": 1.1 },
-        { "x0": 4, "z0": 2, "x1": 14, "z1": 10, "h": 0.8 }
+        {
+          "x0": -16,
+          "z0": -12,
+          "x1": -4,
+          "z1": -2,
+          "h": 1.1
+        },
+        {
+          "x0": 4,
+          "z0": 2,
+          "x1": 14,
+          "z1": 10,
+          "h": 0.8
+        }
       ],
       "escadas": [
-        { "x": -10, "z": -2, "w": 2.4, "dir": "norte", "h": 1.1 },
-        { "x": -4, "z": -7, "w": 2.2, "dir": "oeste", "h": 1.1 },
-        { "x": 9, "z": 2, "w": 2.4, "dir": "sul", "h": 0.8 },
-        { "x": 9, "z": 10, "w": 2.4, "dir": "norte", "h": 0.8 }
+        {
+          "x": -10,
+          "z": -2,
+          "w": 2.4,
+          "dir": "norte",
+          "h": 1.1
+        },
+        {
+          "x": -4,
+          "z": -7,
+          "w": 2.2,
+          "dir": "oeste",
+          "h": 1.1
+        },
+        {
+          "x": 9,
+          "z": 2,
+          "w": 2.4,
+          "dir": "sul",
+          "h": 0.8
+        },
+        {
+          "x": 9,
+          "z": 10,
+          "w": 2.4,
+          "dir": "norte",
+          "h": 0.8
+        }
       ],
-      "caverna": { "x": 0, "z": -14 },
-      "centro": { "x": 14, "z": -13 },
-      "grama": { "x0": -14, "z0": 4, "x1": -4, "z1": 12 },
-      "spawn": { "x": 0, "z": 13 },
-      "selvagens": ["voltim", "salamandro", "folhito", "draguim", "diabrim"],
+      "caverna": {
+        "x": 0,
+        "z": -14
+      },
+      "centro": {
+        "x": 14,
+        "z": -13
+      },
+      "grama": {
+        "x0": -14,
+        "z0": 4,
+        "x1": -4,
+        "z1": 12
+      },
+      "spawn": {
+        "x": 0,
+        "z": 13
+      },
+      "selvagens": [
+        "voltim",
+        "salamandro",
+        "folhito",
+        "draguim",
+        "diabrim"
+      ],
       "saidas": [
-        { "borda": "sul", "de": -2, "ate": 2, "destino": "campo" },
-        { "borda": "leste", "de": 2, "ate": 6, "destino": "encosta" }
+        {
+          "borda": "sul",
+          "de": -2,
+          "ate": 2,
+          "destino": "campo"
+        },
+        {
+          "borda": "leste",
+          "de": 2,
+          "ate": 6,
+          "destino": "encosta"
+        }
       ]
     },
     "encosta": {
       "nome": "Encosta do Lago",
-      "regiao": { "x": 1, "y": -2 },
-      "limite": { "x": 14, "z": 14 },
+      "regiao": {
+        "x": 1,
+        "y": -2
+      },
+      "limite": {
+        "x": 14,
+        "z": 14
+      },
       "arvores": [
-        [-6, -8, 1], [4, -4, 0], [8, 6, 1], [-8, 4, 0]
+        [
+          -6,
+          -8,
+          1
+        ],
+        [
+          4,
+          -4,
+          0
+        ],
+        [
+          8,
+          6,
+          1
+        ],
+        [
+          -8,
+          4,
+          0
+        ]
       ],
       "platos": [
-        { "x0": -10, "z0": -10, "x1": -2, "z1": -4, "h": 0.7 }
+        {
+          "x0": -10,
+          "z0": -10,
+          "x1": -2,
+          "z1": -4,
+          "h": 0.7
+        }
       ],
       "escadas": [
-        { "x": -6, "z": -4, "w": 2.2, "dir": "norte", "h": 0.7 },
-        { "x": -10, "z": -7, "w": 2.2, "dir": "leste", "h": 0.7 }
+        {
+          "x": -6,
+          "z": -4,
+          "w": 2.2,
+          "dir": "norte",
+          "h": 0.7
+        },
+        {
+          "x": -10,
+          "z": -7,
+          "w": 2.2,
+          "dir": "leste",
+          "h": 0.7
+        }
       ],
-      "grama": { "x0": 0, "z0": 2, "x1": 10, "z1": 10 },
-      "spawn": { "x": -12, "z": 8 },
-      "selvagens": ["voltim", "gotim", "raiozim", "sapum"],
+      "grama": {
+        "x0": 0,
+        "z0": 2,
+        "x1": 10,
+        "z1": 10
+      },
+      "spawn": {
+        "x": -12,
+        "z": 8
+      },
+      "selvagens": [
+        "voltim",
+        "gotim",
+        "raiozim",
+        "sapum",
+        "faiscat"
+      ],
       "saidas": [
-        { "borda": "oeste", "de": 2, "ate": 6, "destino": "colinas" },
-        { "borda": "sul", "de": -6, "ate": -2, "destino": "lago" },
-        { "borda": "leste", "de": -2, "ate": 2, "destino": "penhasco" }
+        {
+          "borda": "oeste",
+          "de": 2,
+          "ate": 6,
+          "destino": "colinas"
+        },
+        {
+          "borda": "sul",
+          "de": -6,
+          "ate": -2,
+          "destino": "lago"
+        },
+        {
+          "borda": "leste",
+          "de": -2,
+          "ate": 2,
+          "destino": "penhasco"
+        }
       ]
     },
     "penhasco": {
       "nome": "Penhasco do Vento",
-      "regiao": { "x": 2, "y": -2 },
-      "limite": { "x": 18, "z": 16 },
+      "regiao": {
+        "x": 2,
+        "y": -2
+      },
+      "limite": {
+        "x": 18,
+        "z": 16
+      },
       "borda": "montanha",
       "chao": "penhasco",
       "arvores": [
-        [-10, -10, 1], [-4, -11, 1], [7, -10, 1], [12, -8, 1], [-12, 7, 1], [11, 12, 1]
+        [
+          -10,
+          -10,
+          1
+        ],
+        [
+          -4,
+          -11,
+          1
+        ],
+        [
+          7,
+          -10,
+          1
+        ],
+        [
+          12,
+          -8,
+          1
+        ],
+        [
+          -12,
+          7,
+          1
+        ],
+        [
+          11,
+          12,
+          1
+        ]
       ],
       "platos": [
-        { "x0": -14, "z0": -12, "x1": 0, "z1": -4, "h": 1.0 },
-        { "x0": 4, "z0": -12, "x1": 14, "z1": -2, "h": 2.0 },
-        { "x0": -14, "z0": 4, "x1": -4, "z1": 12, "h": 1.0 }
+        {
+          "x0": -14,
+          "z0": -12,
+          "x1": 0,
+          "z1": -4,
+          "h": 1
+        },
+        {
+          "x0": 4,
+          "z0": -12,
+          "x1": 14,
+          "z1": -2,
+          "h": 2
+        },
+        {
+          "x0": -14,
+          "z0": 4,
+          "x1": -4,
+          "z1": 12,
+          "h": 1
+        }
       ],
       "escadas": [
-        { "x": -7, "z": -4, "w": 2.4, "dir": "norte", "h": 1.0 },
-        { "x": -14, "z": -8, "w": 2.4, "dir": "leste", "h": 1.0 },
-        { "x": 9, "z": -2, "w": 2.4, "dir": "norte", "h": 2.0 },
-        { "x": 14, "z": -7, "w": 2.4, "dir": "oeste", "h": 2.0 },
-        { "x": -9, "z": 4, "w": 2.4, "dir": "sul", "h": 1.0 },
-        { "x": -4, "z": 8, "w": 2.4, "dir": "oeste", "h": 1.0 }
+        {
+          "x": -7,
+          "z": -4,
+          "w": 2.4,
+          "dir": "norte",
+          "h": 1
+        },
+        {
+          "x": -14,
+          "z": -8,
+          "w": 2.4,
+          "dir": "leste",
+          "h": 1
+        },
+        {
+          "x": 9,
+          "z": -2,
+          "w": 2.4,
+          "dir": "norte",
+          "h": 2
+        },
+        {
+          "x": 14,
+          "z": -7,
+          "w": 2.4,
+          "dir": "oeste",
+          "h": 2
+        },
+        {
+          "x": -9,
+          "z": 4,
+          "w": 2.4,
+          "dir": "sul",
+          "h": 1
+        },
+        {
+          "x": -4,
+          "z": 8,
+          "w": 2.4,
+          "dir": "oeste",
+          "h": 1
+        }
       ],
       "pedras": [
-        [2, 8, 1.4], [14, 6, 1.1], [-2, 0, 1.0]
+        [
+          2,
+          8,
+          1.4
+        ],
+        [
+          14,
+          6,
+          1.1
+        ],
+        [
+          -2,
+          0,
+          1
+        ]
       ],
       "gramas": [
-        { "x0": 4, "z0": 8, "x1": 14, "z1": 13 }
+        {
+          "x0": 4,
+          "z0": 8,
+          "x1": 14,
+          "z1": 13
+        }
       ],
-      "spawn": { "x": -16, "z": 0 },
-      "selvagens": ["salamandro", "cascorro", "raiozim", "assombrim", "draguim", "yetao"],
+      "spawn": {
+        "x": -16,
+        "z": 0
+      },
+      "selvagens": [
+        "salamandro",
+        "cascorro",
+        "raiozim",
+        "assombrim",
+        "draguim",
+        "yetao",
+        "dragolim"
+      ],
       "saidas": [
-        { "borda": "oeste", "de": -2, "ate": 2, "destino": "encosta" }
+        {
+          "borda": "oeste",
+          "de": -2,
+          "ate": 2,
+          "destino": "encosta"
+        }
       ]
     },
     "interior_casa": {
       "nome": "Casa Aconchegante",
       "tipo": "interior",
-      "limite": { "x": 4, "z": 3.2 },
-      "spawn": { "x": 0, "z": 1.8 },
+      "limite": {
+        "x": 4,
+        "z": 3.2
+      },
+      "spawn": {
+        "x": 0,
+        "z": 1.8
+      },
       "arvores": [],
       "saidas": []
     },
@@ -274,12 +1326,26 @@
       "nome": "Centro de Curas",
       "tipo": "interior",
       "estilo": "centro",
-      "limite": { "x": 5, "z": 3.6 },
-      "cura": { "x": 0, "z": -1.6 },
+      "limite": {
+        "x": 5,
+        "z": 3.6
+      },
+      "cura": {
+        "x": 0,
+        "z": -1.6
+      },
       "npcs": [
-        [0, -2.7, "enfermeira", 0]
+        [
+          2.6,
+          -1.3,
+          "enfermeira",
+          -0.9
+        ]
       ],
-      "spawn": { "x": 0, "z": 2.2 },
+      "spawn": {
+        "x": 0,
+        "z": 2.2
+      },
       "arvores": [],
       "saidas": []
     }

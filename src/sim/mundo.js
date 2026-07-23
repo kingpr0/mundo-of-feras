@@ -39,8 +39,21 @@ export function alturaMorros(mapa, pos) {
   }
   return h;
 }
+// a grama alta vive sobre uma PLATAFORMA verde baixa (canteiro): sobe-se
+// andando (rampa suave na borda)
+export function alturaGrama(mapa, pos) {
+  let h = 0;
+  for (const G of zonasGrama(mapa)) {
+    const m = 1.2; // a plataforma se estende além da grama (moldura)
+    const dx = Math.min(pos.x - (G.x0 - m), (G.x1 + m) - pos.x);
+    const dz = Math.min(pos.z - (G.z0 - m), (G.z1 + m) - pos.z);
+    const dentro = Math.min(dx, dz);
+    if (dentro > 0) h = Math.max(h, 0.26 * Math.min(1, dentro / 0.8));
+  }
+  return h;
+}
 export function alturaTerreno(mapa, pos) {
-  let h = alturaMorros(mapa, pos);
+  let h = Math.max(alturaMorros(mapa, pos), alturaGrama(mapa, pos));
   for (const p of mapa.platos || []) {
     if (pos.x > p.x0 && pos.x < p.x1 && pos.z > p.z0 && pos.z < p.z1)
       h = Math.max(h, p.h);
