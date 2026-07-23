@@ -4,6 +4,10 @@
 // É o que viaja no save e, no futuro, pela rede (GDD §13).
 import { vidaMaxima, NIVEL_INICIAL } from './progressao.js';
 
+// usos crescem com a fera: +1 uso por nível a partir do 11 (Lv.11 = 11 usos)
+export const usosMaximos = (base, nivel) =>
+  base == null ? null : base + Math.max(0, nivel - 10);
+
 // cria uma fera nova no nível dado, já com os golpes do seu aprendizado.
 // liberaTudo (modo de teste da inicial): aprende a tabela inteira de uma vez
 export function criarFera(especies, catalogo, chave, nivel = NIVEL_INICIAL, liberaTudo = false) {
@@ -25,7 +29,7 @@ export function aprendeGolpe(fera, catalogo, id) {
   const def = catalogo[id];
   if (!def) return null;
   fera.conhecidos.push(id);
-  if (def.usos != null) fera.usos[id] = def.usos;
+  if (def.usos != null) fera.usos[id] = usosMaximos(def.usos, fera.nivel);
   if (def.base) return { tipo: 'forte', id };
   if (fera.golpes.length < 4) { fera.golpes.push(id); return { tipo: 'slot', id }; }
   const trocado = fera.golpes[1]; // nunca troca o físico do slot 0
@@ -42,7 +46,7 @@ export function lembraGolpe(fera, catalogo, id) {
   if (fera.golpes.length >= 4) fera.golpes.pop();
   fera.golpes.push(id);
   if (catalogo[id].usos != null && fera.usos[id] === undefined)
-    fera.usos[id] = catalogo[id].usos;
+    fera.usos[id] = usosMaximos(catalogo[id].usos, fera.nivel);
   return true;
 }
 
@@ -60,18 +64,20 @@ export function aprendizadosDoNivel(esp, nivel) {
   return (esp.aprendizado || []).filter((a) => a.nivel === nivel).map((a) => a.golpe);
 }
 
-// centro de curas: vida e usos de volta ao máximo
+// centro de curas: vida e usos de volta ao máximo (do nível atual)
 export function curaTotal(fera, especies, catalogo) {
   fera.hpAtual = vidaMaxima(especies[fera.especie].vida, fera.nivel);
-  for (const id of Object.keys(fera.usos)) fera.usos[id] = catalogo[id].usos;
+  for (const id of Object.keys(fera.usos))
+    fera.usos[id] = usosMaximos(catalogo[id].usos, fera.nivel);
 }
 
 // bônus de subir de nível: recupera 20% da vida e 20% dos usos
+// (e o máximo de usos cresce sozinho a partir do nível 11)
 export function bonusNivel(fera, especies, catalogo) {
   const max = vidaMaxima(especies[fera.especie].vida, fera.nivel);
   fera.hpAtual = Math.min(max, Math.round(fera.hpAtual + max * 0.2));
   for (const id of Object.keys(fera.usos)) {
-    const m = catalogo[id].usos;
+    const m = usosMaximos(catalogo[id].usos, fera.nivel);
     if (m != null) fera.usos[id] = Math.min(m, fera.usos[id] + Math.ceil(m * 0.2));
   }
 }

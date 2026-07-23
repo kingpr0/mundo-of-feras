@@ -6,11 +6,14 @@
       "regiao": { "x": 0, "y": 0 },
       "chao": "vila",
       "decor": [
-        ["fogueira", -11, 12.5], ["poco", -13.5, 18], ["banca", -4, 15]
+        ["fogueira", -11, 12.5], ["poco", -13.5, 18], ["banca", -4, 15],
+        ["placa", 3, 8, "Vila Clareira — trate suas feras no Centro de Curas. Ao norte, o Campo; ao sul, as Dunas."]
       ],
       "npcs": [
-        [-12.5, 11, "maga", 2.6], [-9, 17, "aldeao", 3.4],
-        [-3.2, 13.4, "mercador", 0.4], [-16.5, 9.5, "aldea", 1.4]
+        [-12.5, 11, "maga", 2.6, "Sinto uma energia estranha vinda do Penhasco do Vento... feras muito raras vivem lá."],
+        [-9, 17, "aldeao", 3.4, "Dizem que um DRAGÃO ronda as Colinas Rochosas. Eu? Eu nunca saí da vila."],
+        [-3.2, 13.4, "mercador", 0.4, "Minha banca em breve terá cristais e poções! Volte quando a economia chegar ao jogo."],
+        [-16.5, 9.5, "aldea", 1.4, "A grama alta esconde feras selvagens. Nunca entre lá sem as suas!"]
       ],
       "limite": { "x": 24, "z": 24 },
       "arvores": [
@@ -50,6 +53,9 @@
       "pedras": [
         [-16, 6, 1.3], [18, -4, 1.5], [4, -16, 1.0], [-8, 16, 1.1], [-14, -12, 1.2]
       ],
+      "decor": [
+        ["placa", 3, -18, "Dunas Escaldantes — cuidado: na arena daqui, os cactos ESPETAM. Um oásis brilha a sudeste."]
+      ],
       "agua": { "x0": 12, "z0": 12, "x1": 20, "z1": 20 },
       "grama": { "x0": -18, "z0": -18, "x1": -6, "z1": -8 },
       "spawn": { "x": 0, "z": -19 },
@@ -65,10 +71,14 @@
       "arvores": [
         [-6, -2, 0], [4, 3, 1], [12, -3, 0]
       ],
+      "decor": [
+        ["placa", -15, 3, "Trilha dos Pinheiros — Vila Clareira a oeste · Beira do Lago a leste"]
+      ],
       "grama": { "x0": -10, "z0": -3, "x1": 0, "z1": 3 },
       "spawn": { "x": -18, "z": 0 },
       "treinadores": [
         { "x": 8, "z": -4, "tipo": "aldeao", "rot": 2.4, "nome": "Rui Andarilho",
+          "fala": "Você aí! Minhas feras estão coçando por um DUELO — e você não pode recusar!",
           "equipe": [
             { "especie": "cascorro", "nivel": 6 },
             { "especie": "voltim", "nivel": 6 }
@@ -117,6 +127,7 @@
       ],
       "treinadores": [
         { "x": 10, "z": 4, "tipo": "mercador", "rot": 3.1, "nome": "Beto das Rotas",
+          "fala": "Ninguém cruza o Campo Norte sem me enfrentar. Regra minha!",
           "equipe": [
             { "especie": "salamandro", "nivel": 9 },
             { "especie": "gotim", "nivel": 9 }
@@ -153,6 +164,7 @@
       "spawn": { "x": 18, "z": 0 },
       "treinadores": [
         { "x": -2, "z": 5, "tipo": "maga", "rot": 0.2, "nome": "Maga Vilma",
+          "fala": "Minha magia forjou três feras imbatíveis. Prove que estou errada... se conseguir!",
           "equipe": [
             { "especie": "voltim", "nivel": 11 },
             { "especie": "folhito", "nivel": 11 },
@@ -264,6 +276,9 @@
       "estilo": "centro",
       "limite": { "x": 5, "z": 3.6 },
       "cura": { "x": 0, "z": -1.6 },
+      "npcs": [
+        [0, -2.7, "enfermeira", 0]
+      ],
       "spawn": { "x": 0, "z": 2.2 },
       "arvores": [],
       "saidas": []

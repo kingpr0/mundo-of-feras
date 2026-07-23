@@ -96,6 +96,7 @@ const NPCS = {
   aldeao:   { pele: 0xffd9b0, corCabelo: 0x6b4a2f, tunica: 0x5f8a4a, calca: 0x8a6a50, sapato: 0x33313d },
   aldea:    { pele: 0xf2c096, corCabelo: 0xc98a3f, tunica: 0xd97a6a, calca: 0x8a6a50, sapato: 0x33313d },
   mercador: { pele: 0xffd9b0, corCabelo: 0x3a3547, tunica: 0xc9563f, calca: 0x4a4a58, sapato: 0x33313d, cachecol: 0xffd93b },
+  enfermeira: { pele: 0xffd9b0, corCabelo: 0xe07a9a, tunica: 0xf7f3ea, calca: 0xf0d9e2, sapato: 0x33313d },
 };
 export function criarNPC(scene, tipo) {
   return criarHumano(scene, NPCS[tipo] || NPCS.aldeao);

@@ -2,7 +2,7 @@
 // (render/) e roda o loop. A simulação decide; o main traduz eventos em
 // som, partículas e HUD. Nenhuma regra de jogo vive aqui.
 import * as THREE from 'three';
-import { criarMundo, passoMundo, daImunidade, entradaDoMapa } from './sim/mundo.js';
+import { criarMundo, passoMundo, daImunidade, entradaDoMapa, interacaoPerto } from './sim/mundo.js';
 import { criarBatalha, passoBatalha, podeCapturar, fugirBatalha, trocaFera, continuaComOutraFera, proximaFeraTreinador, custoEnergia } from './sim/batalha.js';
 import { ganhaXp, xpParaSubir, xpPorVitoria, nivelSelvagem, vidaMaxima, NIVEL_INICIAL } from './sim/progressao.js';
 import { criarFera, aprendeGolpe, lembraGolpe, montaSlots, aprendizadosDoNivel, curaTotal, bonusNivel, paraBatalha } from './sim/equipe.js';
@@ -109,19 +109,20 @@ function edges() {
         C = keys.KeyC, V = keys.KeyV, F = keys.KeyF, S = keys.Space;
   jE = Z && !pJ; kE = X && !pK; cE = C && !pC; vE = V && !pV; fE = F && !pF; spE = S && !pS;
   pJ = Z; pK = X; pC = C; pV = V; pF = F; pS = S;
-  const CIMA = keys.ArrowUp || keys.KeyW, BAIXO = keys.ArrowDown || keys.KeyS;
+  const CIMA = keys.ArrowUp, BAIXO = keys.ArrowDown;
   cimaE = CIMA && !pCima; baixoE = BAIXO && !pBaixo;
   pCima = CIMA; pBaixo = BAIXO;
   const M = keys.KeyM, ESC = keys.Escape;
   mE = M && !pM; escE = ESC && !pEsc;
   pM = M; pEsc = ESC;
-  const E = keys.KeyE;
-  eE = E && !pE; pE = E;
+  const SUP = keys.KeyS; // S = golpe supremo (A = carregar, lido direto)
+  eE = SUP && !pE; pE = SUP;
 }
 const eixo = (neg, pos) => (keys[pos[0]] || keys[pos[1]] ? 1 : 0) - (keys[neg[0]] || keys[neg[1]] ? 1 : 0);
 
-/* corrida: dois toques rápidos na mesma direção, segurando o segundo */
-const TECLAS_DIR = ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD'];
+/* corrida: dois toques rápidos na mesma direção, segurando o segundo
+   (movimento é SÓ nas setas — A e S agora são botões de luta) */
+const TECLAS_DIR = ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'];
 const ultToque = {}, prevDir = {};
 let correndo = false;
 function detectaCorrida() {
@@ -138,10 +139,10 @@ function detectaCorrida() {
 
 /* na LUTA, dois toques rápidos numa direção = cambalhota (salto-esquiva) */
 const DIR_REL = {
-  ArrowUp: { x: 0, z: -1 }, KeyW: { x: 0, z: -1 },
-  ArrowDown: { x: 0, z: 1 }, KeyS: { x: 0, z: 1 },
-  ArrowLeft: { x: -1, z: 0 }, KeyA: { x: -1, z: 0 },
-  ArrowRight: { x: 1, z: 0 }, KeyD: { x: 1, z: 0 },
+  ArrowUp: { x: 0, z: -1 },
+  ArrowDown: { x: 0, z: 1 },
+  ArrowLeft: { x: -1, z: 0 },
+  ArrowRight: { x: 1, z: 0 },
 };
 function detectaDashLuta() {
   let dash = null;
@@ -191,7 +192,7 @@ function aoEvento(evt) {
     case 'projetil': sfx.swing();
       poof(cena, evt.pos, CORES_TIPO[evt.elemento] || 0xffffff, 12, 3.2); break;
     case 'semUsos': hud.toast(`Sem usos de ${evt.nome}! Descanse no Centro de Curas.`, 1600); break;
-    case 'semEnergia': hud.toast(`Sem energia para ${evt.nome}! Segure \\ para carregar.`, 1600); break;
+    case 'semEnergia': hud.toast(`Sem energia para ${evt.nome}! Segure A para carregar.`, 1600); break;
     case 'feixe': sfx.especial(); cena.shake = 0.35;
       fx.raio(evt.de, evt.para, evt.elemento, evt.visual); break;
     case 'golpeUsado': hud.golpesPainel(linhasGolpes()); break;
@@ -224,8 +225,15 @@ function linhasGolpes() {
   if (!batalha) return [];
   const f = batalha.p;
   const custoTxt = (def) => { const c = custoEnergia(def); return c ? ` · ${c}⚡` : ''; };
-  const usosTxt = (id, def) =>
-    (def.usos == null ? '∞' : `${f.usos[id] || 0}/${def.usos}`) + custoTxt(def);
+  // a versão forte gasta 2 usos do MESMO pote da base
+  const maxPote = (id) => golpesCat[id].usos == null
+    ? null : golpesCat[id].usos + Math.max(0, f.nivel - 10);
+  const usosTxt = (id, def) => {
+    const pote = def.base || id;
+    const m = maxPote(pote);
+    const base = m == null ? '∞' : `${f.usos[pote] || 0}/${m}${def.base ? ' (x2)' : ''}`;
+    return base + custoTxt(def);
+  };
   const linhas = [];
   f.slots.forEach((s, i) => {
     linhas.push({ tecla: TECLAS_GOLPE[i], nome: s.def.nome, usos: usosTxt(s.id, s.def) });
@@ -233,8 +241,8 @@ function linhasGolpes() {
       linhas.push({ tecla: `Shift+${TECLAS_GOLPE[i]}`, nome: s.forte.def.nome, usos: usosTxt(s.forte.id, s.forte.def) });
   });
   const sup = supremos[f.esp.tipo] || supremos.comum;
-  if (sup) linhas.push({ tecla: 'E', nome: sup.nome, usos: '100⚡' });
-  linhas.push({ tecla: '\\', nome: 'Carregar energia', usos: 'segure' });
+  if (sup) linhas.push({ tecla: 'S', nome: sup.nome, usos: '100⚡' });
+  linhas.push({ tecla: 'A', nome: 'Carregar energia', usos: 'segure' });
   return linhas;
 }
 
@@ -369,7 +377,12 @@ const corCss = (tipo) => '#' + (CORES_TIPO[tipo] || 0xcbd0d8).toString(16).padSt
 function fichaFera(f) {
   const esp = especies[f.especie];
   const max = vidaMaxima(esp.vida, f.nivel);
-  const usosTxt = (id) => golpesCat[id].usos == null ? '∞' : `${f.usos[id] || 0}/${golpesCat[id].usos}`;
+  const usosTxt = (id) => {
+    const pote = golpesCat[id].base || id;
+    const m = golpesCat[pote].usos == null
+      ? null : golpesCat[pote].usos + Math.max(0, f.nivel - 10);
+    return m == null ? '∞' : `${f.usos[pote] || 0}/${m}${golpesCat[id].base ? ' (x2)' : ''}`;
+  };
   const golpes = f.golpes.map((id) => `${golpesCat[id].nome} <span>${usosTxt(id)}</span>`);
   for (const id of f.conhecidos)
     if (golpesCat[id].base && f.golpes.includes(golpesCat[id].base))
@@ -559,7 +572,7 @@ function iniciaBatalha() {
   trocaModeloJogador(fera);
   hud.batalhaVisivel(true); hud.atualizaHP(batalha);
   hud.golpesPainel(linhasGolpes());
-  hud.dica('Z/X/C/V golpe · SHIFT+botão = forte · E = SUPREMO · segure \\ = carregar energia · 2 toques = cambalhota · ESPAÇO pula · F captura · ESC menu');
+  hud.dica('Z/X/C/V golpe · SHIFT+botão = forte · S = SUPREMO · segure A = carregar · 2 toques = cambalhota · ESPAÇO pula · F captura · ESC menu');
   hud.toast(`${nomeDe(fera)}, eu escolho você!`);
 }
 function fugir() {
@@ -840,18 +853,25 @@ function loop(agora) {
     else if (mE) { menu.ativo = true; renderMenu(); }
     else {
       detectaCorrida();
-      const inp = { mov: { x: eixo(['ArrowLeft','KeyA'], ['ArrowRight','KeyD']),
-                           z: eixo(['ArrowUp','KeyW'], ['ArrowDown','KeyS']) },
-                    correr: correndo };
+      const inp = { mov: { x: eixo(['ArrowLeft'], ['ArrowRight']),
+                           z: eixo(['ArrowUp'], ['ArrowDown']) },
+                    correr: correndo, falar: jE };
       MD.giraDirecao(domador, inp.mov.x, inp.mov.z);
       const evt = passoMundo(mundo, inp, dt);
       if (mundo.domador.correndo && Math.random() < 0.25)
         poof(cena, { ...mundo.domador.pos, y: mundo.domador.pos.y + 0.15 }, 0xcbb28a, 1, 1.2);
       if (evt === 'encontro') iniciaEncontro();
       else if (evt && evt.tipo === 'treinador') {
-        desafio = { nome: evt.treinador.nome, equipe: evt.treinador.equipe, idx: 0 };
-        hud.toast(`⚔ ${evt.treinador.nome} quer duelar!`, 2000);
-        iniciaEncontro();
+        // conversa primeiro — e o desafio não pode ser recusado!
+        const t = evt.treinador;
+        desafio = { nome: t.nome, equipe: t.equipe, idx: 0 };
+        sfx.encontro();
+        hud.toast(`${t.nome}: "${t.fala || 'Vamos duelar!'}"`, 2400);
+        setTimeout(() => { if (modo === 'explorar' && desafio) iniciaEncontro(); }, 2000);
+      }
+      else if (evt && evt.tipo === 'fala') {
+        sfx.swing();
+        hud.toast(evt.placa ? `🪧 ${evt.texto}` : `💬 ${evt.texto}`, 3800);
       }
       else if (evt === 'caverna')
         hud.toast('Uma caverna sombria... escura demais para entrar agora. (em breve!)', 3000);
@@ -871,6 +891,8 @@ function loop(agora) {
         }
       }
       else if (evt && evt.tipo === 'saida') trocaMapa(evt.saida.destino);
+      // dica de interação: mostra "Z — ..." quando há algo por perto
+      hud.interacao(menu.ativo ? null : interacaoPerto(mundo));
     }
     hud.miniMapa(mundo);
   } else if (modo === 'encontro') {
@@ -886,10 +908,10 @@ function loop(agora) {
       const golpeIdx = press;
       const forte = press != null && shiftSegurado();
       const inpP = {
-        mov: { x: eixo(['ArrowLeft','KeyA'], ['ArrowRight','KeyD']),
-               z: eixo(['ArrowUp','KeyW'], ['ArrowDown','KeyS']) },
+        mov: { x: eixo(['ArrowLeft'], ['ArrowRight']),
+               z: eixo(['ArrowUp'], ['ArrowDown']) },
         pulo: spE, golpe: golpeIdx, forte, supremo: eE, dash, capturar: fE,
-        carregar: !!keys.Backslash, // segurar \ = carregar energia (ki)
+        carregar: !!keys.KeyA, // segurar A = carregar energia (ki)
       };
       const fim = passoBatalha(batalha, inpP, dt, aoEvento);
       hud.atualizaHP(batalha);

@@ -34,6 +34,14 @@ export function criarHUD() {
     exploracaoVisivel(v) {
       $('painel').style.display = v ? 'block' : 'none';
       $('miniWrap').style.display = v ? 'block' : 'none';
+      if (!v) $('interagir').style.display = 'none';
+    },
+    // dica flutuante de interação: "Z — falar com ..." (null esconde)
+    interacao(txt) {
+      const el = $('interagir');
+      if (!txt) { el.style.display = 'none'; return; }
+      el.textContent = `Z — ${txt}`;
+      el.style.display = 'block';
     },
     localAtual(nome) {
       $('pMapa').textContent = nome;

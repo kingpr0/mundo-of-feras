@@ -78,6 +78,21 @@ export function daImunidade(m, segundos = 2) {
   m.imunidade = segundos;
 }
 
+// há algo interativo por perto? (a interface mostra a dica "Z — ...")
+export function interacaoPerto(m) {
+  const d = m.domador.pos;
+  const perto = (x, z, r) => Math.hypot(d.x - x, d.z - z) < r;
+  for (const t of m.mapa.treinadores || [])
+    if (!m.vencidos.has(t.nome) && perto(t.x, t.z, 1.9)) return `desafiar ${t.nome}`;
+  const cura = m.mapa.cura;
+  if (cura && perto(cura.x, cura.z, 1.9)) return 'falar com a enfermeira';
+  for (const n of m.mapa.npcs || [])
+    if (n[4] && perto(n[0], n[1], 1.7)) return 'conversar';
+  for (const dc of m.mapa.decor || [])
+    if (dc[0] === 'placa' && dc[3] && perto(dc[1], dc[2], 1.7)) return 'ler a placa';
+  return null;
+}
+
 // meia-largura/profundidade da base das casas e do centro (para colisão)
 export const CASA_MEIA = { x: 2.0, z: 1.8 };
 export const CENTRO_MEIA = { x: 2.8, z: 2.1 };
@@ -151,6 +166,24 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
   if (m.imunidade > 0) m.imunidade -= dt;
   if (m.cavernaT > 0) m.cavernaT -= dt;
   const d = m.domador;
+
+  // FALAR (Z): treinadores desafiam, a enfermeira cura, moradores e placas
+  // conversam — tudo por interação, nada dispara sozinho
+  if (inp.falar) {
+    const perto = (x, z, r) => Math.hypot(d.pos.x - x, d.pos.z - z) < r;
+    for (let ti = 0; ti < (m.mapa.treinadores || []).length; ti++) {
+      const t = m.mapa.treinadores[ti];
+      if (!m.vencidos.has(t.nome) && perto(t.x, t.z, 1.9))
+        return { tipo: 'treinador', idx: ti, treinador: t };
+    }
+    const cura = m.mapa.cura;
+    if (cura && perto(cura.x, cura.z, 1.9)) return 'cura';
+    for (const n of m.mapa.npcs || [])
+      if (n[4] && perto(n[0], n[1], 1.7)) return { tipo: 'fala', texto: n[4] };
+    for (const dc of m.mapa.decor || [])
+      if (dc[0] === 'placa' && dc[3] && perto(dc[1], dc[2], 1.7))
+        return { tipo: 'fala', texto: dc[3], placa: true };
+  }
   d.andando = inp.mov.x !== 0 || inp.mov.z !== 0;
   d.correndo = d.andando && !!inp.correr;
   if (d.andando) {
@@ -186,16 +219,6 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
         d.pos.z > m.mapa.limite.z - 0.5 && Math.abs(d.pos.x) < 1.2)
       return { tipo: 'porta', destino: 'retorno' };
 
-    // treinador NPC: chegar perto de um ainda não vencido puxa o desafio
-    for (let ti = 0; ti < (m.mapa.treinadores || []).length; ti++) {
-      const t = m.mapa.treinadores[ti];
-      if (m.vencidos.has(t.nome) || m.cavernaT > 0) continue;
-      if (Math.hypot(d.pos.x - t.x, d.pos.z - t.z) < 1.9) {
-        m.cavernaT = 6; // trégua para não redisparar na mesma esquina
-        return { tipo: 'treinador', idx: ti, treinador: t };
-      }
-    }
-
     // boca da caverna: chegar perto avisa (interior dela vem no futuro)
     const cav = m.mapa.caverna;
     if (cav && m.cavernaT <= 0 &&
@@ -203,14 +226,6 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
       m.cavernaT = 4;
       return 'caverna';
     }
-    // balcão do centro de curas: chegar perto cura a equipe
-    const cura = m.mapa.cura;
-    if (cura && m.cavernaT <= 0 &&
-        Math.hypot(d.pos.x - cura.x, d.pos.z - cura.z) < 1.6) {
-      m.cavernaT = 5;
-      return 'cura';
-    }
-
     // encontro à moda clássica: chance por tempo andado dentro da grama alta
     const naGrama = zonasGrama(m.mapa).some((G) =>
       d.pos.x > G.x0 && d.pos.x < G.x1 && d.pos.z > G.z0 && d.pos.z < G.z1);

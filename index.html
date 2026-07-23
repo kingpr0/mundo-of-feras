@@ -52,6 +52,10 @@
     animation:pisca .5s infinite; }
   #dica { position:fixed; bottom:8px; left:50%; transform:translateX(-50%);
     color:rgba(232,227,255,.55); font-size:11px; }
+  #interagir { position:fixed; bottom:34px; left:50%; transform:translateX(-50%);
+    display:none; color:#26202e; font-size:13px; font-weight:bold;
+    background:linear-gradient(180deg,#ffe28a,#ffc93d); border-radius:10px;
+    padding:5px 14px; box-shadow:0 3px 8px rgba(0,0,0,.4); }
   #escolha { position:fixed; bottom:80px; right:48px; padding:16px 24px; display:none;
     flex-direction:column; gap:10px; min-width:160px; }
   .opt { color:#a79fc0; font-size:16px; font-weight:bold; letter-spacing:1px;
@@ -128,6 +132,7 @@
     <div class="opt" id="optFugir">FUGIR</div>
   </div>
   <div id="ficha" class="cartao"></div>
+  <div id="interagir"></div>
   <div id="toast" class="cartao"></div>
   <div id="dica">Setas: andar · na luta: ↑/↓ aproxima-afasta · ←/→ orbita · ESPAÇO pula · Z golpe · X especial · C captura</div>
   <div id="flash"></div>
@@ -138,8 +143,9 @@
     <p>Feras selvagens vivem escondidas na grama alta — pise com cuidado!</p>
     <p>LUTA: ↑/↓ aproxima e afasta · ←/→ orbita · ESPAÇO pula<br>
        Z / X / C / V golpes · F capturar (fera fraca)</p>
-    <p>GOLPE FORTE: <b>SHIFT + botão</b> · GOLPE SUPREMO: <b>E</b><br>
-       golpes especiais gastam a barra laranja — <b>SEGURE \</b> para recarregar</p>
+    <p>GOLPE FORTE: <b>SHIFT + botão</b> · GOLPE SUPREMO: <b>S</b><br>
+       golpes especiais gastam a barra laranja — <b>SEGURE A</b> para recarregar</p>
+    <p>Fale com moradores, placas e treinadores com <b>Z</b></p>
     <p style="color:#ff8a8a">⚠ Fera que desmaiar é perdida para sempre — cuide delas!</p>
     <p class="go">— clique no jogo e pressione ENTER —</p>
   </div>

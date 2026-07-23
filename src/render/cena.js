@@ -127,23 +127,38 @@ function montaChao(scene, tam = 70, tipo = 'grama', mapa = null) {
 /* casinha caprichada: paredes de reboco com VIGAS de madeira (enxaimel),
    telhado com fileiras de telhas, chaminé e fundação de pedra */
 const COR_TELHADO = { vermelho: 0xd1462f, azul: 0x3a6bc9, verde: 0x2f8a4a };
-function texturaParede() {
+function texturaParede(base = '#f2e2c4', vigas = true) {
   const c = document.createElement('canvas'); c.width = c.height = 128;
   const ctx = c.getContext('2d');
-  ctx.fillStyle = '#f2e2c4'; ctx.fillRect(0, 0, 128, 128);
+  ctx.fillStyle = base; ctx.fillRect(0, 0, 128, 128);
   // manchinhas do reboco
   let sem = 41;
   const rnd = () => (sem = (sem * 1103515245 + 12345) % 2147483648) / 2147483648;
-  ctx.fillStyle = 'rgba(180,150,110,0.25)';
+  ctx.fillStyle = 'rgba(180,150,110,0.22)';
   for (let i = 0; i < 26; i++) ctx.fillRect(rnd() * 124, rnd() * 124, 3 + rnd() * 4, 2 + rnd() * 3);
-  // vigas de madeira: moldura + prumos + uma diagonal
-  ctx.fillStyle = '#8a6a50';
-  ctx.fillRect(0, 0, 128, 9); ctx.fillRect(0, 119, 128, 9);
-  ctx.fillRect(0, 0, 8, 128); ctx.fillRect(120, 0, 8, 128);
-  ctx.fillRect(42, 0, 7, 128); ctx.fillRect(84, 0, 7, 128);
-  ctx.save(); ctx.translate(64, 64); ctx.rotate(0.6);
-  ctx.fillRect(-64, -4, 86, 8); ctx.restore();
+  if (vigas) {
+    // vigas de madeira: moldura + prumos + uma diagonal
+    ctx.fillStyle = '#8a6a50';
+    ctx.fillRect(0, 0, 128, 9); ctx.fillRect(0, 119, 128, 9);
+    ctx.fillRect(0, 0, 8, 128); ctx.fillRect(120, 0, 8, 128);
+    ctx.fillRect(42, 0, 7, 128); ctx.fillRect(84, 0, 7, 128);
+    ctx.save(); ctx.translate(64, 64); ctx.rotate(0.6);
+    ctx.fillRect(-64, -4, 86, 8); ctx.restore();
+  } else {
+    // rodapé discreto (estilo do Centro de Curas)
+    ctx.fillStyle = 'rgba(140,120,110,0.5)';
+    ctx.fillRect(0, 119, 128, 9);
+  }
   return new THREE.CanvasTexture(c);
+}
+// beiral: aba grossa na base do telhado piramidal (dá peso ao canto)
+function beiral(grupo, raio, y, corHex) {
+  const cor = new THREE.Color(corHex).multiplyScalar(0.78);
+  const aba = new THREE.Mesh(new THREE.ConeGeometry(raio, 0.5, 4),
+    new THREE.MeshLambertMaterial({ color: cor }));
+  aba.position.y = y; aba.rotation.y = Math.PI / 4;
+  aba.castShadow = true; aba.userData.oclusor = true;
+  grupo.add(aba);
 }
 function texturaTelhado(corCss) {
   const c = document.createElement('canvas'); c.width = c.height = 64;
@@ -176,6 +191,7 @@ function casa(g, x, z, corNome) {
   telhado.position.y = 3.28; telhado.rotation.y = Math.PI / 4; telhado.castShadow = true;
   telhado.userData.oclusor = true;
   grupo.add(telhado);
+  beiral(grupo, 3.15, 2.62, corHex);
   // chaminé de pedra com boca escura
   const cham = new THREE.Mesh(new THREE.BoxGeometry(0.42, 1.1, 0.42), lamb(0x8d939c));
   cham.position.set(1.05, 3.35, -0.7); cham.castShadow = true; grupo.add(cham);
@@ -195,26 +211,32 @@ function casa(g, x, z, corNome) {
   g.add(grupo);
 }
 
-/* centro de curas: prédio branco de telhado vermelho com cruz na fachada */
+/* centro de curas: prédio branco de telhado vermelho com cruz na fachada —
+   no mesmo capricho das casas (fundação, textura, telhas e beiral) */
 function centroCura(g, ct) {
   const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
   const grupo = new THREE.Group();
-  const corpo = new THREE.Mesh(new THREE.BoxGeometry(5.2, 2.6, 3.8), lamb(0xf7f3ea));
-  corpo.position.y = 1.3; corpo.castShadow = true; corpo.userData.oclusor = true; grupo.add(corpo);
-  const telhado = new THREE.Mesh(new THREE.ConeGeometry(4.0, 1.7, 4), lamb(0xd1462f));
-  telhado.position.y = 3.4; telhado.rotation.y = Math.PI / 4; telhado.castShadow = true;
+  const fund = new THREE.Mesh(new THREE.BoxGeometry(5.5, 0.35, 4.1), lamb(0x8d939c));
+  fund.position.y = 0.17; fund.receiveShadow = true; grupo.add(fund);
+  const corpo = new THREE.Mesh(new THREE.BoxGeometry(5.2, 2.6, 3.8),
+    new THREE.MeshLambertMaterial({ map: texturaParede('#f7f3ea', false) }));
+  corpo.position.y = 1.55; corpo.castShadow = true; corpo.userData.oclusor = true; grupo.add(corpo);
+  const telhado = new THREE.Mesh(new THREE.ConeGeometry(4.0, 1.7, 4),
+    new THREE.MeshLambertMaterial({ map: texturaTelhado('#d1462f') }));
+  telhado.position.y = 3.7; telhado.rotation.y = Math.PI / 4; telhado.castShadow = true;
   telhado.userData.oclusor = true;
   grupo.add(telhado);
+  beiral(grupo, 4.3, 3.0, 0xd1462f);
   const porta = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.4, 0.1), lamb(0x9ad4e8));
-  porta.position.set(0, 0.7, 1.92); grupo.add(porta);
+  porta.position.set(0, 0.95, 1.92); grupo.add(porta);
   // cruz branca sobre a porta
   const cr1 = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.22, 0.08), lamb(0xffffff));
-  cr1.position.set(0, 2.1, 1.94); grupo.add(cr1);
+  cr1.position.set(0, 2.35, 1.94); grupo.add(cr1);
   const cr2 = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.7, 0.08), lamb(0xffffff));
-  cr2.position.set(0, 2.1, 1.94); grupo.add(cr2);
+  cr2.position.set(0, 2.35, 1.94); grupo.add(cr2);
   for (const lado of [-1, 1]) {
     const jan = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.7, 0.1), lamb(0xbfe3ff));
-    jan.position.set(lado * 1.7, 1.5, 1.92); grupo.add(jan);
+    jan.position.set(lado * 1.7, 1.75, 1.92); grupo.add(jan);
   }
   grupo.position.set(ct.x, 0, ct.z);
   g.add(grupo);
@@ -296,7 +318,21 @@ function banca(g, x, z, y = 0) {
   toldo.position.set(x, y + 1.95, z - 0.1); toldo.rotation.x = -0.22;
   toldo.castShadow = true; toldo.userData.oclusor = true; g.add(toldo);
 }
-const DECOR = { fogueira, poco, banca };
+function placa(g, x, z, y = 0) {
+  const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
+  const poste = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.9, 6), lamb(0x6b4a2f));
+  poste.position.set(x, y + 0.45, z); poste.castShadow = true; g.add(poste);
+  const tabua = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.55, 0.08), lamb(0x8a6a50));
+  tabua.position.set(x, y + 0.95, z); tabua.rotation.y = 0.06;
+  tabua.castShadow = true; g.add(tabua);
+  // "linhas de texto" sugeridas
+  for (const [ly, lw] of [[0.08, 0.7], [-0.04, 0.55]]) {
+    const linha = new THREE.Mesh(new THREE.BoxGeometry(lw, 0.06, 0.02), lamb(0xf2e2c4));
+    linha.position.set(x, y + 0.98 + ly, z + 0.05); linha.rotation.y = 0.06;
+    g.add(linha);
+  }
+}
+const DECOR = { fogueira, poco, banca, placa };
 
 /* escada de degraus subindo a um platô (o "dir" é a direção da subida) */
 function escada(g, e, mapa) {
@@ -431,12 +467,12 @@ function arvore(scene, x, z, pinheiro) {
 function montaGrama(scene, G) {
   const mats = [0x3d8a35, 0x46983c, 0x51a746]
     .map((c) => new THREE.MeshLambertMaterial({ color: c }));
-  // no lugar do tapete verde, um ANEL de canteiro elevado com degradê
-  // (estilo platô): os arbustos ficam plantados dentro da moldura
-  const wG = G.x1 - G.x0 + 2.2, dG = G.z1 - G.z0 + 2.2;
+  // ANEL de canteiro elevado ABRAÇANDO os arbustos (sem vão entre eles),
+  // com o tapete verde de volta por baixo da grama
+  const wG = G.x1 - G.x0 + 2.4, dG = G.z1 - G.z0 + 2.4;
   const cxG = (G.x0 + G.x1) / 2, czG = (G.z0 + G.z1) / 2;
   const c0 = new THREE.Color(0x7d5f3e), c1 = new THREE.Color(0xbc9668);
-  const LARG = 1.8; // espessura do anel (borda externa - interna)
+  const LARG = 1.6; // espessura total do anel: interna encosta nos arbustos
   for (let i = 0; i < 2; i++) {
     const folga = (1 - i) * 0.4;
     const ext = formaArredondada(wG + folga, dG + folga, 1.3);
@@ -458,6 +494,14 @@ function montaGrama(scene, G) {
   cap.position.set(cxG, 0.22, czG);
   cap.receiveShadow = true;
   scene.add(cap);
+  // tapete verde sob os arbustos, preenchendo o interior do anel
+  const base = new THREE.Mesh(
+    new THREE.PlaneGeometry(G.x1 - G.x0 + 1.2, G.z1 - G.z0 + 1.2),
+    new THREE.MeshLambertMaterial({ color: 0x357a2e }));
+  base.rotation.x = -Math.PI / 2;
+  base.position.set(cxG, 0.014, czG);
+  base.receiveShadow = true;
+  scene.add(base);
   const geoArb = new THREE.SphereGeometry(0.78, 10, 7);
   const passo = 1.05;
   let i = 0;
@@ -710,7 +754,16 @@ export function montaMapa(cena, mapa) {
   // as peças do cenário registram aqui suas animações (fogueira, água...)
   cena.anims = [];
   g.userData.anims = cena.anims;
-  if (mapa.tipo === 'interior') { montaInterior(g, mapa); return; }
+  if (mapa.tipo === 'interior') {
+    montaInterior(g, mapa);
+    // interiores também têm moradores (a enfermeira do Centro, por ex.)
+    (mapa.npcs || []).forEach(([x, z, tipo, rot]) => {
+      const npc = criarNPC(g, tipo);
+      npc.g.position.set(x, 0, z);
+      npc.g.rotation.y = rot || 0;
+    });
+    return;
+  }
   montaChao(g, Math.max(mapa.limite.x, mapa.limite.z) * 2 + 24, mapa.chao || 'grama', mapa);
   montaCaminhos(g, mapa);
   montaPedras(g, mapa);

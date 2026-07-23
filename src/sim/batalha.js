@@ -172,9 +172,13 @@ function tentaGolpe(f, inp, emitir) {
   if (f.pos.y > 0.01 && !podeNoAr) return;
   const custo = custoEnergia(g);
   if (f.energia < custo) { emitir({ tipo: 'semEnergia', nome: g.nome }); return; }
-  if (g.usos != null) {
-    if ((f.usos[escolhido.id] || 0) <= 0) { emitir({ tipo: 'semUsos', nome: g.nome }); return; }
-    f.usos[escolhido.id]--;
+  // usos: a versão FORTE bebe do mesmo pote da base, gastando 2 (a simples
+  // gasta 1). Golpes físicos não têm pote (infinitos).
+  const pote = g.base || escolhido.id;
+  const custoUsos = g.base ? 2 : 1;
+  if (f.usos[pote] !== undefined) {
+    if (f.usos[pote] < custoUsos) { emitir({ tipo: 'semUsos', nome: g.nome }); return; }
+    f.usos[pote] -= custoUsos;
   }
   f.energia -= custo;
   f.estado = 'atk'; f.golpe = g; f.t = 0; f.acertou = false; f.tiros = 0;
@@ -337,15 +341,14 @@ function iaSelvagem(b, dt, rnd) {
         .map((s, i) => i)
         .filter((i) => {
           const s = e.slots[i];
-          return s.def.usos == null || (e.usos[s.id] || 0) > 0;
+          return s.def.usos == null || (e.usos[s.id] || 0) >= 1;
         });
       if (r < 0.6 + 0.25 * furia && livres.length) {
         inp.golpe = livres[Math.floor(rnd() * livres.length)];
         const s = e.slots[inp.golpe];
-        if (s.forte && rnd() < 0.25 + 0.3 * furia) {
-          const fd = s.forte.def;
-          if (fd.usos == null || (e.usos[s.forte.id] || 0) > 0) inp.forte = true;
-        }
+        // a forte gasta 2 do pote da base — a IA só arrisca se tiver
+        if (s.forte && rnd() < 0.25 + 0.3 * furia &&
+            (s.def.usos == null || (e.usos[s.id] || 0) >= 2)) inp.forte = true;
         b.iaMov = null;
       }
       else if (r < 0.85) b.iaMov = escala(dir, -0.8);
