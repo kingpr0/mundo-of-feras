@@ -1,11 +1,5 @@
 # Créditos dos modelos 3D
 
-## Viking (teste) — pasta local `Feras/` (fora do git)
-
-- Gerado pelo Domador no Meshy AI, para TESTE de pipeline de animação.
-- Arquivos pesados (~79 MB cada) e não versionados; se ausentes, o jogo cai
-  no modelo procedural automaticamente.
-
 ## folhito.glb — "Mushnub" · assombrim.glb — "Ghost" · draguim.glb — "Dragon Evolved"
 ## sapum.glb — "Frog" · diabrim.glb — "Demon" · yetao.glb — "Yeti" · espinhim.glb — "Green Spiky Blob"
 
