@@ -572,5 +572,36 @@
         "golpe": "investida_feroz"
       }
     ]
+  },
+  "viking": {
+    "nome": "Viking (teste)",
+    "tipo": "comum",
+    "raridade": "comum",
+    "selvagem": true,
+    "vida": 90,
+    "velocidade": 3.6,
+    "ataque": 1.2,
+    "impulso": 6.5,
+    "sequencia": [
+      "baixo"
+    ],
+    "modelo3d": "./Feras/Meshy_AI_Stylized_Viking_Yeti_biped/Meshy_AI_Stylized_Viking_Yeti_biped_Animation_Walking_withSkin.glb",
+    "altura3d": 1.7,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "Armature|walking_man|baselayer",
+      "andar": "Armature|walking_man|baselayer",
+      "correr": "Armature|walking_man|baselayer"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 6,
+        "golpe": "investida_feroz"
+      }
+    ]
   }
 }

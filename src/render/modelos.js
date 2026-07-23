@@ -713,7 +713,12 @@ export function passoMixer(M, dt) { if (M && M.mixer) M.mixer.update(dt); }
 export function criarFera(scene, chave, esp) {
   if (esp && esp.modelo3d)
     return criarFeraGltf(scene, esp.modelo3d, esp.altura3d || 1.1, esp.giro3d || 0)
-      .then((M) => { M.clipes = esp.clipes || {}; return M; });
+      .then((M) => { M.clipes = esp.clipes || {}; return M; })
+      .catch((e) => {
+        // arquivo ausente/corrompido não derruba o jogo: cai no procedural
+        console.warn(`modelo3d de "${chave}" falhou; usando modelo procedural`, e);
+        return (FABRICAS[chave] || criarCascorro)(scene);
+      });
   const fabrica = FABRICAS[chave];
   return Promise.resolve((fabrica || criarCascorro)(scene));
 }
