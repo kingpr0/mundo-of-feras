@@ -16,9 +16,6 @@ const especies = await (await fetch('./src/dados/especies.json')).json();
 const dadosMapas = await (await fetch('./src/dados/mapas.json')).json();
 const golpesCat = await (await fetch('./src/dados/golpes.json')).json();
 const tipos = await (await fetch('./src/dados/tipos.json')).json();
-// golpes supremos por tipo elemental (barra de energia cheia + tecla E)
-const supremos = {};
-for (const g of Object.values(golpesCat)) if (g.supremo) supremos[g.tipo] = g;
 
 const cv = document.getElementById('cv');
 const cena = criarCena(cv);
@@ -90,7 +87,6 @@ let jE = false, kE = false, cE = false, vE = false, fE = false, spE = false;
 let pJ = false, pK = false, pC = false, pV = false, pF = false, pS = false;
 let cimaE = false, baixoE = false, pCima = false, pBaixo = false;
 let mE = false, escE = false, pM = false, pEsc = false;
-let eE = false, pE = false;
 addEventListener('keydown', (e) => {
   audioInit(); keys[e.code] = true;
   if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
@@ -115,8 +111,6 @@ function edges() {
   const M = keys.KeyM, ESC = keys.Escape;
   mE = M && !pM; escE = ESC && !pEsc;
   pM = M; pEsc = ESC;
-  const SUP = keys.KeyS; // S = golpe supremo (A = carregar, lido direto)
-  eE = SUP && !pE; pE = SUP;
 }
 const eixo = (neg, pos) => (keys[pos[0]] || keys[pos[1]] ? 1 : 0) - (keys[neg[0]] || keys[neg[1]] ? 1 : 0);
 
@@ -173,9 +167,6 @@ function aoEvento(evt) {
       poof(cena, { ...evt.pos, y: evt.pos.y + 1 }, 0xff6b4a, 8, 4.5);
       hud.dano(evt.pos, evt.dano, true, evt.eficaz);
       avisaEficacia(evt.eficaz); break;
-    case 'supremo': sfx.hitForte(); hud.flash(); cena.shake = 0.7; hitstop = 0.12;
-      poof(cena, { ...evt.pos, y: 1 }, 0xffd23f, 20, 6);
-      hud.toast(`☄ GOLPE SUPREMO: ${evt.nome}!`, 1600); break;
     case 'espinho': sfx.hit(); cena.shake = 0.2;
       poof(cena, { ...evt.pos, y: 0.5 }, 0x5fd35a, 6, 3);
       hud.dano(evt.pos, evt.dano, false); break;
@@ -240,8 +231,6 @@ function linhasGolpes() {
     if (s.forte)
       linhas.push({ tecla: `Shift+${TECLAS_GOLPE[i]}`, nome: s.forte.def.nome, usos: usosTxt(s.forte.id, s.forte.def) });
   });
-  const sup = supremos[f.esp.tipo] || supremos.comum;
-  if (sup) linhas.push({ tecla: 'S', nome: sup.nome, usos: '100⚡' });
   linhas.push({ tecla: 'A', nome: 'Carregar energia', usos: 'segure' });
   return linhas;
 }
@@ -574,12 +563,12 @@ function iniciaBatalha() {
     paraBatalha(fera, especies, golpesCat),
     paraBatalha(inimigo, especies, golpesCat),
     RINGUE.dom, RINGUE.fera,
-    { tipos, supremos, bioma: mundo.mapa.chao || 'grama', treinador: !!desafio });
+    { tipos, bioma: mundo.mapa.chao || 'grama', treinador: !!desafio });
   modo = 'batalha';
   trocaModeloJogador(fera);
   hud.batalhaVisivel(true); hud.atualizaHP(batalha);
   hud.golpesPainel(linhasGolpes());
-  hud.dica('Z/X/C/V golpe · SHIFT+botão = forte · S = SUPREMO · segure A = carregar · 2 toques = cambalhota · ESPAÇO pula · F captura · ESC menu');
+  hud.dica('Z/X/C/V golpe · SHIFT+botão = forte · segure A = carregar ki · 2 toques = cambalhota · ESPAÇO pula · F captura · ESC menu');
   hud.toast(`${nomeDe(fera)}, eu escolho você!`);
 }
 function fugir() {
@@ -915,7 +904,7 @@ function loop(agora) {
       const inpP = {
         mov: { x: eixo(['ArrowLeft'], ['ArrowRight']),
                z: eixo(['ArrowUp'], ['ArrowDown']) },
-        pulo: spE, golpe: golpeIdx, forte, supremo: eE, dash, capturar: fE,
+        pulo: spE, golpe: golpeIdx, forte, dash, capturar: fE,
         carregar: !!keys.KeyA, // segurar A = carregar energia (ki)
       };
       const fim = passoBatalha(batalha, inpP, dt, aoEvento);

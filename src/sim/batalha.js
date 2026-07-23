@@ -21,14 +21,14 @@ function novoLutador(l, esp, pos) {
     max: vida,
     estado: 'idle', t: 0, golpe: null, acertou: false, tiros: 0,
     invuln: 0, flash: 0, kb: vec(),
-    // energia estilo "ki": começa CHEIA, golpes especiais gastam, segurar
-    // o botão de carga recupera; espinhoT = cooldown do perigo da arena
-    energia: 100, espinhoT: 0, carregando: false, pulosAr: 0,
+    // energia estilo "ki" (economia tipo elixir): começa na METADE, pinga
+    // devagar, carrega parado (vulnerável!) e golpe físico certeiro gera
+    energia: 50, espinhoT: 0, carregando: false, pulosAr: 0,
   };
 }
 
 // extras = { tipos (tabela de vantagens), bioma (perigos da arena),
-//            supremos (golpes de barra cheia, por tipo elemental) }
+//            treinador (duelo sem captura) }
 export function criarBatalha(especies, jogador, selvagem, posDomador, posSelvagem, extras = {}) {
   const dirE = normXZ(sub(posSelvagem, posDomador));
   const posBra = soma(posDomador, escala(dirE, 1.4));
@@ -43,7 +43,6 @@ export function criarBatalha(especies, jogador, selvagem, posDomador, posSelvage
     fimT: 0,
     tipos: extras.tipos || null,
     bioma: extras.bioma || null,
-    supremos: extras.supremos || null,
     treinador: !!extras.treinador, // duelo de treinador: captura proibida
   };
 }
@@ -66,9 +65,10 @@ function eficacia(tipos, tipoGolpe, tipoAlvo) {
   return { m: 1, ef: null };
 }
 // custo de energia: físico simples é grátis; especial gasta 10; VERSÃO
-// FORTE (tem "base" no catálogo) gasta 60; supremo consome a barra inteira
+// FORTE (tem "base" no catálogo) gasta 60
 export const custoEnergia = (g) =>
-  g.supremo ? 100 : g.base ? 60 : (g.projetil || g.rajada || g.feixe) ? 10 : 0;
+  g.base ? 60 : (g.projetil || g.rajada || g.feixe) ? 10 : 0;
+const ganhaKi = (f, n) => { f.energia = Math.min(100, f.energia + n); };
 
 // a fera caiu mas a equipe tem outra: o duelo continua contra o mesmo inimigo
 export function continuaComOutraFera(b, jogador, especies) {
@@ -105,6 +105,8 @@ export function chanceCaptura(b) {
 }
 
 function aplicaDano(b, vitima, dano, dirKb, empurrao, forte, emitir, invulnT = 0.5, eficaz = null) {
+  // pego CARREGANDO ki: interrompe e ainda dói 25% a mais (punição real)
+  if (vitima.carregando) dano = Math.round(dano * 1.25);
   vitima.hp = Math.max(0, vitima.hp - dano);
   vitima.estado = 'hurt'; vitima.t = 0;
   vitima.invuln = invulnT; vitima.flash = 1;
@@ -121,6 +123,8 @@ function acerta(b, vitima, atacante, g, emitir) {
   const { m, ef } = eficacia(b.tipos, g.tipo || atacante.esp.tipo, vitima.esp.tipo);
   aplicaDano(b, vitima, Math.round(g.dano * atacante.forca * m),
     normXZ(sub(vitima.pos, atacante.pos)), g.empurrao, g.forte, emitir, 0.5, ef);
+  // estilo Hollow Knight: golpe FÍSICO certeiro reabastece o ki
+  if (g.fisico) ganhaKi(atacante, 12);
 }
 
 /* projéteis: golpes elementais voam até o alvo — inclusive disparados do
@@ -188,17 +192,6 @@ function tentaGolpe(f, inp, emitir) {
   emitir({ tipo: 'golpeUsado' });
 }
 
-// golpe SUPREMO: barra de energia cheia libera o golpe máximo do tipo
-function tentaSupremo(b, f, emitir) {
-  if ((f.energia || 0) < 100 || !b.supremos) return;
-  const g = b.supremos[f.esp.tipo] || b.supremos.comum;
-  if (!g) return;
-  if (f.pos.y > 0.01 && !(g.projetil || g.rajada)) return;
-  f.energia = 0;
-  f.estado = 'atk'; f.golpe = g; f.t = 0; f.acertou = false; f.tiros = 0;
-  emitir({ tipo: 'supremo', nome: g.nome, pos: copia(f.pos) });
-}
-
 function passoLutador(b, f, inp, outro, dt, emitir) {
   const p = f.pos;
   f.carregando = false; // só o ramo "idle" pode reativar neste frame
@@ -252,10 +245,12 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
     }
     if (f.t >= g.prep + g.ativo + g.recup) { f.estado = 'idle'; f.golpe = null; }
   } else {
-    // CARREGAR energia (estilo ki): parado no chão, segurando o botão
+    // CARREGAR ki: parado no chão, segurando o botão — lento e vulnerável.
+    // Depois de 45s de luta, a "fúria do crepúsculo" dobra a carga.
     f.carregando = !!inp.carregar && f.pos.y <= 0.01 && f.energia < 100;
     if (f.carregando) {
-      f.energia = Math.min(100, f.energia + 45 * dt);
+      const crepusculo = (b.tempo || 0) > 45 ? 2 : 1;
+      ganhaKi(f, 16 * crepusculo * dt);
       f.movendo = false;
     } else {
       f.movendo = inp.mov.x !== 0 || inp.mov.z !== 0;
@@ -280,10 +275,10 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
           emitir({ tipo: 'pulo' });
         }
       }
-      else if (inp.supremo) tentaSupremo(b, f, emitir);
       else if (inp.golpe != null) tentaGolpe(f, inp, emitir);
     }
   }
+  ganhaKi(f, 2 * dt); // o ki pinga sozinho, como elixir
   f.vy -= GRAVIDADE * dt;
   f.pos.y = Math.max(0, f.pos.y + f.vy * dt);
   if (f.pos.y === 0) { f.vy = Math.max(0, f.vy); f.pulosAr = 0; }
@@ -318,8 +313,9 @@ function iaSelvagem(b, dt, rnd) {
   const dist = distXZ(e.pos, p.pos);
   const dir = normXZ(sub(p.pos, e.pos));
   // sem ki e longe do perigo: a IA para e CARREGA, como um jogador faria
+  // (a carga é lenta — ela desiste cedo se o perigo se aproximar)
   if (b.iaCarrega) {
-    if (e.energia >= 85 || dist < 3.2) b.iaCarrega = false;
+    if (e.energia >= 60 || dist < 3.6) b.iaCarrega = false;
     else { inp.carregar = true; return inp; }
   }
   // fúria: quanto mais machucada, mais rápida e agressiva a fera fica
@@ -329,11 +325,6 @@ function iaSelvagem(b, dt, rnd) {
     b.aiT = (0.55 + rnd() * 0.5) * (1 - 0.45 * furia);
     if (dist > 4.5) b.iaMov = rnd() < 0.55 + 0.3 * furia ? escala(dir, 0.65 + 0.3 * furia) : null;
     else if (dist > 2.2) b.iaMov = rnd() < 0.75 ? escala(dir, 0.8) : null;
-    else if (b.supremos && (e.energia || 0) >= 100 && furia > 0.12 && rnd() < 0.6) {
-      // barra cheia (e já apanhou um pouco): a IA solta o golpe supremo
-      inp.supremo = true;
-      b.iaMov = null;
-    }
     else {
       // a IA gera os mesmos inputs abstratos que um jogador (GDD §9.6/§12)
       const r = rnd();
@@ -415,6 +406,7 @@ const INPUT_NEUTRO = { mov: { x: 0, z: 0 }, pulo: false, golpe: null, forte: fal
 //          correr, capturar }
 // Retorna 'encerrar' quando a batalha terminou de vez (após a pausa final).
 export function passoBatalha(b, inpP, dt, emitir, rnd = Math.random) {
+  b.tempo = (b.tempo || 0) + dt; // relógio da luta (fúria do crepúsculo)
   if (b.fim) {
     passoLutador(b, b.p, INPUT_NEUTRO, b.e, dt, emitir);
     passoLutador(b, b.e, INPUT_NEUTRO, b.p, dt, emitir);
@@ -436,7 +428,7 @@ export function passoBatalha(b, inpP, dt, emitir, rnd = Math.random) {
     ? soma(escala(fw, -inpP.dash.z), escala(rt, inpP.dash.x))
     : null;
   passoLutador(b, b.p, { mov, pulo: inpP.pulo, golpe: inpP.golpe, forte: inpP.forte,
-    supremo: inpP.supremo, carregar: inpP.carregar, dash, dashRel: inpP.dash }, b.e, dt, emitir);
+    carregar: inpP.carregar, dash, dashRel: inpP.dash }, b.e, dt, emitir);
   passoLutador(b, b.e, iaSelvagem(b, dt, rnd), b.p, dt, emitir);
   if (inpP.capturar && podeCapturar(b)) lancaCristal(b, emitir);
   return null;
