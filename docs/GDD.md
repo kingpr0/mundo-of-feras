@@ -24,6 +24,8 @@ O estilo visual é **3D estilizado em diorama** (decidido, substituindo o pixel 
 
 **Feras**: modelos 3D low-poly originais, 100% autorais (exigência legal e de identidade). Cada espécie precisa de silhueta reconhecível a distância e paleta que comunique seu tipo.
 
+**Catálogo oficial**: as 30 espécies do jogo (numeração, tipos, evoluções e guia visual de modelagem) vivem em **`docs/CATALOGO-FERAS.md`** — produção dos modelos a cargo do Domador, integração a cargo do motor.
+
 **Pipeline de modelos (DECIDIDO):** as feras são modelos **glTF (.glb) com esqueleto e animações** — a espécie declara `modelo3d`, `altura3d`, `giro3d` e o mapa `clipes` (parado/andar/correr/ataque/forte/dano/ko) nos dados, e o jogo troca os clipes conforme a luta, com fallbacks para modelos incompletos. Modelos CC0 (Quaternius e afins) são aceitos como base — ver `assets/feras/CREDITOS.md`. Feras ativas nesse pipeline: Raposa (demo, Fox da Khronos), **Folhito** (Mushnub), **Assombrim** (Ghost) e **Draguim** (Dragon Evolved). As espécies procedurais antigas seguem válidas até ganharem modelo próprio.
 
 ## 4. Câmeras

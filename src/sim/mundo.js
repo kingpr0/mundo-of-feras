@@ -205,9 +205,13 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
     const mov = normXZ(vec(inp.mov.x, 0, inp.mov.z));
     const novo = soma(d.pos, escala(mov, (d.correndo ? 4.2 * 1.5 : 4.2) * dt));
     if (!colide(m.mapa, novo)) {
-      // paredões não se escalam: só passa se o desnível for de degrau
+      // paredões não se escalam: só passa se o desnível for de degrau.
+      // A sonda avança a BORDA do corpo (0.3), não o centro — o domador
+      // encosta no paredão sem afundar nele
+      const sonda = soma(novo, escala(mov, 0.3));
       const dh = Math.abs(alturaTerreno(m.mapa, novo) - alturaTerreno(m.mapa, d.pos));
-      if (dh < 0.45) { d.pos.x = novo.x; d.pos.z = novo.z; }
+      const dhSonda = Math.abs(alturaTerreno(m.mapa, sonda) - alturaTerreno(m.mapa, d.pos));
+      if (dh < 0.45 && dhSonda < 0.45) { d.pos.x = novo.x; d.pos.z = novo.z; }
     }
     const saida = verificaSaida(m.mapa, d.pos);
     if (saida) return { tipo: 'saida', saida };
