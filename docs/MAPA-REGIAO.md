@@ -1,57 +1,64 @@
-# Região Ferândia — esboço do mapa-múndi (v1)
+# Região Ferândia — mapa-múndi v2 ("o Mar do Meio")
 
-Visão estilo Kanto: um continente com o mar a leste, geleiras ao norte,
-vulcão a nordeste, deserto ao sul e a jornada dos ginásios costurando tudo.
-**11 áreas já são jogáveis**; 12 são planejadas. A malha usa o mesmo sistema
-de dados de `mapas.json` (`regiao {x,y}` + `saidas`) — criar área nova é
-criar conteúdo, não código.
+Dois continentes partidos por um **mar que atravessa o meio da região**,
+com uma ilha neutra no centro. Frio cresce para o NORTE (até a Muralha e
+além), calor cresce para o SUL (até o vulcão e o deserto profundo).
+**11 áreas jogáveis hoje** (o continente sul é o lar delas); o resto é
+expansão planejada. Tudo entra pelo sistema de dados de `mapas.json`.
 
-## As áreas
+## A espinha dorsal (de sul a norte)
 
-| Área | Bioma | Status | Destaque |
-|------|-------|--------|----------|
-| Vila Clareira | vila verde | ✅ jogável | Início da jornada; fogueira-marco |
-| Cidade Verdejante | cidade | ✅ jogável | **Ginásio de planta** (futuro) |
-| Trilha dos Pinheiros | campo | ✅ jogável | Treinador Rui |
-| Beira do Lago | lago | ✅ jogável | Água viva; pesca (futuro) |
-| Campo Norte | campo | ✅ jogável | Treinador Beto; morros |
-| Rota das Lajes | campo | ✅ jogável | Treinadora Vilma |
-| Colinas Rochosas | terra | ✅ jogável | **Caverna Sombria** (interior pronto) |
-| Encosta do Lago | campo | ✅ jogável | Platôs e escadas |
-| Penhasco do Vento | penhasco | ✅ jogável | Feras muito raras |
-| Dunas Escaldantes | deserto | ✅ jogável | Arena com cactos-armadilha; oásis |
-| Caverna Sombria (interior) | caverna | ✅ jogável | Cristais; covil de Diabrim |
-| Porto Maresia | cidade costeira | 🔲 planejada | **Ginásio de água**; barco p/ ilha |
-| Monte Fervura | vulcão | 🔲 planejada | Túnel de lava; feras de fogo |
-| Cidade Forja | cidade | 🔲 planejada | **Ginásio de fogo**; ferreiro |
-| Vila Nevada | vila de neve | 🔲 planejada | **Ginásio de gelo** |
-| Trilha Nevada | rota alpina | 🔲 planejada | Nevasca; tipo gelo (proposta) |
-| Gruta Gelada | caverna de gelo | 🔲 planejada | Auroram é avistada aqui? |
-| Monte Alvorada | montanha | 🔲 planejada | **Liga das Feras** (topo da região) |
-| Pântano Bruma | pântano | 🔲 planejada | Névoa; feras sombra (proposta) |
-| Rota do Rio | rio | 🔲 planejada | Correnteza que empurra; deságua no mar |
-| Oásis Solar | cidade no deserto | 🔲 planejada | **Ginásio de pedra** (proposta) |
-| Vale Bravo | badlands | 🔲 planejada | Feras raras de alto nível |
-| Ilha do Auroram | ilhota | 🔲 planejada | **Lendária #30**; só de barco |
+1. **Continente Sul (quente)** — o berço: Vila Clareira, Verdejante e as
+   rotas atuais; ao sul, Dunas → Oásis Solar → Ruínas Douradas → Vale
+   Bravo; a sudeste, o vulcão **Monte Fervura** e a **Cidade Forja**.
+2. **Mar do Meio** — corta a região de leste a oeste. Travessia por
+   **balsa**: Porto Maresia (sul) ⚓ → **Ilha Farol** (centro, cidade
+   neutra com a Torre do Eremita) ⚓ → Porto Boreal (norte). A leste da
+   ilha, a **Fossa Abissal** esconde a lendária das águas.
+3. **Continente Norte (frio)** — Floresta Fechada e Campos Frios na costa;
+   subindo, Trilha Nevada, Vila Nevada e as Minas Ecoantes; e então...
+4. **A MURALHA DE GELO** — atravessa TODOS os mapas do extremo norte, de
+   costa a costa. Um portão único (fechado no início) e uma **missão de
+   escalada** para atravessá-la. Além dela: os Ermos Gelados, os Picos Sem
+   Nome e o **Monte Alvorada com a Liga das Feras** — o final do jogo é
+   literalmente além da Muralha.
 
-## A jornada (ordem sugerida dos ginásios)
+## Referências assumidas (e o que roubamos de cada uma)
 
-1. **Verdejante (planta)** — a poucos passos do início; o tutorial de ginásio.
-2. **Porto Maresia (água)** — leste, depois de cruzar o lago.
-3. **Oásis Solar (pedra)** — sul, atravessando as Dunas.
-4. **Cidade Forja (fogo)** — nordeste, contornando o vulcão.
-5. **Vila Nevada (gelo)** — norte gelado, o teste final.
-6. **Liga das Feras** — Monte Alvorada, só com as 5 insígnias.
+| Fonte | O que vira no jogo |
+|-------|--------------------|
+| **Game of Thrones** | A Muralha de gelo contínua no norte; missão de escalada; "Além da Muralha" como zona selvagem de alto nível |
+| **Senhor dos Anéis** | Monte Fervura = a Montanha da Perdição (jornada ao coração do vulcão); **Minas Ecoantes** = Moria, travessia subterrânea sob a Muralha; a **Árvore Anciã** da Floresta Fechada (Fangorn) dá missão; balsa final = Portos Cinzentos |
+| **One Piece** | O Mar do Meio é a nossa Grand Line: travessias de balsa, cada margem um mundo, a Ilha Farol como parada neutra |
+| **Dragon Ball** | **Torre do Eremita** na Ilha Farol: treino de escalada + o mestre que ensina o **golpe supremo** (a mecânica removida volta como RECOMPENSA de missão!) |
+| **Moby Dick** | Os pescadores do Porto Maresia juram ter visto "a sombra na Fossa" — a caçada à lendária das águas |
+| **El Dorado** | Ruínas Douradas: cidade perdida no deserto profundo, quebra-cabeças e feras de pedra |
+| **Avatar / Pokémon** | Ginásios elementais espalhados como as nações dos elementos; um por bioma |
 
-A lendária Auroram: rumores na Gruta Gelada, encontro real na Ilha
-(pós-Liga). Ginásios são também os pontos de **batalha online** planejados.
+## As DUAS lendárias (capa do jogo)
+
+- **#31 Fervorax** (fogo/dragão, proposta) — dorme no coração do Monte
+  Fervura; o vulcão fumega quando ela sonha. Despertar = missão pós-4ª
+  insígnia.
+- **#32 Abissomar** (água/sombra, proposta) — a serpente da Fossa Abissal;
+  só emerge numa noite de tempestade, atraída pela balsa.
+- **#30 Auroram** (gelo, proposta) vira a **terceira secreta** estilo Mew:
+  rumores nos Picos Sem Nome, além da Muralha, pós-Liga.
+
+## A jornada (insígnias em ordem)
+
+1. **Verdejante (planta)** — tutorial, a dois passos de casa.
+2. **Oásis Solar (pedra)** — atravessando as Dunas.
+3. **Cidade Forja (fogo)** — na sombra do vulcão.
+4. **Porto Maresia (água)** — destrava a BALSA. → *missão Fervorax disponível*
+5. **Vila Nevada (gelo)** — do outro lado do mar. → *missão Abissomar disponível*
+6. **A Muralha** — missão de escalada (ou as Minas Ecoantes, para os espertos).
+7. **Liga das Feras** — Monte Alvorada, além da Muralha.
 
 ## Regras de coerência do mundo
 
-- Biomas encostam com transição: campo → terra → deserto; campo → neve
-  passa por rota alpina; vulcão cercado de penhasco/terra.
-- Cavernas conectam lados da região por baixo (atalhos destraváveis).
-- Água é barreira até existir travessia (barco no Porto — futuro).
-- Cada área nova nasce com: espécies do catálogo compatíveis com o bioma,
-  1 treinador NPC pelo menos, 1 placa, e um marco visual próprio (como a
-  fogueira da Clareira).
+- Biomas encostam com transição (campo → terra → deserto; costa → neve).
+- Água é barreira até a balsa existir; a Muralha é barreira até a missão.
+- Cavernas são atalhos destraváveis (Sombria já existe; Ecoantes e Gelada virão).
+- Toda área nova nasce com: espécies do catálogo coerentes com o bioma,
+  1+ treinador NPC, 1 placa e um marco visual próprio (padrão-fogueira).

@@ -1,4 +1,4 @@
-# Catálogo Oficial de Feras — v1 (30 espécies)
+# Catálogo Oficial de Feras — v1.1 (30 espécies + 2 lendárias de capa)
 
 Guia de produção: o Domador modela (Blockbench/Meshy), o motor integra.
 Numeração no estilo clássico: **#1–#9 são as três linhas iniciais** (planta,
@@ -56,7 +56,14 @@ Tipos novos **(proposta)**: `sombra · pedra · gelo · vento` — entram no
 | 27 | **Assombral** | sombra (proposta) | final | Espectro alto de **manto rasgado** e coroa de névoa | Senhor do penhasco à noite |
 | 28 | **Diabrim** | fogo | raro, sem evolução | Diabinho voador de tridente rombudo (já existe) | Caótico neutro |
 | 29 | **Dragolim** | fogo | raríssimo | O dragãozinho coral de **orelhas-nadadeira** e crista de chamas (já existe) | Filhote de lenda? |
-| 30 | **Auroram** | gelo (proposta) | LENDÁRIA | Cervo etéreo de **galhada de cristal** que emite aurora boreal; pelagem branco-azulada | Guardião do inverno — aparição única |
+| 30 | **Auroram** | gelo (proposta) | LENDÁRIA SECRETA (estilo Mew) | Cervo etéreo de **galhada de cristal** que emite aurora boreal; pelagem branco-azulada | Rumor dos Picos Sem Nome, além da Muralha — pós-Liga |
+
+## As lendárias de capa (#31–#32)
+
+| # | Nome | Tipo | Papel | Visual | Onde |
+|---|------|------|-------|--------|------|
+| 31 | **Fervorax** | fogo/dragão (proposta) | LENDÁRIA da capa "Fogo" | Dragão colossal de escamas de obsidiana com **rachaduras de magma** pulsando; chifres como picos de vulcão | Dorme no coração do Monte Fervura — o vulcão fumega quando ela sonha |
+| 32 | **Abissomar** | agua/sombra (proposta) | LENDÁRIA da capa "Água" | **Serpente marinha** de profundeza: corpo azul-negro, barbatanas como véus rasgados, olhos de farol | A "sombra na Fossa Abissal" que os pescadores juram ter visto |
 
 ## Guia técnico de modelagem (para cada fera)
 
