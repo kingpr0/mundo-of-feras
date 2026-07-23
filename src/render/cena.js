@@ -798,27 +798,6 @@ function texturaLajes() {
   return _texLajes;
 }
 /* ---------- vegetação 2.5D: folhas de sprite em planos cruzados ---------- */
-let _texCapim = null;
-function texturaCapim() {
-  if (_texCapim) return _texCapim;
-  const c = document.createElement('canvas'); c.width = c.height = 128;
-  const x = c.getContext('2d');
-  let sem = 7;
-  const rnd = () => (sem = (sem * 1103515245 + 12345) % 2147483648) / 2147483648;
-  const cores = ['#3d8a35', '#4a9a3d', '#59b04a', '#357a2e', '#65bd52'];
-  for (let i = 0; i < 12; i++) {
-    const bx = 10 + rnd() * 108, topx = bx + (rnd() - 0.5) * 50;
-    const h = 66 + rnd() * 58, w = 5 + rnd() * 6;
-    x.fillStyle = cores[Math.floor(rnd() * cores.length)];
-    x.beginPath();
-    x.moveTo(bx - w, 128);
-    x.quadraticCurveTo(bx - w * 0.4, 128 - h * 0.6, topx, 128 - h);
-    x.quadraticCurveTo(bx + w * 0.4, 128 - h * 0.6, bx + w, 128);
-    x.closePath(); x.fill();
-  }
-  _texCapim = new THREE.CanvasTexture(c);
-  return _texCapim;
-}
 const _texFlores = {};
 function texturaFlor(cor) {
   if (_texFlores[cor]) return _texFlores[cor];
@@ -895,12 +874,10 @@ function texturaCaminhoTerra() {
 }
 
 /* caminhos v2: LAJE elevada de cantos redondos, textura alinhada ao mundo
-   (cruzamentos sem briga), meio-fio de pedra na vila e capim nas beiradas
-   dos caminhos de terra */
+   (cruzamentos sem briga) e meio-fio de pedra na vila */
 function montaCaminhos(g, mapa) {
   const vila = (mapa.chao || 'grama') === 'vila';
   const ESC = 4.5;
-  const tufos = [];
   const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
   (mapa.caminhos || []).forEach((c, i) => {
     const w = c.x1 - c.x0, d = c.z1 - c.z0;
@@ -919,9 +896,10 @@ function montaCaminhos(g, mapa) {
     m.position.set(cx, 0.008 + i * 0.012, cz);
     m.receiveShadow = true;
     g.add(m);
-    // beiradas: meio-fio de pedra (vila) ou capim (terra)
+    // meio-fio de pedra nas beiradas (só na vila; no campo a laje basta)
+    if (!vila) return;
     const horizontal = w >= d;
-    const passoB = vila ? 2.6 : 1.9;
+    const passoB = 2.6;
     const ini = horizontal ? c.x0 + 1 : c.z0 + 1;
     const fim = horizontal ? c.x1 - 1 : c.z1 - 1;
     for (let t = ini; t <= fim; t += passoB) {
@@ -929,17 +907,14 @@ function montaCaminhos(g, mapa) {
         const px = horizontal ? t : cx + lado * (w / 2 + 0.22);
         const pz = horizontal ? cz + lado * (d / 2 + 0.22) : t;
         const jx = px + (((t * 13) % 5) - 2) * 0.07, jz = pz + (((t * 7) % 5) - 2) * 0.07;
-        if (vila) {
-          const guia = new THREE.Mesh(new THREE.BoxGeometry(
-            horizontal ? 0.5 : 0.2, 0.14, horizontal ? 0.2 : 0.5), lamb(0x9aa0a8));
-          guia.position.set(jx, alturaTerreno(mapa, { x: jx, z: jz }) + 0.07, jz);
-          guia.receiveShadow = true;
-          g.add(guia);
-        } else tufos.push({ x: jx, y: alturaTerreno(mapa, { x: jx, z: jz }), z: jz });
+        const guia = new THREE.Mesh(new THREE.BoxGeometry(
+          horizontal ? 0.5 : 0.2, 0.14, horizontal ? 0.2 : 0.5), lamb(0x9aa0a8));
+        guia.position.set(jx, alturaTerreno(mapa, { x: jx, z: jz }) + 0.07, jz);
+        guia.receiveShadow = true;
+        g.add(guia);
       }
     }
   });
-  if (tufos.length) g.add(malhaCruzetas(tufos, texturaCapim(), 0.5, 0.7));
 }
 
 /* tapete de VIDA do mapa: tufos, flores, pedrinhas e cogumelos espalhados
@@ -967,17 +942,20 @@ function montaDetalhes(g, mapa) {
     for (const n of mapa.npcs || []) if (perto(x, z, n[0], n[1], 1.7)) return false;
     return true;
   };
-  const deserto = mapa.chao === 'deserto', penhasco = mapa.chao === 'penhasco';
+  const chao = mapa.chao || 'grama';
+  const deserto = chao === 'deserto';
+  // flores e cogumelos só onde o chão é VERDE; terra/penhasco ganham pedras
+  const verde = chao === 'grama' || chao === 'vila';
   const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
-  const tufos = [], florB = [], florR = [];
+  const florB = [], florR = [];
   let pedrinhas = 0, cactinhos = 0, cogumelos = 0;
-  for (let i = 0; i < 190; i++) {
+  for (let i = 0; i < 150; i++) {
     const x = (rnd() * 2 - 1) * (L.x - 1.5), z = (rnd() * 2 - 1) * (L.z - 1.5);
     if (!livre(x, z)) continue;
     const y = alturaTerreno(mapa, { x, z });
     const r = rnd();
     const pedrinha = () => {
-      if (pedrinhas++ > 24) return;
+      if (pedrinhas++ > 22) return;
       const p = new THREE.Mesh(new THREE.DodecahedronGeometry(0.09 + rnd() * 0.09),
         lamb(deserto ? 0xbfa26a : 0x8d939c));
       p.position.set(x, y + 0.07, z); p.rotation.y = rnd() * 3;
@@ -986,14 +964,12 @@ function montaDetalhes(g, mapa) {
     if (deserto) {
       if (r < 0.55) pedrinha();
       else if (cactinhos++ < 12) cacto(g, x, z, 0.32 + rnd() * 0.2);
-    } else if (penhasco) {
-      if (r < 0.55) pedrinha();
-      else tufos.push({ x, y, z });
+    } else if (!verde) {
+      if (r < 0.4) pedrinha();
     } else {
-      if (r < 0.5) tufos.push({ x, y, z });
-      else if (r < 0.72) florB.push({ x, y, z });
-      else if (r < 0.85) florR.push({ x, y, z });
-      else if (r < 0.95) pedrinha();
+      if (r < 0.4) florB.push({ x, y, z });
+      else if (r < 0.66) florR.push({ x, y, z });
+      else if (r < 0.85) pedrinha();
       else if (cogumelos++ < 8) {
         const pe = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 0.14, 6), lamb(0xf2e2c4));
         pe.position.set(x, y + 0.07, z); g.add(pe);
@@ -1002,8 +978,6 @@ function montaDetalhes(g, mapa) {
       }
     }
   }
-  if (tufos.length)
-    g.add(malhaCruzetas(tufos, texturaCapim(), 0.5, 0.72, penhasco ? 0xc9b36a : null));
   if (florB.length) g.add(malhaCruzetas(florB, texturaFlor('#fff6df'), 0.34, 0.6));
   if (florR.length) g.add(malhaCruzetas(florR, texturaFlor('#ff8ab0'), 0.34, 0.6));
 }
