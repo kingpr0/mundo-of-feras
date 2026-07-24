@@ -1305,6 +1305,12 @@
           "de": -2,
           "ate": 2,
           "destino": "encosta"
+        },
+        {
+          "borda": "norte",
+          "de": -2,
+          "ate": 2,
+          "destino": "fiorde"
         }
       ]
     },
@@ -1373,6 +1379,268 @@
         "diabrim"
       ],
       "saidas": []
+    },
+    "fiorde": {
+      "nome": "Fiorde Ventania",
+      "regiao": {
+        "x": 2,
+        "y": -3
+      },
+      "chao": "penhasco",
+      "borda": "montanha",
+      "limite": {
+        "x": 16,
+        "z": 16
+      },
+      "agua": {
+        "x0": -16,
+        "z0": -16,
+        "x1": 16,
+        "z1": -9
+      },
+      "morros": [
+        {
+          "x": -8,
+          "z": 2,
+          "r": 5,
+          "h": 0.8
+        },
+        {
+          "x": 9,
+          "z": 6,
+          "r": 5,
+          "h": 0.9
+        }
+      ],
+      "platos": [
+        {
+          "x0": -15,
+          "z0": 6,
+          "x1": -6,
+          "z1": 14,
+          "h": 1.2
+        }
+      ],
+      "escadas": [
+        {
+          "x": -10,
+          "z": 6,
+          "w": 2.6,
+          "dir": "norte",
+          "h": 1.2
+        }
+      ],
+      "casas": [
+        [
+          -2,
+          4,
+          "azul"
+        ],
+        [
+          4,
+          -2,
+          "azul"
+        ],
+        [
+          13,
+          -1,
+          "vermelho"
+        ]
+      ],
+      "pedras": [
+        [
+          -13,
+          -2,
+          1.4
+        ],
+        [
+          0,
+          12,
+          1.2
+        ],
+        [
+          15,
+          13,
+          1.1
+        ]
+      ],
+      "decor": [
+        [
+          "fogueira",
+          6,
+          12
+        ],
+        [
+          "placa",
+          -1,
+          -6,
+          "Fiorde Ventania — as encostas dos Senhores do Vento. O Castelo vigia a oeste."
+        ]
+      ],
+      "npcs": [
+        [
+          -4,
+          8,
+          "aldeao",
+          2.8,
+          "Meu avô ergueu estas casas nas encostas. O vento aqui esculpe até a alma."
+        ],
+        [
+          10,
+          -4,
+          "aldea",
+          0.6,
+          "O portão do Castelo? Só se abre para domadores com três insígnias... ou convidados dos Senhores."
+        ]
+      ],
+      "treinadores": [
+        {
+          "x": -6,
+          "z": -4,
+          "tipo": "mercador",
+          "rot": 1.2,
+          "nome": "Capanga da Coleira",
+          "fala": "A Guilda paga bem por feras raras. As SUAS, por exemplo... entregue ou duele!",
+          "equipe": [
+            {
+              "especie": "cascorro",
+              "nivel": 12
+            },
+            {
+              "especie": "voltim",
+              "nivel": 12
+            }
+          ]
+        }
+      ],
+      "grama": {
+        "x0": -2,
+        "z0": 8,
+        "x1": 4,
+        "z1": 14
+      },
+      "spawn": {
+        "x": 0,
+        "z": 13
+      },
+      "selvagens": [
+        "yetao",
+        "raiozim",
+        "cascorro"
+      ],
+      "saidas": [
+        {
+          "borda": "sul",
+          "de": -2,
+          "ate": 2,
+          "destino": "penhasco"
+        },
+        {
+          "borda": "oeste",
+          "de": 4,
+          "ate": 8,
+          "destino": "castelo"
+        }
+      ]
+    },
+    "castelo": {
+      "nome": "Castelo Ventania",
+      "regiao": {
+        "x": 1,
+        "y": -3
+      },
+      "chao": "vila",
+      "borda": "montanha",
+      "limite": {
+        "x": 14,
+        "z": 12
+      },
+      "castelo": {
+        "x": 0,
+        "z": -3
+      },
+      "caminhos": [
+        {
+          "x0": -2,
+          "z0": 3,
+          "x1": 2,
+          "z1": 8
+        },
+        {
+          "x0": -2,
+          "z0": 4,
+          "x1": 14,
+          "z1": 8
+        }
+      ],
+      "pedras": [
+        [
+          -11,
+          2,
+          1.3
+        ],
+        [
+          12,
+          11,
+          1.2
+        ],
+        [
+          -12,
+          10,
+          1.1
+        ]
+      ],
+      "decor": [
+        [
+          "fogueira",
+          -6,
+          10
+        ],
+        [
+          "placa",
+          5,
+          10,
+          "Castelo Ventania — sede dos Senhores do Vento. O portão se abre para quem provar seu valor."
+        ]
+      ],
+      "npcs": [
+        [
+          3.1,
+          4.6,
+          "maga",
+          0,
+          "Alto lá! O Senhor do Vento só recebe domadores com TRÊS insígnias."
+        ],
+        [
+          -4,
+          9.5,
+          "aldeao",
+          1.2,
+          "Dizem que o brasão do Castelo tem TRÊS feras, não duas. Conte você mesmo... se conseguir entrar."
+        ],
+        [
+          10.5,
+          2.5,
+          "aldea",
+          3.6,
+          "Do alto do torreão vê-se o Mar do Meio inteiro. E em noites claras... a Muralha."
+        ]
+      ],
+      "spawn": {
+        "x": 12,
+        "z": 6
+      },
+      "selvagens": [
+        "cascorro"
+      ],
+      "saidas": [
+        {
+          "borda": "leste",
+          "de": 4,
+          "ate": 8,
+          "destino": "fiorde"
+        }
+      ]
     }
   }
 }

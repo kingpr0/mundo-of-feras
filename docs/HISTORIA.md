@@ -66,7 +66,10 @@ clímax (a definir com as lendárias confirmadas).
 
 ## Regras de jogo que nascem da história
 
-1. **Início**: escolha entre 3 iniciais (planta/fogo/água) na Fogueira Eterna.
+0. **Abertura** (implementada): textos da Guardiã (Z avança) → o controle é
+   liberado → o jogador CAMINHA até a Fogueira Eterna → Ritual da Escolha.
+1. **Início**: escolha entre 3 iniciais (planta/fogo/água) na Fogueira Eterna
+   — e só a fogueira da vila NATAL acende ou reacende o elo.
 2. **Derrota total**: sem teleporte — volta a pé, sem encontros (elo apagado),
    até falar com a Fogueira Eterna e receber nova inicial nível 5.
 3. **Guilda da Coleira**: treinadores-vilões de rota, desafio irrecusável.

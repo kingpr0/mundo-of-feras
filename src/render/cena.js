@@ -615,6 +615,77 @@ function plato(g, p, mapa = {}) {
   g.add(topo);
 }
 
+/* CASTELO VENTANIA — muralhas com ameias, torres nos cantos, torreão
+   central com bandeira ao vento e portão ao sul (colisão em sim/mundo.js) */
+function montaCastelo(g, c, anims) {
+  const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
+  const PEDRA = 0x8d939c, ESCURA = 0x6e7680, TELHA = 0x3a6bc9;
+  const grupo = new THREE.Group();
+  grupo.position.set(c.x, 0, c.z);
+  g.add(grupo);
+  const muro = (w, d, x, z) => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, 3.2, d), lamb(PEDRA));
+    m.position.set(x, 1.6, z);
+    m.castShadow = m.receiveShadow = true;
+    m.userData.oclusor = true;
+    grupo.add(m);
+    // ameias no topo
+    const aoLongoX = w > d;
+    const comp = aoLongoX ? w : d;
+    for (let t = -comp / 2 + 0.5; t <= comp / 2 - 0.5; t += 1.1) {
+      const dente = new THREE.Mesh(new THREE.BoxGeometry(
+        aoLongoX ? 0.55 : d + 0.1, 0.5, aoLongoX ? w * 0 + d + 0.1 : 0.55), lamb(ESCURA));
+      dente.position.set(aoLongoX ? x + t : x, 3.45, aoLongoX ? z : z + t);
+      grupo.add(dente);
+    }
+  };
+  muro(16, 1.2, 0, -6);        // norte
+  muro(1.2, 12, -8, 0);        // oeste
+  muro(1.2, 12, 8, 0);         // leste
+  muro(6, 1.2, -5, 6);         // sul (esquerda do portão)
+  muro(6, 1.2, 5, 6);          // sul (direita do portão)
+  // torres dos cantos
+  for (const [tx, tz] of [[-8, -6], [8, -6], [-8, 6], [8, 6]]) {
+    const torre = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.5, 4.6, 10), lamb(PEDRA));
+    torre.position.set(tx, 2.3, tz);
+    torre.castShadow = true; torre.userData.oclusor = true;
+    grupo.add(torre);
+    const chapeu = new THREE.Mesh(new THREE.ConeGeometry(1.6, 1.4, 10), lamb(TELHA));
+    chapeu.position.set(tx, 5.3, tz); chapeu.castShadow = true;
+    chapeu.userData.oclusor = true;
+    grupo.add(chapeu);
+  }
+  // torreão central com bandeira dos Senhores do Vento
+  const torreao = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.5, 6.2, 12), lamb(PEDRA));
+  torreao.position.set(0, 3.1, -2);
+  torreao.castShadow = true; torreao.userData.oclusor = true;
+  grupo.add(torreao);
+  const coroa = new THREE.Mesh(new THREE.ConeGeometry(2.6, 2, 12), lamb(TELHA));
+  coroa.position.set(0, 7.2, -2); coroa.castShadow = true;
+  coroa.userData.oclusor = true;
+  grupo.add(coroa);
+  const porta = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.8, 0.2), lamb(0x16121c));
+  porta.position.set(0, 0.9, 0.45); grupo.add(porta);
+  const mastro = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 2.2, 6), lamb(0x6b4a2f));
+  mastro.position.set(0, 9.2, -2); grupo.add(mastro);
+  const bandeira = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.8),
+    new THREE.MeshLambertMaterial({ color: 0x59e0d0, side: THREE.DoubleSide }));
+  bandeira.position.set(0.8, 9.6, -2);
+  grupo.add(bandeira);
+  // a bandeira tremula ao vento do fiorde
+  if (anims) anims.push((t) => {
+    bandeira.rotation.y = Math.sin(t * 3.2) * 0.35;
+    bandeira.position.x = 0.8 + Math.sin(t * 3.2) * 0.06;
+  });
+  // portão: batentes de pedra
+  for (const lado of [-1, 1]) {
+    const batente = new THREE.Mesh(new THREE.BoxGeometry(0.6, 3.8, 1.4), lamb(ESCURA));
+    batente.position.set(lado * 2.2, 1.9, 6);
+    batente.castShadow = true; batente.userData.oclusor = true;
+    grupo.add(batente);
+  }
+}
+
 /* boca de caverna nas rochas (o interior vem no futuro) */
 function bocaCaverna(g, c) {
   const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
@@ -1038,6 +1109,7 @@ export function montaMapa(cena, mapa) {
   });
   (mapa.casas || []).forEach(([x, z, cor]) => casa(g, x, z, cor));
   if (mapa.centro) centroCura(g, mapa.centro);
+  if (mapa.castelo) montaCastelo(g, mapa.castelo, cena.anims);
   (mapa.platos || []).forEach((p) => plato(g, p, mapa));
   (mapa.escadas || []).forEach((e) => escada(g, e, mapa));
   (mapa.decor || []).forEach(([tipo, x, z]) => {

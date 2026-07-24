@@ -35,7 +35,7 @@ expansão planejada. Tudo entra pelo sistema de dados de `mapas.json`.
 | **El Dorado** | Ruínas Douradas: cidade perdida no deserto profundo, quebra-cabeças e feras de pedra |
 | **Avatar / Pokémon** | Ginásios elementais espalhados como as nações dos elementos; um por bioma |
 
-## O canto noroeste: o Fiorde e o Castelo
+## O canto noroeste: o Fiorde e o Castelo — ✅ JOGÁVEIS (versão inicial)
 
 A oeste do Penhasco do Vento, **montanhas contornam o mar** formando o
 Fiorde Ventania: encostas escarpadas com casas de madeira penduradas

@@ -42,7 +42,17 @@ const TECLAS_GOLPE = ['Z', 'X', 'C', 'V'];
 const projMeshes = new Map();
 
 /* ---------- estado ---------- */
-let modo = 'titulo'; // titulo | explorar | encontro | batalha
+let modo = 'titulo'; // titulo | intro | explorar | encontro | batalha
+// abertura: o jogador lê a história antes de ganhar o controle
+const INTRO_FALAS = [
+  'Ferândia desperta. Ao sul, o vulcão fumega sem erupção; no Mar do Meio, as ondas andam inquietas sem tempestade...',
+  'Na Vila Clareira, porém, hoje é um dia de festa: o dia do SEU Ritual da Escolha.',
+  'Guardiã: "Sinto cheiro de cinza e sal no vento. Os tempos pedem novos domadores..."',
+  'Guardiã: "Venha até a FOGUEIRA ETERNA, no coração da vila. Três companheiras esperam por você."',
+  'Ande com as SETAS até a fogueira e aperte Z para falar com ela. Boa jornada, domador!',
+];
+let falaIntro = 0;
+let jaEscolheu = false; // o primeiro Ritual tem fala própria da Guardiã
 const chavesSelvagens = Object.keys(especies).filter((k) => especies[k].selvagem);
 let chaveMapa = dadosMapas.inicial;
 // treinadores derrotados valem para a sessão inteira (não voltam ao trocar de mapa)
@@ -100,12 +110,13 @@ addEventListener('keydown', (e) => {
   audioInit(); keys[e.code] = true;
   if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
   if (e.code === 'Enter' && modo === 'titulo') {
-    hud.escondeTitulo(); modo = 'explorar'; cv.focus();
+    hud.escondeTitulo(); cv.focus();
     musica('explorar');
-    renderMenu();
-    hud.dica(DICA_EXPLORAR);
-    if (equipe.length === 0) iniciaRitual(false);
-    else hud.toast('Explore a grama alta... e cuide das suas feras: quem desmaia não volta!');
+    // a abertura: textos primeiro, controle depois
+    modo = 'intro';
+    falaIntro = 0;
+    hud.dica('Z avança o texto');
+    hud.toast(`${INTRO_FALAS[0]}  ▸`, 600000);
   }
 });
 addEventListener('keyup', (e) => keys[e.code] = false);
@@ -514,6 +525,7 @@ function iniciaRitual(renascer) {
 function escolheInicial(k) {
   equipe = [criarFera(especies, golpesCat, k, NIVEL_INICIAL, true)];
   ativa = 0;
+  jaEscolheu = true;
   sfx.capturado();
   hud.flash();
   poof(cena, { ...mundo.domador.pos, y: 1 }, 0xffd23f, 16, 4);
@@ -728,7 +740,7 @@ function trocaMapa(destino, entrada) {
 /* ---------- sincroniza modelos com a simulação ---------- */
 function sincronizaVisual(dt) {
   const d = mundo.domador;
-  if (modo === 'explorar' || modo === 'titulo') {
+  if (modo === 'explorar' || modo === 'titulo' || modo === 'intro') {
     MD.setPos(domador, d.pos);
     MD.passoGiro(domador, dt);
     MD.animaAndar(domador, d.animT * (d.correndo ? 1.45 : 1), d.andando);
@@ -881,7 +893,21 @@ function loop(agora) {
   passoAmbiente(cena, tempo);
   hud.passoDanos(cena.camera, dt, THREE);
 
-  if (modo === 'explorar') {
+  if (modo === 'intro') {
+    // abertura: Z (ou ESPAÇO) avança os textos; o controle vem depois
+    if (jE || spE) {
+      falaIntro++;
+      if (falaIntro < INTRO_FALAS.length) {
+        sfx.swing();
+        hud.toast(`${INTRO_FALAS[falaIntro]}  ▸`, 600000);
+      } else {
+        modo = 'explorar';
+        renderMenu();
+        hud.dica(DICA_EXPLORAR);
+        hud.toast('Siga até a Fogueira Eterna — a pílula dourada avisa quando estiver perto.', 3200);
+      }
+    }
+  } else if (modo === 'explorar') {
     if (menu.ativo) {
       navegaMenu();
       if (holoM) { // holograma gira e flutua
@@ -903,7 +929,11 @@ function loop(agora) {
         poof(cena, { ...mundo.domador.pos, y: mundo.domador.pos.y + 0.15 }, 0xcbb28a, 1, 1.2);
       if (evt === 'encontro') iniciaEncontro();
       else if (evt && evt.tipo === 'fogueira') {
-        if (!equipe.length) iniciaRitual(true);
+        if (!equipe.length) {
+          // só a fogueira da vila NATAL acende (ou reacende) o elo
+          if (chaveMapa === dadosMapas.inicial) iniciaRitual(jaEscolheu);
+          else hud.toast('Esta fogueira não reconhece você. A SUA chama arde na Vila Clareira.', 3000);
+        }
         else hud.toast('🔥 A Fogueira Eterna crepita. O elo com suas feras se aquece.', 2800);
       }
       else if (evt && evt.tipo === 'treinador') {
@@ -969,7 +999,7 @@ function loop(agora) {
   sincronizaVisual(dt);
   passoCamera(cena, modo === 'encontro' ? 'batalha' : modo, mundo,
               modo === 'encontro' ? camEncontro : batalha, dt);
-  if (modo === 'explorar' || modo === 'titulo')
+  if (modo === 'explorar' || modo === 'titulo' || modo === 'intro')
     passoOclusores(cena, [mundo.domador.pos], cena.oclusores);
   else if (modo === 'encontro')
     passoOclusores(cena, [RINGUE.fera], cena.oclusoresArena);

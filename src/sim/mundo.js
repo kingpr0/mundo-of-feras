@@ -119,7 +119,20 @@ export function zonasGrama(mapa) {
   return mapa.gramas || (mapa.grama ? [mapa.grama] : []);
 }
 
+// muralhas, torres e torreão do castelo (o portão fica aberto ao sul)
+function colideCastelo(c, pos) {
+  const dx = pos.x - c.x, dz = pos.z - c.z;
+  if (Math.hypot(dx, dz + 2) < 2.9) return true;                    // torreão
+  for (const [tx, tz] of [[-8, -6], [8, -6], [-8, 6], [8, 6]])
+    if (Math.hypot(dx - tx, dz - tz) < 1.8) return true;            // torres
+  if (Math.abs(dx) < 8 && dz > -6.9 && dz < -5.1) return true;      // muro norte
+  if (Math.abs(dz) < 6 && Math.abs(dx) > 7.1 && Math.abs(dx) < 8.9) return true; // laterais
+  if (dz > 5.1 && dz < 6.9 && Math.abs(dx) > 2 && Math.abs(dx) < 8) return true; // sul c/ portão
+  return false;
+}
+
 function colide(mapa, pos) {
+  if (mapa.castelo && colideCastelo(mapa.castelo, pos)) return true;
   for (const a of mapa.arvores || []) {
     const dx = pos.x - a[0], dz = pos.z - a[1];
     if (dx * dx + dz * dz < RAIO_ARVORE * RAIO_ARVORE) return true;
