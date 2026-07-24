@@ -35,7 +35,17 @@ expansão planejada. Tudo entra pelo sistema de dados de `mapas.json`.
 | **El Dorado** | Ruínas Douradas: cidade perdida no deserto profundo, quebra-cabeças e feras de pedra |
 | **Avatar / Pokémon** | Ginásios elementais espalhados como as nações dos elementos; um por bioma |
 
-## As DUAS lendárias (capa do jogo)
+## O canto noroeste: o Fiorde e o Castelo
+
+A oeste do Penhasco do Vento, **montanhas contornam o mar** formando o
+Fiorde Ventania: encostas escarpadas com casas de madeira penduradas
+(estilo vila viking) subindo até o **Castelo Ventania**, a fortaleza dos
+Senhores do Vento no ponto mais alto das falésias — de lá se enxerga o Mar
+do Meio inteiro. Papel na história: convoca domadores com 3 insígnias e
+concede o favor que (junto da 4ª insígnia) destrava a balsa
+(ver `HISTORIA.md`).
+
+## As DUAS lendárias (capa do jogo) — NOMES E TIPOS PROVISÓRIOS
 
 - **#31 Fervorax** (fogo/dragão, proposta) — dorme no coração do Monte
   Fervura; o vulcão fumega quando ela sonha. Despertar = missão pós-4ª
@@ -49,8 +59,8 @@ expansão planejada. Tudo entra pelo sistema de dados de `mapas.json`.
 
 1. **Verdejante (planta)** — tutorial, a dois passos de casa.
 2. **Oásis Solar (pedra)** — atravessando as Dunas.
-3. **Cidade Forja (fogo)** — na sombra do vulcão.
-4. **Porto Maresia (água)** — destrava a BALSA. → *missão Fervorax disponível*
+3. **Cidade Forja (fogo)** — na sombra do vulcão. → *o Castelo Ventania convoca*
+4. **Porto Maresia (água)** — com o favor do Castelo, destrava a BALSA. → *missão da lendária de fogo*
 5. **Vila Nevada (gelo)** — do outro lado do mar. → *missão Abissomar disponível*
 6. **A Muralha** — missão de escalada (ou as Minas Ecoantes, para os espertos).
 7. **Liga das Feras** — Monte Alvorada, além da Muralha.

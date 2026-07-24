@@ -103,8 +103,10 @@ export function interacaoPerto(m) {
   if (cura && perto(cura.x, cura.z, 1.9)) return 'falar com a enfermeira';
   for (const n of m.mapa.npcs || [])
     if (n[4] && perto(n[0], n[1], 1.7)) return 'conversar';
-  for (const dc of m.mapa.decor || [])
+  for (const dc of m.mapa.decor || []) {
     if (dc[0] === 'placa' && dc[3] && perto(dc[1], dc[2], 1.7)) return 'ler a placa';
+    if (dc[0] === 'fogueira' && perto(dc[1], dc[2], 2.4)) return 'a Fogueira Eterna';
+  }
   return null;
 }
 
@@ -195,9 +197,13 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
     if (cura && perto(cura.x, cura.z, 1.9)) return 'cura';
     for (const n of m.mapa.npcs || [])
       if (n[4] && perto(n[0], n[1], 1.7)) return { tipo: 'fala', texto: n[4] };
-    for (const dc of m.mapa.decor || [])
+    for (const dc of m.mapa.decor || []) {
       if (dc[0] === 'placa' && dc[3] && perto(dc[1], dc[2], 1.7))
         return { tipo: 'fala', texto: dc[3], placa: true };
+      // a Fogueira Eterna: onde o elo com as feras nasce (e renasce)
+      if (dc[0] === 'fogueira' && perto(dc[1], dc[2], 2.4))
+        return { tipo: 'fogueira' };
+    }
   }
   d.andando = inp.mov.x !== 0 || inp.mov.z !== 0;
   d.correndo = d.andando && !!inp.correr;

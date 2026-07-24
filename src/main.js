@@ -58,11 +58,20 @@ montaMapa(cena, mundo.mapa);
 hud.localAtual(mundo.mapa.nome);
 hud.mapaRegiao(dadosMapas, chaveMapa);
 
-// fera inicial em modo de teste: todos os golpes da tabela já liberados
-let equipe = [criarFera(especies, golpesCat, 'brasinha', NIVEL_INICIAL, true)];
+// a jornada começa SEM fera: o Ritual da Escolha na Fogueira Eterna
+// oferece as três iniciais (planta, fogo e água) — ver docs/HISTORIA.md
+const INICIAIS = ['folhito', 'brasinha', 'gotim'];
+let equipe = [];
 let ativa = 0;
 const nomeDe = (f) => f.apelido || especies[f.especie].nome;
 function atualizaPainel() {
+  if (!equipe.length) { // elo apagado: o Caminho da Cinza
+    hud.nomeJogador('sem elo', 0);
+    hud.painelVida(0, 0);
+    hud.equipe(0);
+    if (modo === 'explorar') renderMenu();
+    return;
+  }
   const f = equipe[ativa];
   hud.nomeJogador(nomeDe(f), f.nivel);
   hud.painelVida(f.hpAtual, vidaMaxima(especies[f.especie].vida, f.nivel));
@@ -94,8 +103,9 @@ addEventListener('keydown', (e) => {
     hud.escondeTitulo(); modo = 'explorar'; cv.focus();
     musica('explorar');
     renderMenu();
-    hud.toast('Explore a grama alta... e cuide das suas feras: quem desmaia não volta!');
     hud.dica(DICA_EXPLORAR);
+    if (equipe.length === 0) iniciaRitual(false);
+    else hud.toast('Explore a grama alta... e cuide das suas feras: quem desmaia não volta!');
   }
 });
 addEventListener('keyup', (e) => keys[e.code] = false);
@@ -270,6 +280,7 @@ function premiaXp() {
 /* ---------- menus ---------- */
 function tituloMenu() {
   const t = menu.tipo;
+  if (t === 'inicial') return 'RITUAL DA ESCOLHA';
   if (t === 'statusFera' || t === 'lembrar') {
     const f = equipe[menu.fera];
     return `${nomeDe(f).toUpperCase()} · Lv.${f.nivel}`;
@@ -283,6 +294,10 @@ function tituloMenu() {
 function itensDoMenu() {
   const t = menu.tipo;
   const nada = () => {};
+  if (t === 'inicial') return INICIAIS.map((k) => ({
+    txt: `${especies[k].nome} · ${especies[k].tipo}`,
+    acao: () => escolheInicial(k),
+  }));
   if (t === 'exploracao') return [
     { txt: 'Equipe', acao: () => abreMenu('equipeExp') },
     { txt: 'Status', acao: () => abreMenu('statusLista') },
@@ -446,10 +461,15 @@ function abreMenu(tipo) {
   } else if (tipo === 'compendioFera') {
     mostraHoloEspecie(menu.especie);
     hud.ficha(fichaEspecie(menu.especie));
+  } else if (tipo === 'inicial') {
+    menu.sel = 0;
+    mostraHoloEspecie(INICIAIS[0]);
+    hud.ficha(fichaEspecie(INICIAIS[0]));
   } else escondeHolo();
 }
 // "fechar": na exploração o menu continua na lateral, só desativa a navegação
 function fechaMenu() {
+  if (menu.tipo === 'inicial' && !equipe.length) return; // sem fera, sem saída
   escondeHolo();
   menu = { tipo: 'exploracao', sel: 0, fera: menu.fera, especie: menu.especie, ativo: false };
   if (modo === 'batalha' || modo === 'encontro') hud.menu(false);
@@ -457,6 +477,8 @@ function fechaMenu() {
 }
 function voltaMenu() {
   const t = menu.tipo;
+  if (t === 'inicial' && !equipe.length) return; // o Ritual não se recusa
+
   if (t === 'equipeExp' || t === 'statusLista' || t === 'catalogo' || t === 'compendio') abreMenu('exploracao');
   else if (t === 'equipeBat' || t === 'batalha') fechaMenu();
   else if (t === 'statusFera') abreMenu('statusLista');
@@ -466,14 +488,38 @@ function voltaMenu() {
 }
 function navegaMenu() {
   const itens = itensDoMenu();
+  if (!itens.length) { if (kE || escE) voltaMenu(); return; }
   if (baixoE || cimaE) {
     menu.sel = (menu.sel + (baixoE ? 1 : -1) + itens.length) % itens.length;
     selLembrado[menu.tipo] = menu.sel;
     sfx.swing();
     renderMenu();
+    // no Ritual, o holograma e a ficha acompanham a fera destacada
+    if (menu.tipo === 'inicial') {
+      mostraHoloEspecie(INICIAIS[menu.sel]);
+      hud.ficha(fichaEspecie(INICIAIS[menu.sel]));
+    }
   }
   if (kE || escE) { voltaMenu(); return; }
   if (jE) { selLembrado[menu.tipo] = menu.sel; itens[menu.sel].acao(); }
+}
+
+/* ---------- o Ritual da Escolha (Fogueira Eterna) ---------- */
+function iniciaRitual(renascer) {
+  hud.toast(renascer
+    ? '🔥 Guardiã: "O elo pode renascer. Escolha quem caminhará com você."'
+    : '🔥 Guardiã: "Diante da Fogueira Eterna, escolha sua companheira de jornada."', 3600);
+  abreMenu('inicial');
+}
+function escolheInicial(k) {
+  equipe = [criarFera(especies, golpesCat, k, NIVEL_INICIAL, true)];
+  ativa = 0;
+  sfx.capturado();
+  hud.flash();
+  poof(cena, { ...mundo.domador.pos, y: 1 }, 0xffd23f, 16, 4);
+  atualizaPainel();
+  fechaMenu();
+  hud.toast(`✨ O elo está aceso! ${especies[k].nome} agora caminha com você.`, 3400);
 }
 function selecionaFera(i) {
   const f = equipe[i];
@@ -619,7 +665,7 @@ function encerraBatalha() {
       atualizaPainel();
       return; // a batalha segue!
     }
-    hud.toast('💀 Todas as suas feras desmaiaram... e foram perdidas.', 3400);
+    hud.toast('💀 Todas as suas feras desmaiaram... e o seu elo se apagou.', 3400);
     equipe = [];
   }
 
@@ -654,14 +700,11 @@ function encerraBatalha() {
   batalha = null; modo = 'explorar';
   menu = { tipo: 'exploracao', sel: 0, fera: menu.fera, especie: menu.especie, ativo: false };
   renderMenu();
-  if (resultado === 'derrota') {
-    // derrota total: acorda na vila inicial; sem feras, recebe uma nova inicial
-    trocaMapa(dadosMapas.inicial);
-    if (equipe.length === 0) {
-      equipe = [criarFera(especies, golpesCat, 'brasinha', NIVEL_INICIAL, true)];
-      ativa = 0;
-      setTimeout(() => hud.toast('Você recebeu uma nova Brasinha. Cuide bem dela desta vez...', 3500), 1700);
-    }
+  if (resultado === 'derrota' && equipe.length === 0) {
+    // o CAMINHO DA CINZA: sem teleporte — o herói volta A PÉ até a
+    // Fogueira Eterna da Vila Clareira; sem elo, feras selvagens o ignoram
+    setTimeout(() => hud.toast(
+      '🚶 Sem elo, as feras o ignoram. Volte a pé à Fogueira Eterna da Vila Clareira.', 4500), 1800);
   }
   atualizaPainel();
 }
@@ -849,6 +892,8 @@ function loop(agora) {
     else if (mE) { menu.ativo = true; renderMenu(); }
     else {
       detectaCorrida();
+      // elo apagado: nenhuma fera selvagem aparece no Caminho da Cinza
+      if (!equipe.length) daImunidade(mundo, 0.5);
       const inp = { mov: { x: eixo(['ArrowLeft'], ['ArrowRight']),
                            z: eixo(['ArrowUp'], ['ArrowDown']) },
                     correr: correndo, falar: jE };
@@ -857,13 +902,20 @@ function loop(agora) {
       if (mundo.domador.correndo && Math.random() < 0.25)
         poof(cena, { ...mundo.domador.pos, y: mundo.domador.pos.y + 0.15 }, 0xcbb28a, 1, 1.2);
       if (evt === 'encontro') iniciaEncontro();
+      else if (evt && evt.tipo === 'fogueira') {
+        if (!equipe.length) iniciaRitual(true);
+        else hud.toast('🔥 A Fogueira Eterna crepita. O elo com suas feras se aquece.', 2800);
+      }
       else if (evt && evt.tipo === 'treinador') {
-        // conversa primeiro — e o desafio não pode ser recusado!
-        const t = evt.treinador;
-        desafio = { nome: t.nome, equipe: t.equipe, idx: 0 };
-        sfx.encontro();
-        hud.toast(`${t.nome}: "${t.fala || 'Vamos duelar!'}"`, 2400);
-        setTimeout(() => { if (modo === 'explorar' && desafio) iniciaEncontro(); }, 2000);
+        if (!equipe.length) { hud.toast('Sem elo não há duelo. Volte à Fogueira Eterna.', 2200); }
+        else {
+          // conversa primeiro — e o desafio não pode ser recusado!
+          const t = evt.treinador;
+          desafio = { nome: t.nome, equipe: t.equipe, idx: 0 };
+          sfx.encontro();
+          hud.toast(`${t.nome}: "${t.fala || 'Vamos duelar!'}"`, 2400);
+          setTimeout(() => { if (modo === 'explorar' && desafio) iniciaEncontro(); }, 2000);
+        }
       }
       else if (evt && evt.tipo === 'fala') {
         sfx.swing();

@@ -121,7 +121,7 @@ Cada golpe carrega dados de RPG e de fighting game ao mesmo tempo: **poder** (es
 
 ### 9.4b Permadeath (decidido — pilar de jogabilidade)
 
-**As feras só são perdidas se a equipe INTEIRA cair.** Uma fera que desmaia fica fora de combate (HP 0) até ser curada no Centro — mas continua sua. Quando a ativa cai, a próxima viva entra no mesmo duelo (o inimigo mantém o HP). Se **todas** caírem, o jogador perde **todas** as feras, acorda na vila inicial e — apenas se estiver sem nenhuma — recebe uma nova inicial (no futuro: escolha entre 3 iniciais de tipos diferentes, parte da abertura da história). O **HP das feras persiste entre batalhas**; cura pelo Centro de Curas (tudo), por subir de nível (+20%) ou por itens (futuro).
+**As feras só são perdidas se a equipe INTEIRA cair.** Uma fera que desmaia fica fora de combate (HP 0) até ser curada no Centro — mas continua sua. Quando a ativa cai, a próxima viva entra no mesmo duelo (o inimigo mantém o HP). Se **todas** caírem, o **elo se apaga** (decidido, ver `HISTORIA.md`): SEM teleporte — o jogador fica onde está, sem feras, e faz o **Caminho da Cinza a pé** até a Fogueira Eterna da Vila Clareira (sem elo, feras selvagens o ignoram e treinadores não duelam). Lá, o **Ritual da Escolha** oferece de novo as **3 iniciais** (Folhito/planta, Brasinha/fogo, Gotim/água — a mesma escolha da abertura do jogo, com holograma e ficha) e entrega uma nova nível 5. O **HP das feras persiste entre batalhas**; cura pelo Centro de Curas (tudo), por subir de nível (+20%) ou por itens (futuro).
 
 ### 9.5 Captura
 
