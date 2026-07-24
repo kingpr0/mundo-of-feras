@@ -15,6 +15,8 @@ expansão planejada. Tudo entra pelo sistema de dados de `mapas.json`.
    **balsa**: Porto Maresia (sul) ⚓ → **Ilha Farol** (centro, cidade
    neutra com a Torre do Eremita) ⚓ → Porto Boreal (norte). A leste da
    ilha, a **Fossa Abissal** esconde a lendária das águas.
+   **✅ JOGÁVEIS (versão inicial): Porto Maresia (norte da Encosta) e a
+   Ilha Farol — a balsa já cruza o mar (falar com o barco, tecla Z).**
 3. **Continente Norte (frio)** — Floresta Fechada e Campos Frios na costa;
    subindo, Trilha Nevada, Vila Nevada e as Minas Ecoantes; e então...
 4. **A MURALHA DE GELO** — atravessa TODOS os mapas do extremo norte, de

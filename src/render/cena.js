@@ -334,7 +334,86 @@ function placa(g, x, z, y = 0) {
     g.add(linha);
   }
 }
-const DECOR = { fogueira, poco, banca, placa };
+/* farol listrado com lanterna e FEIXE de luz girando (marco da Ilha Farol) */
+function farol(g, x, z, y = 0) {
+  const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.4, 0.6, 12), lamb(0x8d939c));
+  base.position.set(x, y + 0.3, z); base.castShadow = true;
+  base.userData.oclusor = true; g.add(base);
+  const cores = [0xf7f3ea, 0xd1462f, 0xf7f3ea, 0xd1462f];
+  let alt = y + 0.6;
+  for (let i = 0; i < 4; i++) {
+    const secao = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.0 - i * 0.12, 1.08 - i * 0.12, 1.1, 12), lamb(cores[i]));
+    secao.position.set(x, alt + 0.55, z); secao.castShadow = true;
+    secao.userData.oclusor = true; g.add(secao);
+    alt += 1.1;
+  }
+  const galeria = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 0.14, 12), lamb(0x4a4a52));
+  galeria.position.set(x, alt + 0.07, z); g.add(galeria);
+  const lanterna = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.7, 10),
+    new THREE.MeshLambertMaterial({ color: 0x9ad4e8, emissive: 0x2a7a8a }));
+  lanterna.position.set(x, alt + 0.5, z); g.add(lanterna);
+  const topo = new THREE.Mesh(new THREE.ConeGeometry(0.6, 0.5, 10), lamb(0xd1462f));
+  topo.position.set(x, alt + 1.1, z); topo.castShadow = true; g.add(topo);
+  // o feixe: um plano comprido aditivo preso num pivô que gira
+  const pivo = new THREE.Group();
+  pivo.position.set(x, alt + 0.5, z);
+  g.add(pivo);
+  const feixe = new THREE.Mesh(new THREE.PlaneGeometry(7, 0.5),
+    new THREE.MeshBasicMaterial({ color: 0xbfe8dd, transparent: true, opacity: 0.35,
+      blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+  feixe.position.x = 3.8;
+  pivo.add(feixe);
+  (g.userData.anims || []).push((t) => { pivo.rotation.y = t * 0.9; });
+}
+const DECOR = { fogueira, poco, banca, placa, farol };
+
+/* píer de madeira + barco da balsa (que balança nas ondas) */
+function montaBalsa(g, b, anims) {
+  const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
+  const s = b.dir === 'norte' ? -1 : 1; // o píer avança para o mar
+  for (let i = 0; i < 6; i++) {
+    const prancha = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.09, 0.55), lamb(0x8a6a50));
+    prancha.position.set(b.x, 0.2, b.z + s * (0.35 + i * 0.62));
+    prancha.castShadow = true; g.add(prancha);
+    if (i % 2 === 0) for (const lado of [-1, 1]) {
+      const poste = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.08, 0.7, 6), lamb(0x6b4a2f));
+      poste.position.set(b.x + lado * 0.85, 0.05, b.z + s * (0.35 + i * 0.62));
+      g.add(poste);
+    }
+  }
+  // o barco, atracado ao lado do píer
+  const barco = new THREE.Group();
+  barco.position.set(b.x + 2.2, 0.12, b.z + s * 2.2);
+  g.add(barco);
+  const casco = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.5, 3), lamb(0x7a5233));
+  casco.position.y = 0.25; casco.castShadow = true; barco.add(casco);
+  const proa = new THREE.Mesh(new THREE.ConeGeometry(0.75, 1.1, 4), lamb(0x7a5233));
+  proa.rotation.x = s > 0 ? Math.PI / 2 : -Math.PI / 2;
+  proa.rotation.y = Math.PI / 4;
+  proa.position.set(0, 0.25, s * 2.0);
+  barco.add(proa);
+  const beirada = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.12, 3.2), lamb(0x9a7243));
+  beirada.position.y = 0.55; barco.add(beirada);
+  const mastro = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 2.4, 6), lamb(0x6b4a2f));
+  mastro.position.y = 1.7; barco.add(mastro);
+  const vela = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 1.4),
+    new THREE.MeshLambertMaterial({ color: 0xfff6df, side: THREE.DoubleSide }));
+  vela.position.set(0.02, 1.9, -s * 0.4);
+  vela.rotation.y = Math.PI / 2;
+  barco.add(vela);
+  const flamula = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.25),
+    new THREE.MeshLambertMaterial({ color: 0x59e0d0, side: THREE.DoubleSide }));
+  flamula.position.set(0.3, 2.8, 0);
+  barco.add(flamula);
+  if (anims) anims.push((t) => {
+    barco.position.y = 0.12 + Math.sin(t * 1.6) * 0.05;
+    barco.rotation.z = Math.sin(t * 1.3) * 0.04;
+    barco.rotation.x = Math.sin(t * 1.9) * 0.03;
+    flamula.rotation.y = Math.sin(t * 4) * 0.5;
+  });
+}
 
 /* escada de degraus subindo a um platô (o "dir" é a direção da subida) */
 function escada(g, e, mapa) {
@@ -360,7 +439,24 @@ function escada(g, e, mapa) {
 function montaBorda(g, mapa) {
   const L = mapa.limite;
   const saidas = mapa.saidas || [];
-  const ag = mapa.agua;
+  const aguas = mapa.aguas || (mapa.agua ? [mapa.agua] : []);
+  // borda "mar": ilha em mar aberto — sem moldura de árvores; o horizonte
+  // é água a perder de vista (quatro planos azuis cobrindo o avental)
+  if (mapa.borda === 'mar') {
+    const MAR = 0x3f8fd4, EXT = 70;
+    const plano = (w, d, x, z) => {
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d),
+        new THREE.MeshLambertMaterial({ color: MAR, transparent: true, opacity: 0.94 }));
+      m.rotation.x = -Math.PI / 2;
+      m.position.set(x, 0.045, z);
+      g.add(m);
+    };
+    plano(EXT * 2, EXT - L.z, 0, -(L.z + (EXT - L.z) / 2));
+    plano(EXT * 2, EXT - L.z, 0, L.z + (EXT - L.z) / 2);
+    plano(EXT - L.x, L.z * 2, -(L.x + (EXT - L.x) / 2), 0);
+    plano(EXT - L.x, L.z * 2, L.x + (EXT - L.x) / 2, 0);
+    return;
+  }
   const bloqueada = (x, z) => {
     for (const s of saidas) {
       const folga = 3;
@@ -369,7 +465,8 @@ function montaBorda(g, mapa) {
       if (s.borda === 'sul' && z > L.z && x > s.de - folga && x < s.ate + folga) return true;
       if (s.borda === 'norte' && z < -L.z && x > s.de - folga && x < s.ate + folga) return true;
     }
-    if (ag && x > ag.x0 - 1 && x < ag.x1 + 1 && z > ag.z0 - 1 && z < ag.z1 + 1) return true;
+    for (const ag of aguas)
+      if (x > ag.x0 - 1 && x < ag.x1 + 1 && z > ag.z0 - 1 && z < ag.z1 + 1) return true;
     return false;
   };
   // sem muros artificiais: a moldura é feita de árvores/rochas GRANDES em
@@ -997,8 +1094,8 @@ function montaDetalhes(g, mapa) {
   const gramas = mapa.gramas || (mapa.grama ? [mapa.grama] : []);
   const perto = (x, z, px, pz, r) => Math.hypot(x - px, z - pz) < r;
   const livre = (x, z) => {
-    const ag = mapa.agua;
-    if (ag && x > ag.x0 - 1 && x < ag.x1 + 1 && z > ag.z0 - 1 && z < ag.z1 + 1) return false;
+    for (const ag of mapa.aguas || (mapa.agua ? [mapa.agua] : []))
+      if (x > ag.x0 - 1 && x < ag.x1 + 1 && z > ag.z0 - 1 && z < ag.z1 + 1) return false;
     for (const c of mapa.caminhos || [])
       if (x > c.x0 - 0.9 && x < c.x1 + 0.9 && z > c.z0 - 0.9 && z < c.z1 + 0.9) return false;
     for (const G of gramas)
@@ -1127,7 +1224,8 @@ export function montaMapa(cena, mapa) {
     npc.g.rotation.y = t.rot || 0;
   });
   for (const G of mapa.gramas || (mapa.grama ? [mapa.grama] : [])) montaGrama(g, G);
-  if (mapa.agua) montaAgua(g, mapa.agua);
+  for (const ag of mapa.aguas || (mapa.agua ? [mapa.agua] : [])) montaAgua(g, ag);
+  if (mapa.balsa) montaBalsa(g, mapa.balsa, cena.anims);
   if (mapa.caverna) bocaCaverna(g, mapa.caverna);
   montaBorda(g, mapa);
   // lista de oclusores para o efeito "vidro" quando algo tapa o personagem

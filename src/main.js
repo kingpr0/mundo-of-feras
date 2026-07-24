@@ -947,6 +947,14 @@ function loop(agora) {
           setTimeout(() => { if (modo === 'explorar' && desafio) iniciaEncontro(); }, 2000);
         }
       }
+      else if (evt && evt.tipo === 'balsa') {
+        // a travessia do Mar do Meio: desembarca no píer do outro lado
+        const bDest = dadosMapas.mapas[evt.destino].balsa;
+        sfx.cristalVoa();
+        hud.toast('🌊 A balsa corta o Mar do Meio...', 2600);
+        trocaMapa(evt.destino, { x: bDest.x, y: 0,
+          z: bDest.z + (bDest.dir === 'norte' ? 1.8 : -1.8) });
+      }
       else if (evt && evt.tipo === 'fala') {
         sfx.swing();
         hud.toast(evt.placa ? `🪧 ${evt.texto}` : `💬 ${evt.texto}`, 3800);

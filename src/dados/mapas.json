@@ -1147,6 +1147,12 @@
           "de": -2,
           "ate": 2,
           "destino": "penhasco"
+        },
+        {
+          "borda": "norte",
+          "de": -2,
+          "ate": 2,
+          "destino": "porto"
         }
       ]
     },
@@ -1639,6 +1645,225 @@
           "de": 4,
           "ate": 8,
           "destino": "fiorde"
+        }
+      ]
+    },
+    "porto": {
+      "nome": "Porto Maresia",
+      "regiao": {
+        "x": 0,
+        "y": -3
+      },
+      "chao": "vila",
+      "limite": {
+        "x": 18,
+        "z": 14
+      },
+      "agua": {
+        "x0": -18,
+        "z0": -14,
+        "x1": 18,
+        "z1": -6
+      },
+      "balsa": {
+        "x": 2,
+        "z": -5.2,
+        "destino": "ilha",
+        "dir": "norte"
+      },
+      "casas": [
+        [
+          -8,
+          0,
+          "azul"
+        ],
+        [
+          -14,
+          6,
+          "vermelho"
+        ],
+        [
+          12,
+          8,
+          "azul"
+        ]
+      ],
+      "centro": {
+        "x": 8,
+        "z": 2
+      },
+      "caminhos": [
+        {
+          "x0": -2,
+          "z0": -4,
+          "x1": 2,
+          "z1": 14
+        }
+      ],
+      "decor": [
+        [
+          "banca",
+          -3,
+          7
+        ],
+        [
+          "poco",
+          14,
+          0
+        ],
+        [
+          "placa",
+          -1,
+          10,
+          "Porto Maresia — a balsa cruza o Mar do Meio até a Ilha Farol. (Ginásio de água: em obras.)"
+        ]
+      ],
+      "npcs": [
+        [
+          5.5,
+          -3,
+          "aldeao",
+          5.6,
+          "Barqueiro: — Para a Ilha Farol? Fale com a balsa e suba a bordo! O mar anda estranho, mas ela é firme."
+        ],
+        [
+          -6,
+          4,
+          "aldea",
+          1,
+          "Juro que vi uma SOMBRA enorme sob as ondas ontem à noite... mas ninguém acredita em mim."
+        ],
+        [
+          10,
+          6,
+          "mercador",
+          2.5,
+          "Peixe fresco! Um dia venderei iscas para atrair feras aquáticas."
+        ]
+      ],
+      "spawn": {
+        "x": 0,
+        "z": 12
+      },
+      "selvagens": [
+        "gotim"
+      ],
+      "saidas": [
+        {
+          "borda": "sul",
+          "de": -2,
+          "ate": 2,
+          "destino": "encosta"
+        },
+        {
+          "borda": "norte",
+          "de": -2,
+          "ate": 2,
+          "destino": "ilha"
+        }
+      ]
+    },
+    "ilha": {
+      "nome": "Ilha Farol",
+      "regiao": {
+        "x": 0,
+        "y": -4
+      },
+      "chao": "vila",
+      "borda": "mar",
+      "limite": {
+        "x": 16,
+        "z": 12
+      },
+      "aguas": [
+        {
+          "x0": -16,
+          "z0": -12,
+          "x1": 16,
+          "z1": -7
+        },
+        {
+          "x0": -16,
+          "z0": 7,
+          "x1": 16,
+          "z1": 12
+        },
+        {
+          "x0": -16,
+          "z0": -12,
+          "x1": -9,
+          "z1": 12
+        },
+        {
+          "x0": 9,
+          "z0": -12,
+          "x1": 16,
+          "z1": 12
+        }
+      ],
+      "balsa": {
+        "x": 0,
+        "z": 6.6,
+        "destino": "porto",
+        "dir": "sul"
+      },
+      "casas": [
+        [
+          -5,
+          -4,
+          "verde"
+        ]
+      ],
+      "decor": [
+        [
+          "farol",
+          6,
+          -3
+        ],
+        [
+          "placa",
+          2,
+          2,
+          "Ilha Farol — coração do Mar do Meio. O farol guia as balsas; o Eremita guia os teimosos."
+        ]
+      ],
+      "npcs": [
+        [
+          6,
+          -0.5,
+          "maga",
+          0.2,
+          "Eremita: — A Torre testa corpo e espírito. Volte quando o fogo e o mar se agitarem de verdade... e eu lhe ensinarei o golpe SUPREMO."
+        ],
+        [
+          -3,
+          4,
+          "aldeao",
+          0.8,
+          "Nasci no mar e morrerei no mar. A ilha é só uma pausa entre os dois."
+        ]
+      ],
+      "grama": {
+        "x0": -8,
+        "z0": -6,
+        "x1": -3,
+        "z1": -1
+      },
+      "spawn": {
+        "x": 0,
+        "z": 4
+      },
+      "selvagens": [
+        "sapum",
+        "gotim",
+        "voltim"
+      ],
+      "saidas": [
+        {
+          "borda": "sul",
+          "de": -2,
+          "ate": 2,
+          "destino": "porto"
         }
       ]
     }

@@ -101,6 +101,8 @@ export function interacaoPerto(m) {
     if (!m.vencidos.has(t.nome) && perto(t.x, t.z, 1.9)) return `desafiar ${t.nome}`;
   const cura = m.mapa.cura;
   if (cura && perto(cura.x, cura.z, 1.9)) return 'falar com a enfermeira';
+  const bal = m.mapa.balsa;
+  if (bal && perto(bal.x, bal.z, 2.6)) return 'pegar a balsa';
   for (const n of m.mapa.npcs || [])
     if (n[4] && perto(n[0], n[1], 1.7)) return 'conversar';
   for (const dc of m.mapa.decor || []) {
@@ -117,6 +119,10 @@ export const CENTRO_MEIA = { x: 2.8, z: 2.1 };
 // zonas de grama alta (aceita "grama" única ou lista "gramas")
 export function zonasGrama(mapa) {
   return mapa.gramas || (mapa.grama ? [mapa.grama] : []);
+}
+// mapas podem ter várias águas (a Ilha Farol é cercada por 4 faixas de mar)
+export function zonasAgua(mapa) {
+  return mapa.aguas || (mapa.agua ? [mapa.agua] : []);
 }
 
 // muralhas, torres e torreão do castelo (o portão fica aberto ao sul)
@@ -147,8 +153,8 @@ function colide(mapa, pos) {
   }
   const ct = mapa.centro;
   if (ct && Math.abs(pos.x - ct.x) < CENTRO_MEIA.x && Math.abs(pos.z - ct.z) < CENTRO_MEIA.z) return true;
-  const ag = mapa.agua;
-  if (ag && pos.x > ag.x0 && pos.x < ag.x1 && pos.z > ag.z0 && pos.z < ag.z1) return true;
+  for (const ag of zonasAgua(mapa))
+    if (pos.x > ag.x0 && pos.x < ag.x1 && pos.z > ag.z0 && pos.z < ag.z1) return true;
   if (colideDecor(mapa, pos)) return true;
   for (const t of mapa.treinadores || []) {
     const dx = pos.x - t.x, dz = pos.z - t.z;
@@ -208,6 +214,9 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
     }
     const cura = m.mapa.cura;
     if (cura && perto(cura.x, cura.z, 1.9)) return 'cura';
+    // a balsa cruza o Mar do Meio (falar com o barco embarca)
+    const bal = m.mapa.balsa;
+    if (bal && perto(bal.x, bal.z, 2.6)) return { tipo: 'balsa', destino: bal.destino };
     for (const n of m.mapa.npcs || [])
       if (n[4] && perto(n[0], n[1], 1.7)) return { tipo: 'fala', texto: n[4] };
     for (const dc of m.mapa.decor || []) {
