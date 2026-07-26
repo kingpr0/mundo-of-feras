@@ -1,7 +1,7 @@
 // CENA — Three.js: luz, cenário dos mapas (montados a partir de mapas.json),
 // arena de batalha, partículas e as duas câmeras (exploração e lock-on).
 import * as THREE from 'three';
-import { alturaTerreno, alturaMorros } from '../sim/mundo.js';
+import { alturaTerreno, alturaSolo, alturaDegraus } from '../sim/mundo.js';
 import { criarNPC } from './modelos.js';
 import { texturaChamaAnimada } from './efeitos.js';
 
@@ -110,14 +110,15 @@ function montaChao(scene, tam = 70, tipo = 'grama', mapa = null) {
   }
   const t = new THREE.CanvasTexture(c);
   t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(tam / 22, tam / 22);
-  // chão com RELEVO: a malha é deslocada pelos morros suaves da sim
-  const temMorros = mapa && mapa.morros && mapa.morros.length;
-  const geo = new THREE.PlaneGeometry(tam, tam, temMorros ? 96 : 1, temMorros ? 96 : 1);
+  // chão com RELEVO: a malha é deslocada por morros E degraus (terraços)
+  const temRelevo = mapa &&
+    ((mapa.morros && mapa.morros.length) || (mapa.degraus && mapa.degraus.length));
+  const geo = new THREE.PlaneGeometry(tam, tam, temRelevo ? 128 : 1, temRelevo ? 128 : 1);
   geo.rotateX(-Math.PI / 2);
-  if (temMorros) {
+  if (temRelevo) {
     const p = geo.attributes.position;
     for (let i = 0; i < p.count; i++)
-      p.setY(i, alturaMorros(mapa, { x: p.getX(i), z: p.getZ(i) }));
+      p.setY(i, alturaSolo(mapa, { x: p.getX(i), z: p.getZ(i) }));
     geo.computeVertexNormals();
   }
   const ch = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ map: t }));
@@ -423,13 +424,38 @@ function escada(g, e, mapa) {
   const n = Math.max(3, Math.ceil(e.h / 0.2));
   const L = 1.7, passo = L / n;
   const dv = { norte: [0, -1], sul: [0, 1], leste: [1, 0], oeste: [-1, 0] }[e.dir];
+  // a escada nasce na COTA do lado de baixo (degraus/terraços empilhados)
+  const baseY = alturaDegraus(mapa, { x: e.x - dv[0] * 1.2, z: e.z - dv[1] * 1.2 });
   for (let k = 0; k < n; k++) {
     const alt = e.h * (k + 1) / n;
     const cx3 = e.x - dv[0] * (L - passo * (k + 0.5));
     const cz3 = e.z - dv[1] * (L - passo * (k + 0.5));
     const m = new THREE.Mesh(new THREE.BoxGeometry(
       dv[0] !== 0 ? passo : e.w, alt, dv[0] !== 0 ? e.w : passo), lamb(cor));
-    m.position.set(cx3, alt / 2, cz3);
+    m.position.set(cx3, baseY + alt / 2, cz3);
+    m.castShadow = m.receiveShadow = true;
+    g.add(m);
+  }
+}
+
+/* face dos DEGRAUS: uma mureta de terra escura marcando a linha de cota
+   que corta o mapa inteiro (o chão deslocado faz o corpo do terraço) */
+function montaDegraus(g, mapa) {
+  const L = mapa.limite;
+  const CORES = { grama: 0x4e7a35, vila: 0x8a6a4a, terra: 0x7d5f3e,
+                  penhasco: 0x6e3c32, deserto: 0xa8875a };
+  const cor = CORES[mapa.chao || 'grama'] || 0x7d5f3e;
+  for (const dg of mapa.degraus || []) {
+    const ladoBaixo = dg.eixo === 'x'
+      ? { x: dg.em + (dg.alto === 'leste' ? -0.6 : 0.6), z: 0 }
+      : { x: 0, z: dg.em + (dg.alto === 'sul' ? -0.6 : 0.6) };
+    const base = alturaDegraus(mapa, ladoBaixo);
+    const comp = (dg.eixo === 'x' ? L.z : L.x) * 2 + 28;
+    const m = new THREE.Mesh(new THREE.BoxGeometry(
+      dg.eixo === 'x' ? 0.55 : comp, dg.h + 0.08, dg.eixo === 'x' ? comp : 0.55),
+      new THREE.MeshLambertMaterial({ color: cor }));
+    m.position.set(dg.eixo === 'x' ? dg.em : 0, base + dg.h / 2,
+                   dg.eixo === 'x' ? 0 : dg.em);
     m.castShadow = m.receiveShadow = true;
     g.add(m);
   }
@@ -558,13 +584,15 @@ function arvore(scene, x, z, pinheiro) {
 /* grama alta: um mar CONTÍNUO de arbustos arredondados lado a lado (grade
    com leve variação) — quem entra some da cintura para baixo, estilo
    Pokémon/ClaudeCraft */
-function montaGrama(scene, G) {
+function montaGrama(scene, G, mapa) {
   const mats = [0x3d8a35, 0x46983c, 0x51a746]
     .map((c) => new THREE.MeshLambertMaterial({ color: c }));
   // PLATAFORMA verde contínua (canteiro elevado de cantos redondos, com
   // laterais em degradê) — os arbustos ficam plantados EM CIMA dela
   const wG = G.x1 - G.x0 + 2.4, dG = G.z1 - G.z0 + 2.4;
   const cxG = (G.x0 + G.x1) / 2, czG = (G.z0 + G.z1) / 2;
+  // assenta na cota do terraço em que a grama vive
+  const baseY = mapa ? alturaDegraus(mapa, { x: cxG, z: czG }) : 0;
   const c0 = new THREE.Color(0x7d5f3e), c1 = new THREE.Color(0xbc9668);
   for (let i = 0; i < 2; i++) {
     const folga = (1 - i) * 0.4;
@@ -574,7 +602,7 @@ function montaGrama(scene, G) {
     const m = new THREE.Mesh(geo,
       new THREE.MeshLambertMaterial({ color: c0.clone().lerp(c1, i) }));
     m.rotation.x = -Math.PI / 2;
-    m.position.set(cxG, i * 0.11, czG);
+    m.position.set(cxG, baseY + i * 0.11, czG);
     m.castShadow = m.receiveShadow = true;
     scene.add(m);
   }
@@ -584,10 +612,10 @@ function montaGrama(scene, G) {
       { depth: 0.05, bevelEnabled: false }),
     new THREE.MeshLambertMaterial({ color: 0x57a441 }));
   cap.rotation.x = -Math.PI / 2;
-  cap.position.set(cxG, 0.22, czG);
+  cap.position.set(cxG, baseY + 0.22, czG);
   cap.receiveShadow = true;
   scene.add(cap);
-  const TOPO = 0.27; // altura do topo (a sim sobe junto: alturaGrama)
+  const TOPO = baseY + 0.27; // altura do topo (a sim sobe junto: alturaGrama)
   const geoArb = new THREE.SphereGeometry(0.78, 10, 7);
   const passo = 1.05;
   let i = 0;
@@ -1147,7 +1175,7 @@ function montaPedras(g, mapa) {
   for (const [x, z, esc = 1] of mapa.pedras || []) {
     const pedra = new THREE.Mesh(new THREE.DodecahedronGeometry(0.7 * esc),
       new THREE.MeshLambertMaterial({ color: 0x9c7a4e }));
-    pedra.position.set(x, 0.5 * esc, z);
+    pedra.position.set(x, alturaSolo(mapa, { x, z }) + 0.5 * esc, z);
     pedra.scale.set(1.35, 0.95, 1.05);
     pedra.rotation.y = (x * 7 + z * 3) % 3;
     pedra.castShadow = true; pedra.userData.oclusor = true;
@@ -1189,6 +1217,7 @@ export function montaMapa(cena, mapa) {
   }
   // chão bem maior que o mapa: os cantos da câmera nunca mostram o vazio
   montaChao(g, Math.max(mapa.limite.x, mapa.limite.z) * 2 + 64, mapa.chao || 'grama', mapa);
+  montaDegraus(g, mapa);
   montaCaminhos(g, mapa);
   montaPedras(g, mapa);
   montaDetalhes(g, mapa);
@@ -1217,7 +1246,7 @@ export function montaMapa(cena, mapa) {
     npc.g.position.set(t.x, alturaTerreno(mapa, t), t.z);
     npc.g.rotation.y = t.rot || 0;
   });
-  for (const G of mapa.gramas || (mapa.grama ? [mapa.grama] : [])) montaGrama(g, G);
+  for (const G of mapa.gramas || (mapa.grama ? [mapa.grama] : [])) montaGrama(g, G, mapa);
   for (const ag of mapa.aguas || (mapa.agua ? [mapa.agua] : [])) montaAgua(g, ag);
   if (mapa.balsa) montaBalsa(g, mapa.balsa, cena.anims);
   if (mapa.caverna) bocaCaverna(g, mapa.caverna);

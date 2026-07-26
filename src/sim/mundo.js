@@ -53,19 +53,41 @@ export function alturaGrama(mapa, pos) {
   }
   return h;
 }
+// DEGRAUS: linhas de cota que cortam o mapa INTEIRO (terraços). Cada
+// degrau eleva todo um lado do mapa; vários degraus empilham (carta
+// topográfica de verdade). { eixo:'z'|'x', em: coordenada, alto: lado, h }
+export function alturaDegraus(mapa, pos) {
+  let h = 0;
+  for (const dg of mapa.degraus || []) {
+    const v = dg.eixo === 'x' ? pos.x : pos.z;
+    const altoMaior = dg.alto === (dg.eixo === 'x' ? 'leste' : 'sul');
+    if (altoMaior ? v > dg.em : v < dg.em) h += dg.h;
+  }
+  return h;
+}
+// o "solo" (degraus + morros) — o render desloca a malha do chão com isso
+export function alturaSolo(mapa, pos) {
+  return alturaDegraus(mapa, pos) + alturaMorros(mapa, pos);
+}
 export function alturaTerreno(mapa, pos) {
-  let h = Math.max(alturaMorros(mapa, pos), alturaGrama(mapa, pos));
+  const base = alturaDegraus(mapa, pos);
+  let h = base + Math.max(alturaMorros(mapa, pos), alturaGrama(mapa, pos));
   for (const p of mapa.platos || []) {
     if (pos.x > p.x0 && pos.x < p.x1 && pos.z > p.z0 && pos.z < p.z1)
-      h = Math.max(h, p.h);
+      h = Math.max(h, base + p.h);
   }
   for (const e of mapa.escadas || []) {
     const dv = DV_ESCADA[e.dir];
     const dx = pos.x - e.x, dz = pos.z - e.z;
     const along = -(dx * dv[0] + dz * dv[1]);       // descendo a escada
     const perp = Math.abs(dx * dv[1] - dz * dv[0]); // desvio lateral
-    if (along >= -0.2 && along <= COMP_ESCADA && perp <= e.w / 2)
-      h = Math.max(h, e.h * (1 - Math.max(0, along) / COMP_ESCADA));
+    if (along >= -0.2 && along <= COMP_ESCADA && perp <= e.w / 2) {
+      // a rampa nasce na COTA do pé da escada (lado de baixo) — em altura
+      // ABSOLUTA, para emendar sem soma dupla com o degrau do lado alto
+      const cotaPe = alturaDegraus(mapa,
+        { x: e.x - dv[0] * 1.2, z: e.z - dv[1] * 1.2 });
+      h = Math.max(h, cotaPe + e.h * (1 - Math.max(0, along) / COMP_ESCADA));
+    }
   }
   return h;
 }
