@@ -72,7 +72,7 @@ export function alturaTerreno(mapa, pos) {
 
 function colideDecor(mapa, pos) {
   for (const d of mapa.decor || []) {
-    const r = d[0] === 'banca' ? 1.3 : d[0] === 'fogueira' ? 1.8 : 0.95;
+    const r = d[0] === 'banca' ? 1.3 : d[0] === 'fogueira' ? 1.8 : d[0] === 'farol' ? 1.7 : 0.95;
     const dx = pos.x - d[1], dz = pos.z - d[2];
     if (dx * dx + dz * dz < r * r) return true;
   }

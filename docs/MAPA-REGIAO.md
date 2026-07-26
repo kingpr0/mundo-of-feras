@@ -67,6 +67,27 @@ concede o favor que (junto da 4ª insígnia) destrava a balsa
 6. **A Muralha** — missão de escalada (ou as Minas Ecoantes, para os espertos).
 7. **Liga das Feras** — Monte Alvorada, além da Muralha.
 
+## Cotas de altitude (o mapa como carta topográfica)
+
+O mar é o nível 0 e a terra SOBE conforme se afasta dele — para o sul E
+para o norte. A costa não é praia: é **encosta/falésia** (a cidade fica no
+alto e desce por escadarias até o píer). Cota de referência por área:
+
+| Cota | Áreas |
+|------|-------|
+| 0 (mar) | Mar do Meio, Fossa Abissal, Ilha Farol |
+| 1 | Porto Maresia (topo da falésia), Porto Boreal |
+| 2 | Encosta do Lago, Beira do Lago, Trilha, Campos Frios |
+| 3 | Vila Clareira, Verdejante, Campo Norte, Rota das Lajes, Floresta Fechada |
+| 4 | Colinas Rochosas, Dunas Escaldantes, Pântano Bruma, Vila Nevada |
+| 5 | Penhasco do Vento, Monte Fervura (base), Trilha Nevada |
+| 6 | **Fiorde Ventania** e **Castelo Ventania** (o ponto alto da costa) |
+| 7+ | A Muralha, Ermos Gelados, Monte Alvorada (cume da região) |
+
+Regra prática: mapas vizinhos diferem em ~1 cota; dentro do mapa, a
+diferença aparece como platôs + escadarias (ou morros suaves). Mapa novo
+deve declarar a cota no design e esculpir o relevo de acordo.
+
 ## Regras de coerência do mundo
 
 - Biomas encostam com transição (campo → terra → deserto; costa → neve).

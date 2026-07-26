@@ -176,7 +176,7 @@ function texturaTelhado(corCss) {
   t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(3, 2);
   return t;
 }
-function casa(g, x, z, corNome) {
+function casa(g, x, z, corNome, y = 0) {
   const grupo = new THREE.Group();
   const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
   const corHex = COR_TELHADO[corNome] || COR_TELHADO.vermelho;
@@ -209,15 +209,16 @@ function casa(g, x, z, corNome) {
     const moldura = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.08, 0.12), lamb(0x8a6a50));
     moldura.position.set(lado * 1.1, 1.28, 1.63); grupo.add(moldura);
   }
-  grupo.position.set(x, 0, z);
+  grupo.position.set(x, y, z);
   g.add(grupo);
 }
 
 /* centro de curas: prédio branco de telhado vermelho com cruz na fachada —
    no mesmo capricho das casas (fundação, textura, telhas e beiral) */
-function centroCura(g, ct) {
+function centroCura(g, ct, y = 0) {
   const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
   const grupo = new THREE.Group();
+  grupo.position.y = y;
   const fund = new THREE.Mesh(new THREE.BoxGeometry(5.5, 0.35, 4.1), lamb(0x8d939c));
   fund.position.y = 0.17; fund.receiveShadow = true; grupo.add(fund);
   const corpo = new THREE.Mesh(new THREE.BoxGeometry(5.2, 2.6, 3.8),
@@ -442,21 +443,9 @@ function montaBorda(g, mapa) {
   const aguas = mapa.aguas || (mapa.agua ? [mapa.agua] : []);
   // borda "mar": ilha em mar aberto — sem moldura de árvores; o horizonte
   // é água a perder de vista (quatro planos azuis cobrindo o avental)
-  if (mapa.borda === 'mar') {
-    const MAR = 0x3f8fd4, EXT = 70;
-    const plano = (w, d, x, z) => {
-      const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d),
-        new THREE.MeshLambertMaterial({ color: MAR, transparent: true, opacity: 0.94 }));
-      m.rotation.x = -Math.PI / 2;
-      m.position.set(x, 0.045, z);
-      g.add(m);
-    };
-    plano(EXT * 2, EXT - L.z, 0, -(L.z + (EXT - L.z) / 2));
-    plano(EXT * 2, EXT - L.z, 0, L.z + (EXT - L.z) / 2);
-    plano(EXT - L.x, L.z * 2, -(L.x + (EXT - L.x) / 2), 0);
-    plano(EXT - L.x, L.z * 2, L.x + (EXT - L.x) / 2, 0);
-    return;
-  }
+  // borda "mar": ilha em mar aberto — nada de moldura de árvores; as
+  // próprias faixas de água (estendidas nos dados) fazem o horizonte
+  if (mapa.borda === 'mar') return;
   const bloqueada = (x, z) => {
     for (const s of saidas) {
       const folga = 3;
@@ -475,7 +464,8 @@ function montaBorda(g, mapa) {
   const planta = (x, z, i, esc = 1) => {
     if (bloqueada(x, z)) return;
     if (mapa.borda === 'montanha') {
-      const r = (1.3 + (i % 3) * 0.5) * esc;
+      // fila da frente com rochas MENORES: nada invade a área jogável
+      const r = esc === 1 ? 1.0 + (i % 3) * 0.25 : (1.3 + (i % 3) * 0.5) * esc;
       const pedra = new THREE.Mesh(new THREE.DodecahedronGeometry(r),
         new THREE.MeshLambertMaterial({ color: (i % 2) ? 0x7d838c : 0x6e7680 }));
       pedra.position.set(x + (Math.random() - 0.5), r * 0.7, z + (Math.random() - 0.5));
@@ -492,20 +482,20 @@ function montaBorda(g, mapa) {
   };
   const passo = 2.4;
   let i = 0;
-  for (let x = -L.x - 1.5; x <= L.x + 11; x += passo, i++) {
-    planta(x, -L.z - 1.5, i); planta(x, L.z + 1.5, i);
-    planta(x + 1.2, -L.z - 3.4, i + 1, 1.35); planta(x + 1.2, L.z + 3.4, i + 1, 1.35);
-    planta(x + 0.5, -L.z - 5.6, i + 2, 1.7); planta(x + 0.5, L.z + 5.6, i + 2, 1.7);
+  for (let x = -L.x - 2.4; x <= L.x + 12; x += passo, i++) {
+    planta(x, -L.z - 2.4, i); planta(x, L.z + 2.4, i);
+    planta(x + 1.2, -L.z - 4.3, i + 1, 1.35); planta(x + 1.2, L.z + 4.3, i + 1, 1.35);
+    planta(x + 0.5, -L.z - 6.5, i + 2, 1.7); planta(x + 0.5, L.z + 6.5, i + 2, 1.7);
     // duas fileiras EXTRAS, cada vez mais altas: o horizonte vira floresta
-    planta(x + 1.6, -L.z - 8.1, i + 3, 2.15); planta(x + 1.6, L.z + 8.1, i + 3, 2.15);
-    planta(x + 0.4, -L.z - 10.8, i + 4, 2.6); planta(x + 0.4, L.z + 10.8, i + 4, 2.6);
+    planta(x + 1.6, -L.z - 9, i + 3, 2.15); planta(x + 1.6, L.z + 9, i + 3, 2.15);
+    planta(x + 0.4, -L.z - 11.7, i + 4, 2.6); planta(x + 0.4, L.z + 11.7, i + 4, 2.6);
   }
-  for (let z = -L.z - 1.5; z <= L.z + 11; z += passo, i++) {
-    planta(-L.x - 1.5, z, i); planta(L.x + 1.5, z, i);
-    planta(-L.x - 3.4, z + 1.2, i + 1, 1.35); planta(L.x + 3.4, z + 1.2, i + 1, 1.35);
-    planta(-L.x - 5.6, z + 0.5, i + 2, 1.7); planta(L.x + 5.6, z + 0.5, i + 2, 1.7);
-    planta(-L.x - 8.1, z + 1.6, i + 3, 2.15); planta(L.x + 8.1, z + 1.6, i + 3, 2.15);
-    planta(-L.x - 10.8, z + 0.4, i + 4, 2.6); planta(L.x + 10.8, z + 0.4, i + 4, 2.6);
+  for (let z = -L.z - 2.4; z <= L.z + 12; z += passo, i++) {
+    planta(-L.x - 2.4, z, i); planta(L.x + 2.4, z, i);
+    planta(-L.x - 4.3, z + 1.2, i + 1, 1.35); planta(L.x + 4.3, z + 1.2, i + 1, 1.35);
+    planta(-L.x - 6.5, z + 0.5, i + 2, 1.7); planta(L.x + 6.5, z + 0.5, i + 2, 1.7);
+    planta(-L.x - 9, z + 1.6, i + 3, 2.15); planta(L.x + 9, z + 1.6, i + 3, 2.15);
+    planta(-L.x - 11.7, z + 0.4, i + 4, 2.6); planta(L.x + 11.7, z + 0.4, i + 4, 2.6);
   }
 }
 
@@ -714,11 +704,12 @@ function plato(g, p, mapa = {}) {
 
 /* CASTELO VENTANIA — muralhas com ameias, torres nos cantos, torreão
    central com bandeira ao vento e portão ao sul (colisão em sim/mundo.js) */
-function montaCastelo(g, c, anims) {
+function montaCastelo(g, c, anims, mapa = null) {
   const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
   const PEDRA = 0x8d939c, ESCURA = 0x6e7680, TELHA = 0x3a6bc9;
   const grupo = new THREE.Group();
-  grupo.position.set(c.x, 0, c.z);
+  // o castelo assenta na COTA do terreno (fica no alto do platô)
+  grupo.position.set(c.x, mapa ? alturaTerreno(mapa, c) : 0, c.z);
   g.add(grupo);
   const muro = (w, d, x, z) => {
     const m = new THREE.Mesh(new THREE.BoxGeometry(w, 3.2, d), lamb(PEDRA));
@@ -1060,8 +1051,9 @@ function montaCaminhos(g, mapa) {
       { depth: 0.05, bevelEnabled: false });
     const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ map: tex }));
     m.rotation.x = -Math.PI / 2;
-    // cada caminho um fiapo acima do anterior: sem briga de textura no cruzamento
-    m.position.set(cx, 0.008 + i * 0.012, cz);
+    // assenta na cota do terreno; cada caminho um fiapo acima do anterior
+    m.position.set(cx,
+      alturaTerreno(mapa, { x: cx, z: cz }) + 0.008 + i * 0.012, cz);
     m.receiveShadow = true;
     g.add(m);
     // meio-fio de pedra nas beiradas (só na vila; no campo a laje basta)
@@ -1204,9 +1196,11 @@ export function montaMapa(cena, mapa) {
     const grupoArv = arvore(g, x, z, p);
     if (grupoArv) grupoArv.position.y = alturaTerreno(mapa, { x, z });
   });
-  (mapa.casas || []).forEach(([x, z, cor]) => casa(g, x, z, cor));
-  if (mapa.centro) centroCura(g, mapa.centro);
-  if (mapa.castelo) montaCastelo(g, mapa.castelo, cena.anims);
+  (mapa.casas || []).forEach(([x, z, cor]) =>
+    casa(g, x, z, cor, alturaTerreno(mapa, { x, z })));
+  if (mapa.centro)
+    centroCura(g, mapa.centro, alturaTerreno(mapa, mapa.centro));
+  if (mapa.castelo) montaCastelo(g, mapa.castelo, cena.anims, mapa);
   (mapa.platos || []).forEach((p) => plato(g, p, mapa));
   (mapa.escadas || []).forEach((e) => escada(g, e, mapa));
   (mapa.decor || []).forEach(([tipo, x, z]) => {
