@@ -113,7 +113,7 @@ function montaChao(scene, tam = 70, tipo = 'grama', mapa = null) {
   // chão com RELEVO: a malha é deslocada por morros E degraus (terraços)
   const temRelevo = mapa &&
     ((mapa.morros && mapa.morros.length) || (mapa.degraus && mapa.degraus.length));
-  const geo = new THREE.PlaneGeometry(tam, tam, temRelevo ? 128 : 1, temRelevo ? 128 : 1);
+  const geo = new THREE.PlaneGeometry(tam, tam, temRelevo ? 176 : 1, temRelevo ? 176 : 1);
   geo.rotateX(-Math.PI / 2);
   if (temRelevo) {
     const p = geo.attributes.position;
@@ -438,49 +438,30 @@ function escada(g, e, mapa) {
   }
 }
 
-/* DEGRAUS de cota: rampa = ESCADARIA fora a fora (degraus longos cruzando
-   o mapa inteiro, subíveis em qualquer ponto); rampa 0 = mureta de falésia
-   (o chão deslocado faz o corpo do terraço nos dois casos) */
+/* DEGRAUS de cota: a rampa fica INVISÍVEL — é o próprio chão deslocado
+   que sobe, na cor e textura do ambiente (elevação natural). Só a falésia
+   (rampa 0) ganha mureta escura marcando o corte seco. */
 function montaDegraus(g, mapa) {
   const L = mapa.limite;
   const MURETA = { grama: 0x4e7a35, vila: 0x8a6a4a, terra: 0x7d5f3e,
                    penhasco: 0x6e3c32, deserto: 0xa8875a };
-  const corDegrau = mapa.chao === 'penhasco' ? 0xa25e4e
-    : mapa.chao === 'deserto' ? 0xc9a06a : 0xb08a5a;
   for (const dg of mapa.degraus || []) {
+    const rampa = dg.rampa !== undefined ? dg.rampa : 2.2;
+    if (rampa !== 0) continue; // elevação pura: o chão deslocado resolve
     const eixoX = dg.eixo === 'x';
     const altoMaior = dg.alto === (eixoX ? 'leste' : 'sul');
     const s = altoMaior ? 1 : -1;
-    const rampa = dg.rampa !== undefined ? dg.rampa : 2.2;
     const comp = (eixoX ? L.z : L.x) * 2 + 28;
     const pontoPe = eixoX
-      ? { x: dg.em - s * (rampa / 2 + 0.8), z: 0 }
-      : { x: 0, z: dg.em - s * (rampa / 2 + 0.8) };
+      ? { x: dg.em - s * 1.4, z: 0 }
+      : { x: 0, z: dg.em - s * 1.4 };
     const base = alturaDegraus(mapa, pontoPe);
-    if (rampa === 0) {
-      // falésia: mureta escura marcando o corte
-      const m = new THREE.Mesh(new THREE.BoxGeometry(
-        eixoX ? 0.55 : comp, dg.h + 0.08, eixoX ? comp : 0.55),
-        new THREE.MeshLambertMaterial({ color: MURETA[mapa.chao || 'grama'] || 0x7d5f3e }));
-      m.position.set(eixoX ? dg.em : 0, base + dg.h / 2, eixoX ? 0 : dg.em);
-      m.castShadow = m.receiveShadow = true;
-      g.add(m);
-      continue;
-    }
-    // escadaria contínua cobrindo toda a largura da rampa
-    const n = Math.max(3, Math.ceil(dg.h / 0.16));
-    const prof = rampa / n;
-    const mat = new THREE.MeshLambertMaterial({ color: corDegrau });
-    for (let k = 0; k < n; k++) {
-      const alt = dg.h * (k + 1) / n + 0.03;
-      const off = -rampa / 2 + prof * (k + 0.5);
-      const m = new THREE.Mesh(new THREE.BoxGeometry(
-        eixoX ? prof + 0.06 : comp, alt, eixoX ? comp : prof + 0.06), mat);
-      m.position.set(eixoX ? dg.em + s * off : 0, base + alt / 2 - 0.02,
-                     eixoX ? 0 : dg.em + s * off);
-      m.receiveShadow = true;
-      g.add(m);
-    }
+    const m = new THREE.Mesh(new THREE.BoxGeometry(
+      eixoX ? 0.55 : comp, dg.h + 0.08, eixoX ? comp : 0.55),
+      new THREE.MeshLambertMaterial({ color: MURETA[mapa.chao || 'grama'] || 0x7d5f3e }));
+    m.position.set(eixoX ? dg.em : 0, base + dg.h / 2, eixoX ? 0 : dg.em);
+    m.castShadow = m.receiveShadow = true;
+    g.add(m);
   }
 }
 
@@ -867,15 +848,21 @@ function montaInterior(g, mapa) {
   const L = mapa.limite;
   const caverna = mapa.estilo === 'caverna';
   const centro = mapa.estilo === 'centro';
+  const paco = mapa.estilo === 'castelo';
   let matPiso;
   if (centro) {
     const tx = texturaXadrez();
     tx.repeat.set(L.x, L.z);
     matPiso = new THREE.MeshLambertMaterial({ map: tx });
+  } else if (paco) {
+    const tx = texturaLajes().clone();
+    tx.needsUpdate = true;
+    tx.repeat.set(L.x / 2.6, L.z / 2.6);
+    matPiso = new THREE.MeshLambertMaterial({ map: tx, color: 0xb8bcc4 });
   } else matPiso = lamb(caverna ? 0x474254 : 0xa8734a);
   const piso = new THREE.Mesh(new THREE.BoxGeometry(L.x * 2 + 0.8, 0.1, L.z * 2 + 0.8), matPiso);
   piso.position.y = -0.05; piso.receiveShadow = true; g.add(piso);
-  const corParede = caverna ? 0x555068 : 0xe8d3b0;
+  const corParede = caverna ? 0x555068 : paco ? 0x8d939c : 0xe8d3b0;
   const parede = (w, d, x, z) => {
     const m = new THREE.Mesh(new THREE.BoxGeometry(w, 2.6, d), lamb(corParede));
     m.position.set(x, 1.3, z); m.castShadow = true; g.add(m);
@@ -886,6 +873,47 @@ function montaInterior(g, mapa) {
   const seg = L.x - 1;                                  // frente com vão da porta
   parede(seg, 0.4, -(1 + seg / 2), L.z + 0.2);
   parede(seg, 0.4, 1 + seg / 2, L.z + 0.2);
+  if (paco) {
+    // PAÇO do castelo: tapete real, colunas, estandartes e a porta com
+    // escadinha rumo ao próximo andar (nas "portas" do mapa)
+    const tapete = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.03, L.z * 2 - 1),
+      lamb(0xa8322a));
+    tapete.position.set(0, 0.03, 0); tapete.receiveShadow = true; g.add(tapete);
+    for (const cx of [-(L.x - 1.6), L.x - 1.6]) {
+      for (const cz of [-(L.z - 1.8), 0, L.z - 1.8]) {
+        if (L.z < 5.5 && cz === 0) continue;
+        const col = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.38, 2.6, 10),
+          lamb(0xa8adb5));
+        col.position.set(cx, 1.3, cz); col.castShadow = true;
+        col.userData.oclusor = true; g.add(col);
+        const capitel = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.18, 0.9), lamb(0x6e7680));
+        capitel.position.set(cx, 2.55, cz); g.add(capitel);
+      }
+    }
+    // estandartes ciano dos Senhores do Vento na parede do fundo
+    for (const bx of [-L.x / 2, L.x / 2]) {
+      const pano = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 1.6),
+        new THREE.MeshLambertMaterial({ color: 0x2a8f84, side: THREE.DoubleSide }));
+      pano.position.set(bx, 1.7, -L.z + 0.05); g.add(pano);
+      const simbolo = new THREE.Mesh(new THREE.CircleGeometry(0.22, 3),
+        new THREE.MeshLambertMaterial({ color: 0xfff6df, side: THREE.DoubleSide }));
+      simbolo.position.set(bx, 1.8, -L.z + 0.08); g.add(simbolo);
+    }
+    // portas de subida (parede norte): moldura, porta preta e degraus
+    for (const pt of mapa.portas || []) {
+      const moldura = new THREE.Mesh(new THREE.BoxGeometry(1.7, 2.4, 0.3), lamb(0x6e7680));
+      moldura.position.set(pt.x, 1.2, -L.z + 0.15); g.add(moldura);
+      const porta = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2.0, 0.34), lamb(0x16121c));
+      porta.position.set(pt.x, 1.0, -L.z + 0.16); g.add(porta);
+      for (let k = 0; k < 3; k++) {
+        const degrau = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.1 * (k + 1), 0.34),
+          lamb(0xa8adb5));
+        degrau.position.set(pt.x, 0.05 * (k + 1), -L.z + 1.4 - k * 0.34);
+        degrau.receiveShadow = true; g.add(degrau);
+      }
+    }
+    return;
+  }
   if (caverna) {
     // CAVERNA: estalagmites, pedras e cristais que brilham no escuro
     for (const [x, z, esc] of [[-7, 4, 1.2], [6, -4, 1.5], [8, 3, 1.0], [3, -5.5, 0.8], [-4, 5.2, 0.9]]) {
@@ -1232,11 +1260,14 @@ export function montaMapa(cena, mapa) {
   g.userData.anims = cena.anims;
   if (mapa.tipo === 'interior') {
     montaInterior(g, mapa);
-    // interiores também têm moradores (a enfermeira do Centro, por ex.)
+    // interiores também têm moradores e decoração (braseiros do castelo...)
     (mapa.npcs || []).forEach(([x, z, tipo, rot]) => {
       const npc = criarNPC(g, tipo);
       npc.g.position.set(x, 0, z);
       npc.g.rotation.y = rot || 0;
+    });
+    (mapa.decor || []).forEach(([tipo, x, z]) => {
+      if (DECOR[tipo]) DECOR[tipo](g, x, z, 0);
     });
     return;
   }

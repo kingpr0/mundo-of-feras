@@ -97,7 +97,9 @@ let escolha = 0;
 let desafio = null; // duelo de treinador em andamento: { nome, equipe, idx }
 // menu lateral: SEMPRE visível na exploração; "ativo" = navegando nele
 let menu = { tipo: 'exploracao', sel: 0, fera: 0, especie: null, ativo: false };
-let retornoPorta = null;
+// PILHA de retornos de porta: entrar em salas aninhadas (castelo!) empilha,
+// sair pela porta sul desempilha — andar por andar
+let retornoPorta = [];
 let hitstop = 0, tempo = 0;
 
 /* ---------- entrada (setas + Z/X/C/V golpes, F captura, M/ESC menu) ---- */
@@ -966,11 +968,11 @@ function loop(agora) {
         hud.toast('❤ Enfermeira: vida e golpes de todas as feras restaurados!', 3000);
       }
       else if (evt && evt.tipo === 'porta') {
-        if (evt.destino === 'retorno' && retornoPorta) {
-          const r = retornoPorta; retornoPorta = null;
+        if (evt.destino === 'retorno' && retornoPorta.length) {
+          const r = retornoPorta.pop();
           trocaMapa(r.mapa, { x: r.pos.x, y: 0, z: r.pos.z });
-        } else {
-          retornoPorta = { mapa: chaveMapa, pos: evt.retorno };
+        } else if (evt.destino !== 'retorno') {
+          retornoPorta.push({ mapa: chaveMapa, pos: evt.retorno });
           trocaMapa(evt.destino);
         }
       }

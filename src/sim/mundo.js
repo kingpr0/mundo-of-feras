@@ -293,6 +293,11 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
         d.pos.z > m.mapa.limite.z - 0.5 && Math.abs(d.pos.x) < 1.2)
       return { tipo: 'porta', destino: 'retorno' };
 
+    // PORTAS genéricas (salas do castelo, andares...): chegar perto entra
+    for (const pt of m.mapa.portas || [])
+      if (Math.hypot(d.pos.x - pt.x, d.pos.z - pt.z) < 0.9)
+        return { tipo: 'porta', destino: pt.destino, retorno: pt.retorno };
+
     // boca da caverna: entrar leva ao interior dela
     const cav = m.mapa.caverna;
     if (cav && m.cavernaT <= 0 &&

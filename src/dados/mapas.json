@@ -1737,6 +1737,17 @@
           "alto": "norte",
           "h": 0.9
         }
+      ],
+      "portas": [
+        {
+          "x": 0,
+          "z": -5.2,
+          "destino": "castelo_hall",
+          "retorno": {
+            "x": 0,
+            "z": -3.6
+          }
+        }
       ]
     },
     "porto": {
@@ -1980,6 +1991,125 @@
           "destino": "porto"
         }
       ]
+    },
+    "castelo_hall": {
+      "nome": "Salão dos Ventos",
+      "tipo": "interior",
+      "estilo": "castelo",
+      "limite": {
+        "x": 10,
+        "z": 7
+      },
+      "decor": [
+        [
+          "fogueira",
+          -7,
+          -4
+        ],
+        [
+          "fogueira",
+          7,
+          -4
+        ]
+      ],
+      "npcs": [
+        [
+          -4,
+          -4.5,
+          "aldeao",
+          0.9,
+          "Mordomo: — Bem-vindo ao Salão dos Ventos. O Senhor não recebe estranhos... mas a biblioteca, no andar de cima, é aberta aos curiosos."
+        ]
+      ],
+      "portas": [
+        {
+          "x": 0,
+          "z": -5.9,
+          "destino": "castelo_salao",
+          "retorno": {
+            "x": 0,
+            "z": -4.4
+          }
+        }
+      ],
+      "spawn": {
+        "x": 0,
+        "z": 5.6
+      },
+      "selvagens": [
+        "cascorro"
+      ],
+      "saidas": []
+    },
+    "castelo_salao": {
+      "nome": "Biblioteca dos Ventos",
+      "tipo": "interior",
+      "estilo": "castelo",
+      "limite": {
+        "x": 8,
+        "z": 6
+      },
+      "decor": [
+        [
+          "fogueira",
+          -6,
+          -3
+        ]
+      ],
+      "npcs": [
+        [
+          3.5,
+          -3,
+          "maga",
+          3.6,
+          "Bibliotecária: — Estes tomos falam de TRÊS guardiões de Ferândia. O nome do terceiro... foi raspado de todas as páginas."
+        ]
+      ],
+      "portas": [
+        {
+          "x": 0,
+          "z": -4.9,
+          "destino": "castelo_topo",
+          "retorno": {
+            "x": 0,
+            "z": -3.4
+          }
+        }
+      ],
+      "spawn": {
+        "x": 0,
+        "z": 4.6
+      },
+      "selvagens": [
+        "cascorro"
+      ],
+      "saidas": []
+    },
+    "castelo_topo": {
+      "nome": "Câmara do Senhor do Vento",
+      "tipo": "interior",
+      "estilo": "castelo",
+      "limite": {
+        "x": 6,
+        "z": 5
+      },
+      "npcs": [
+        [
+          0,
+          -2.8,
+          "senhor",
+          0,
+          "Senhor do Vento: — Então é você quem a Guardiã despertou... Traga-me TRÊS insígnias e a balsa do Mar do Meio será sua. O que dorme além da Muralha não espera para sempre."
+        ]
+      ],
+      "spawn": {
+        "x": 0,
+        "z": 3.6
+      },
+      "selvagens": [
+        "cascorro"
+      ],
+      "saidas": []
     }
   }
 }
