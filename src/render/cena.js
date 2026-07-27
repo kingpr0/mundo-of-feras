@@ -438,26 +438,49 @@ function escada(g, e, mapa) {
   }
 }
 
-/* face dos DEGRAUS: uma mureta de terra escura marcando a linha de cota
-   que corta o mapa inteiro (o chão deslocado faz o corpo do terraço) */
+/* DEGRAUS de cota: rampa = ESCADARIA fora a fora (degraus longos cruzando
+   o mapa inteiro, subíveis em qualquer ponto); rampa 0 = mureta de falésia
+   (o chão deslocado faz o corpo do terraço nos dois casos) */
 function montaDegraus(g, mapa) {
   const L = mapa.limite;
-  const CORES = { grama: 0x4e7a35, vila: 0x8a6a4a, terra: 0x7d5f3e,
-                  penhasco: 0x6e3c32, deserto: 0xa8875a };
-  const cor = CORES[mapa.chao || 'grama'] || 0x7d5f3e;
+  const MURETA = { grama: 0x4e7a35, vila: 0x8a6a4a, terra: 0x7d5f3e,
+                   penhasco: 0x6e3c32, deserto: 0xa8875a };
+  const corDegrau = mapa.chao === 'penhasco' ? 0xa25e4e
+    : mapa.chao === 'deserto' ? 0xc9a06a : 0xb08a5a;
   for (const dg of mapa.degraus || []) {
-    const ladoBaixo = dg.eixo === 'x'
-      ? { x: dg.em + (dg.alto === 'leste' ? -0.6 : 0.6), z: 0 }
-      : { x: 0, z: dg.em + (dg.alto === 'sul' ? -0.6 : 0.6) };
-    const base = alturaDegraus(mapa, ladoBaixo);
-    const comp = (dg.eixo === 'x' ? L.z : L.x) * 2 + 28;
-    const m = new THREE.Mesh(new THREE.BoxGeometry(
-      dg.eixo === 'x' ? 0.55 : comp, dg.h + 0.08, dg.eixo === 'x' ? comp : 0.55),
-      new THREE.MeshLambertMaterial({ color: cor }));
-    m.position.set(dg.eixo === 'x' ? dg.em : 0, base + dg.h / 2,
-                   dg.eixo === 'x' ? 0 : dg.em);
-    m.castShadow = m.receiveShadow = true;
-    g.add(m);
+    const eixoX = dg.eixo === 'x';
+    const altoMaior = dg.alto === (eixoX ? 'leste' : 'sul');
+    const s = altoMaior ? 1 : -1;
+    const rampa = dg.rampa !== undefined ? dg.rampa : 2.2;
+    const comp = (eixoX ? L.z : L.x) * 2 + 28;
+    const pontoPe = eixoX
+      ? { x: dg.em - s * (rampa / 2 + 0.8), z: 0 }
+      : { x: 0, z: dg.em - s * (rampa / 2 + 0.8) };
+    const base = alturaDegraus(mapa, pontoPe);
+    if (rampa === 0) {
+      // falésia: mureta escura marcando o corte
+      const m = new THREE.Mesh(new THREE.BoxGeometry(
+        eixoX ? 0.55 : comp, dg.h + 0.08, eixoX ? comp : 0.55),
+        new THREE.MeshLambertMaterial({ color: MURETA[mapa.chao || 'grama'] || 0x7d5f3e }));
+      m.position.set(eixoX ? dg.em : 0, base + dg.h / 2, eixoX ? 0 : dg.em);
+      m.castShadow = m.receiveShadow = true;
+      g.add(m);
+      continue;
+    }
+    // escadaria contínua cobrindo toda a largura da rampa
+    const n = Math.max(3, Math.ceil(dg.h / 0.16));
+    const prof = rampa / n;
+    const mat = new THREE.MeshLambertMaterial({ color: corDegrau });
+    for (let k = 0; k < n; k++) {
+      const alt = dg.h * (k + 1) / n + 0.03;
+      const off = -rampa / 2 + prof * (k + 0.5);
+      const m = new THREE.Mesh(new THREE.BoxGeometry(
+        eixoX ? prof + 0.06 : comp, alt, eixoX ? comp : prof + 0.06), mat);
+      m.position.set(eixoX ? dg.em + s * off : 0, base + alt / 2 - 0.02,
+                     eixoX ? 0 : dg.em + s * off);
+      m.receiveShadow = true;
+      g.add(m);
+    }
   }
 }
 
@@ -708,6 +731,8 @@ function plato(g, p, mapa = {}) {
   const c1 = new THREE.Color(pen ? 0xb06552 : 0xbc9668);
   const w = p.x1 - p.x0, d = p.z1 - p.z0;
   const cx = (p.x0 + p.x1) / 2, cz = (p.z0 + p.z1) / 2;
+  // o platô assenta na COTA do terraço em que está
+  const baseY = alturaDegraus(mapa, { x: cx, z: cz });
   const r = Math.min(1.6, Math.min(w, d) * 0.22);
   const camadas = 4;
   for (let i = 0; i < camadas; i++) {
@@ -717,7 +742,7 @@ function plato(g, p, mapa = {}) {
     const geo = new THREE.ExtrudeGeometry(shape, { depth: p.h / camadas, bevelEnabled: false });
     const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ color: cor }));
     m.rotation.x = -Math.PI / 2;
-    m.position.set(cx, (i * p.h) / camadas, cz);
+    m.position.set(cx, baseY + (i * p.h) / camadas, cz);
     m.castShadow = m.receiveShadow = true;
     m.userData.oclusor = true;
     g.add(m);
@@ -725,7 +750,7 @@ function plato(g, p, mapa = {}) {
   const topoGeo = new THREE.ExtrudeGeometry(formaArredondada(w - 0.15, d - 0.15, r), { depth: 0.09, bevelEnabled: false });
   const topo = new THREE.Mesh(topoGeo, new THREE.MeshLambertMaterial({ color: 0x67b34f }));
   topo.rotation.x = -Math.PI / 2;
-  topo.position.set(cx, p.h, cz);
+  topo.position.set(cx, baseY + p.h, cz);
   topo.receiveShadow = true;
   g.add(topo);
 }

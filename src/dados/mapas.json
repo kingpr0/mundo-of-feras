@@ -210,6 +210,14 @@
           "ate": 2,
           "destino": "verdejante"
         }
+      ],
+      "degraus": [
+        {
+          "eixo": "z",
+          "em": 0,
+          "alto": "norte",
+          "h": 0.5
+        }
       ]
     },
     "verdejante": {
@@ -235,6 +243,12 @@
         {
           "x0": -2,
           "z0": -24,
+          "x1": 2,
+          "z1": -11.2
+        },
+        {
+          "x0": -2,
+          "z0": -8.8,
           "x1": 2,
           "z1": 24
         },
@@ -389,6 +403,14 @@
           "ate": 2,
           "destino": "clareira"
         }
+      ],
+      "degraus": [
+        {
+          "eixo": "z",
+          "em": -10,
+          "alto": "norte",
+          "h": 0.6
+        }
       ]
     },
     "deserto": {
@@ -492,6 +514,14 @@
           "ate": 2,
           "destino": "clareira"
         }
+      ],
+      "degraus": [
+        {
+          "eixo": "z",
+          "em": -6,
+          "alto": "norte",
+          "h": 0.6
+        }
       ]
     },
     "trilha": {
@@ -541,7 +571,7 @@
       },
       "treinadores": [
         {
-          "x": 7,
+          "x": 9,
           "z": -5,
           "tipo": "aldeao",
           "rot": 2.4,
@@ -575,6 +605,14 @@
           "de": -2,
           "ate": 2,
           "destino": "lago"
+        }
+      ],
+      "degraus": [
+        {
+          "eixo": "x",
+          "em": 6,
+          "alto": "leste",
+          "h": 0.5
         }
       ]
     },
@@ -658,6 +696,14 @@
           "de": -6,
           "ate": -2,
           "destino": "encosta"
+        }
+      ],
+      "degraus": [
+        {
+          "eixo": "x",
+          "em": -6,
+          "alto": "oeste",
+          "h": 0.6
         }
       ]
     },
@@ -746,7 +792,7 @@
       "treinadores": [
         {
           "x": 0,
-          "z": 6,
+          "z": 8.4,
           "tipo": "mercador",
           "rot": 3.1,
           "nome": "Beto das Rotas",
@@ -797,6 +843,14 @@
           "de": 8,
           "ate": 12,
           "destino": "rota"
+        }
+      ],
+      "degraus": [
+        {
+          "eixo": "z",
+          "em": 6,
+          "alto": "norte",
+          "h": 0.6
         }
       ]
     },
@@ -1154,6 +1208,14 @@
           "ate": 2,
           "destino": "porto"
         }
+      ],
+      "degraus": [
+        {
+          "eixo": "z",
+          "em": 0,
+          "alto": "norte",
+          "h": 0.6
+        }
       ]
     },
     "penhasco": {
@@ -1318,6 +1380,14 @@
           "ate": 2,
           "destino": "fiorde"
         }
+      ],
+      "degraus": [
+        {
+          "eixo": "z",
+          "em": 0,
+          "alto": "sul",
+          "h": 0.7
+        }
       ]
     },
     "interior_casa": {
@@ -1416,22 +1486,6 @@
           "z": 10,
           "r": 6,
           "h": 0.9
-        }
-      ],
-      "escadas": [
-        {
-          "x": 0,
-          "z": -2,
-          "w": 2.8,
-          "dir": "sul",
-          "h": 0.7
-        },
-        {
-          "x": 2,
-          "z": 10,
-          "w": 2.8,
-          "dir": "sul",
-          "h": 0.7
         }
       ],
       "casas": [
@@ -1582,40 +1636,24 @@
         "x": 0,
         "z": -6
       },
-      "escadas": [
-        {
-          "x": 0,
-          "z": 6,
-          "w": 3,
-          "dir": "norte",
-          "h": 0.7
-        },
-        {
-          "x": 0,
-          "z": 1.8,
-          "w": 3,
-          "dir": "norte",
-          "h": 0.9
-        }
-      ],
       "caminhos": [
         {
           "x0": -2,
-          "z0": 6.6,
+          "z0": 7.4,
           "x1": 2,
           "z1": 11
         },
         {
           "x0": -2,
-          "z0": 6.6,
+          "z0": 7.4,
           "x1": 22,
           "z1": 10
         },
         {
           "x0": -2,
-          "z0": 2.4,
+          "z0": 3.2,
           "x1": 2,
-          "z1": 5.4
+          "z1": 4.6
         }
       ],
       "decor": [
@@ -1829,7 +1867,8 @@
           "eixo": "z",
           "em": -7.5,
           "alto": "sul",
-          "h": 0.9
+          "h": 0.9,
+          "rampa": 0
         }
       ]
     },

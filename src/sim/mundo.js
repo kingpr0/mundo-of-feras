@@ -55,13 +55,18 @@ export function alturaGrama(mapa, pos) {
 }
 // DEGRAUS: linhas de cota que cortam o mapa INTEIRO (terraços). Cada
 // degrau eleva todo um lado do mapa; vários degraus empilham (carta
-// topográfica de verdade). { eixo:'z'|'x', em: coordenada, alto: lado, h }
+// topográfica). { eixo:'z'|'x', em: coordenada, alto: lado, h, rampa? }
+// A subida é uma RAMPA de largura `rampa` (padrão 2.2) — atravessável em
+// QUALQUER ponto da linha; rampa 0 = paredão seco (falésia, exige escada).
 export function alturaDegraus(mapa, pos) {
   let h = 0;
   for (const dg of mapa.degraus || []) {
     const v = dg.eixo === 'x' ? pos.x : pos.z;
     const altoMaior = dg.alto === (dg.eixo === 'x' ? 'leste' : 'sul');
-    if (altoMaior ? v > dg.em : v < dg.em) h += dg.h;
+    const rampa = dg.rampa !== undefined ? dg.rampa : 2.2;
+    const d = altoMaior ? v - dg.em : dg.em - v; // avanço rumo ao lado alto
+    if (rampa === 0) { if (d > 0) h += dg.h; }
+    else h += dg.h * Math.max(0, Math.min(1, d / rampa + 0.5));
   }
   return h;
 }
