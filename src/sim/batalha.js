@@ -24,7 +24,7 @@ function novoLutador(l, esp, pos) {
     // energia estilo "ki" (economia tipo elixir): começa na METADE, pinga
     // devagar, carrega parado (vulnerável!) e golpe físico certeiro gera
     energia: 50, espinhoT: 0, carregando: false, pulosAr: 0, giroAr: 0,
-    dashDir: { x: 0, y: 0, z: 1 },
+    piruetando: false, dashDir: { x: 0, y: 0, z: 1 },
   };
 }
 
@@ -221,6 +221,7 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
     if (inp.pulo && f.giroAr <= 0) {
       f.vy = f.esp.impulso * 0.95;
       f.giroAr = 0.4;
+      f.piruetando = true; // a pirueta visual dura o voo INTEIRO
       emitir({ tipo: 'pulo' });
     }
     if (f.t > 0.28) f.estado = 'idle';
@@ -313,7 +314,7 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
   }
   f.vy -= GRAVIDADE * dt;
   f.pos.y = Math.max(0, f.pos.y + f.vy * dt);
-  if (f.pos.y === 0) { f.vy = Math.max(0, f.vy); f.pulosAr = 0; }
+  if (f.pos.y === 0) { f.vy = Math.max(0, f.vy); f.pulosAr = 0; f.piruetando = false; }
   const r = Math.hypot(f.pos.x, f.pos.z);
   if (r > ARENA.raio) {
     f.pos.x *= ARENA.raio / r; f.pos.z *= ARENA.raio / r;

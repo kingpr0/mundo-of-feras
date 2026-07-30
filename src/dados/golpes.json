@@ -154,14 +154,15 @@
     "dano": 16,
     "alcance": 8,
     "empurrao": 5,
-    "prep": 0.5,
+    "prep": 0.78,
     "ativo": 0.15,
     "recup": 0.5,
     "forte": true,
     "usos": null,
     "feixe": {
       "alcance": 8
-    }
+    },
+    "clipe": "kame"
   },
   "jato_agua": {
     "nome": "Jato d'Água",
@@ -220,7 +221,7 @@
     "nome": "Arranhão",
     "tipo": "comum",
     "fisico": true,
-    "clipe": "soco",
+    "clipe": "garra",
     "dano": 6,
     "alcance": 1.6,
     "empurrao": 2.2,
@@ -235,7 +236,7 @@
     "tipo": "comum",
     "fisico": true,
     "base": "garra",
-    "clipe": "soco",
+    "clipe": "garra",
     "dano": 14,
     "alcance": 1.9,
     "empurrao": 5.5,
@@ -256,7 +257,8 @@
     "ativo": 0.12,
     "recup": 0.26,
     "forte": false,
-    "usos": null
+    "usos": null,
+    "clipe": "mordida"
   },
   "soco_trovao": {
     "nome": "Soco-Trovão",
@@ -322,5 +324,34 @@
     "recup": 0.3,
     "forte": false,
     "usos": 12
+  },
+  "soco": {
+    "nome": "Soco",
+    "tipo": "comum",
+    "fisico": true,
+    "clipe": "soco",
+    "dano": 8,
+    "alcance": 1.7,
+    "empurrao": 3,
+    "prep": 0.08,
+    "ativo": 0.12,
+    "recup": 0.16,
+    "forte": false,
+    "usos": null
+  },
+  "gancho": {
+    "nome": "Gancho",
+    "tipo": "comum",
+    "fisico": true,
+    "base": "soco",
+    "clipe": "gancho",
+    "dano": 15,
+    "alcance": 1.9,
+    "empurrao": 7.5,
+    "prep": 0.26,
+    "ativo": 0.16,
+    "recup": 0.4,
+    "forte": true,
+    "usos": null
   }
 }

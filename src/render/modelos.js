@@ -919,6 +919,43 @@ export function animaLuta(M, f) {
     M.g.scale.setScalar(1);
     M.g.userData._emDash = false;
   }
+  // PIRUETA AÉREA (cambalhota + pulo): roda 360° acompanhando o VOO inteiro
+  // — a fase vem da física (vy vai de +v0 a -v0), então casa com o arco
+  if (f.piruetando && f.pos.y > 0.02) {
+    const v0 = (f.esp.impulso || 7) * 0.95;
+    const fase = Math.min(1, Math.max(0, (v0 - f.vy) / (2 * v0)));
+    const ang = fase * Math.PI * 2;
+    const rel = f.dashRel || { x: 0, z: -1 };
+    M.g.scale.setScalar(0.82);
+    if (Math.abs(rel.x) > Math.abs(rel.z)) {
+      M.g.rotation.z = rel.x > 0 ? ang : -ang; M.g.rotation.x = 0;
+    } else {
+      M.g.rotation.x = rel.z > 0 ? -ang : ang; M.g.rotation.z = 0;
+    }
+    M.g.userData._pirueta = true;
+    return;
+  }
+  if (M.g.userData._pirueta) {
+    M.g.rotation.x = 0; M.g.rotation.z = 0;
+    M.g.scale.setScalar(1);
+    M.g.userData._pirueta = false;
+  }
+  // PULO comum: estica subindo, achata ao aterrissar (squash & stretch)
+  if (f.estado === 'idle') {
+    const noAr = f.pos.y > 0.02;
+    const ud = M.g.userData;
+    if (noAr) {
+      const sy = 1 + 0.09 * Math.max(-0.6, Math.min(1, f.vy / 7));
+      M.g.scale.set(1 / Math.sqrt(sy), sy, 1 / Math.sqrt(sy));
+      ud._eraAr = true;
+    } else {
+      if (ud._eraAr) { ud._squash = 0.2; ud._eraAr = false; }
+      if (ud._squash > 0.005) {
+        M.g.scale.set(1 + ud._squash * 0.6, 1 - ud._squash, 1 + ud._squash * 0.6);
+        ud._squash *= 0.8;
+      } else if (ud._squash) { ud._squash = 0; M.g.scale.setScalar(1); }
+    }
+  }
   let rx = M.g.userData._leanAndar || 0;
   if (f.estado === 'dash') {
     M.g.userData._emDash = true;

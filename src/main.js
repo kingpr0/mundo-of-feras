@@ -479,12 +479,14 @@ function fichaEspecie(k) {
 /* holograma: a fera aparece girando no centro da tela. No compêndio
    ("compacto") toda fera é projetada do MESMO tamanho — o porte real
    é coisa de batalha (o "holofote" que escurece o resto é CSS puro) */
+let holoAltoExtra = 0; // no compêndio a fera sobe: ficha embaixo, fera em cima
 function mostraHoloEspecie(chave, compacto = false) {
   escondeHolo();
   holoM = modelosIni[chave];
   // o domador dá lugar à projeção — o holograma fica no centro da tela
   MD.mostra(domador, false);
-  const base = { x: mundo.domador.pos.x, y: mundo.domador.pos.y + 0.1, z: mundo.domador.pos.z };
+  holoAltoExtra = compacto ? 1.7 : 0;
+  const base = { x: mundo.domador.pos.x, y: mundo.domador.pos.y + 0.1 + holoAltoExtra, z: mundo.domador.pos.z };
   MD.setPos(holoM, base);
   MD.setEscala(holoM, compacto ? 2.6 / (especies[chave].altura3d || 1.1) : 4.5);
   // sólido e com tinta azulada BEM sutil: as cores reais da fera aparecem
@@ -496,7 +498,7 @@ function mostraHoloEspecie(chave, compacto = false) {
   MD.mostra(holoM, true);
   MD.setPos(discoHolo, base);
   MD.setEscala(discoHolo, 3.6);
-  MD.mostra(discoHolo, true);
+  MD.mostra(discoHolo, !compacto); // no compêndio a bolinha azul some
 }
 function escondeHolo() {
   hud.ficha(null);
@@ -1104,7 +1106,7 @@ function loop(agora) {
       navegaMenu();
       if (holoM) { // holograma gira e flutua
         holoM.g.rotation.y += dt * 1.6;
-        holoM.g.position.y = mundo.domador.pos.y + 0.15 + Math.sin(tempo * 2) * 0.08;
+        holoM.g.position.y = mundo.domador.pos.y + 0.15 + holoAltoExtra + Math.sin(tempo * 2) * 0.08;
       }
     }
     else if (mE) { menu.ativo = true; renderMenu(); }

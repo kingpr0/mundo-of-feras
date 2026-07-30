@@ -100,9 +100,11 @@
      o mundo continua visível (escurecido por um véu 3D atrás da fera) */
   #compendio { position:fixed; inset:0; display:none; pointer-events:none;
     /* holofote: o mundo escurece, a fera girando fica no facho de luz */
-    background:radial-gradient(circle at 50% 46%, rgba(6,8,14,0) 170px,
-      rgba(6,8,14,.55) 320px, rgba(6,8,14,.78) 62%); }
-  #compFicha { position:absolute; left:3%; top:14%; width:280px; padding:14px 18px; }
+    background:radial-gradient(circle at 50% 34%, rgba(6,8,14,0) 180px,
+      rgba(6,8,14,.55) 330px, rgba(6,8,14,.78) 62%); }
+  /* a fera fica ACIMA, no facho; as informações entram ABAIXO dela */
+  #compFicha { position:absolute; left:50%; transform:translateX(-50%);
+    bottom:3%; width:330px; max-height:42%; overflow:hidden; padding:12px 18px; }
   #compFicha h2 { color:#ffd23f; font-size:18px; letter-spacing:1px; margin-bottom:2px; }
   #compFicha .fsub { font-size:12px; color:#cfc7e6; margin-bottom:8px; }
   #compFicha .ftag { display:inline-block; padding:2px 10px; border-radius:9px; font-size:11px;

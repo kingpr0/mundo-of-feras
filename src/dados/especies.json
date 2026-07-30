@@ -20,7 +20,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -73,7 +77,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -122,7 +130,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -181,8 +193,16 @@
         "golpe": "bola_fogo"
       },
       {
+        "nivel": 6,
+        "golpe": "soco"
+      },
+      {
         "nivel": 8,
         "golpe": "garras_furiosas"
+      },
+      {
+        "nivel": 9,
+        "golpe": "gancho"
       },
       {
         "nivel": 10,
@@ -197,7 +217,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -224,7 +248,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -243,8 +271,16 @@
         "golpe": "bola_fogo"
       },
       {
+        "nivel": 6,
+        "golpe": "soco"
+      },
+      {
         "nivel": 8,
         "golpe": "garras_furiosas"
+      },
+      {
+        "nivel": 9,
+        "golpe": "gancho"
       },
       {
         "nivel": 10,
@@ -278,7 +314,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -297,8 +337,16 @@
         "golpe": "bola_fogo"
       },
       {
+        "nivel": 6,
+        "golpe": "soco"
+      },
+      {
         "nivel": 8,
         "golpe": "garras_furiosas"
+      },
+      {
+        "nivel": 9,
+        "golpe": "gancho"
       },
       {
         "nivel": 10,
@@ -345,7 +393,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -372,7 +424,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -425,7 +481,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -440,8 +500,16 @@
         "golpe": "jato_agua"
       },
       {
+        "nivel": 6,
+        "golpe": "soco"
+      },
+      {
         "nivel": 8,
         "golpe": "garras_furiosas"
+      },
+      {
+        "nivel": 9,
+        "golpe": "gancho"
       },
       {
         "nivel": 10,
@@ -476,8 +544,16 @@
         "golpe": "esfera_voltaica"
       },
       {
+        "nivel": 6,
+        "golpe": "soco"
+      },
+      {
         "nivel": 8,
         "golpe": "garras_furiosas"
+      },
+      {
+        "nivel": 9,
+        "golpe": "gancho"
       },
       {
         "nivel": 10,
@@ -496,7 +572,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -523,7 +603,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -538,8 +622,16 @@
         "golpe": "esfera_voltaica"
       },
       {
+        "nivel": 6,
+        "golpe": "soco"
+      },
+      {
         "nivel": 8,
         "golpe": "garras_furiosas"
+      },
+      {
+        "nivel": 9,
+        "golpe": "gancho"
       },
       {
         "nivel": 10,
@@ -576,7 +668,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -625,7 +721,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -650,6 +750,10 @@
       {
         "nivel": 10,
         "golpe": "tempestade_folhas"
+      },
+      {
+        "nivel": 15,
+        "golpe": "raio_esmeralda"
       }
     ],
     "defesa": 1.1
@@ -675,7 +779,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -720,7 +828,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -741,6 +853,10 @@
       {
         "nivel": 10,
         "golpe": "tempestade_folhas"
+      },
+      {
+        "nivel": 15,
+        "golpe": "raio_esmeralda"
       }
     ],
     "defesa": 1
@@ -766,7 +882,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -779,6 +899,14 @@
       {
         "nivel": 5,
         "golpe": "garras_furiosas"
+      },
+      {
+        "nivel": 6,
+        "golpe": "soco"
+      },
+      {
+        "nivel": 9,
+        "golpe": "gancho"
       },
       {
         "nivel": 10,
@@ -807,7 +935,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -820,6 +952,14 @@
       {
         "nivel": 5,
         "golpe": "garras_furiosas"
+      },
+      {
+        "nivel": 6,
+        "golpe": "soco"
+      },
+      {
+        "nivel": 9,
+        "golpe": "gancho"
       },
       {
         "nivel": 10,
@@ -850,7 +990,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -896,7 +1040,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -946,7 +1094,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -992,7 +1144,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -1038,7 +1194,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -1087,7 +1247,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -1106,8 +1270,16 @@
         "golpe": "bola_fogo"
       },
       {
+        "nivel": 6,
+        "golpe": "soco"
+      },
+      {
         "nivel": 8,
         "golpe": "garras_furiosas"
+      },
+      {
+        "nivel": 9,
+        "golpe": "gancho"
       },
       {
         "nivel": 10,
@@ -1141,7 +1313,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -1182,7 +1358,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -1195,6 +1375,14 @@
       {
         "nivel": 5,
         "golpe": "garras_furiosas"
+      },
+      {
+        "nivel": 6,
+        "golpe": "soco"
+      },
+      {
+        "nivel": 9,
+        "golpe": "gancho"
       },
       {
         "nivel": 10,
@@ -1224,7 +1412,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -1270,7 +1462,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -1316,7 +1512,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -1341,6 +1541,10 @@
       {
         "nivel": 10,
         "golpe": "tempestade_folhas"
+      },
+      {
+        "nivel": 15,
+        "golpe": "raio_esmeralda"
       }
     ],
     "defesa": 1.05
@@ -1366,7 +1570,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -1407,7 +1615,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -1448,7 +1660,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -1501,7 +1717,11 @@
       "andar": "andar",
       "correr": "correr",
       "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
       "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
       "forte": "forte",
       "dano": "dano",
       "ko": "ko"
@@ -1547,12 +1767,18 @@
     "altura3d": 1.1,
     "giro3d": 0,
     "clipes": {
-      "parado": "CharacterArmature|Flying_Idle",
-      "andar": "CharacterArmature|Fast_Flying",
-      "ataque": "CharacterArmature|Headbutt",
-      "forte": "CharacterArmature|Punch",
-      "dano": "CharacterArmature|HitReact",
-      "ko": "CharacterArmature|Death"
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "mordida": "mordida",
+      "garra": "garra",
+      "soco": "soco",
+      "gancho": "gancho",
+      "kame": "kame",
+      "forte": "forte",
+      "dano": "dano",
+      "ko": "ko"
     },
     "aprendizado": [
       {
