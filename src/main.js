@@ -314,7 +314,8 @@ function tituloMenu() {
   return { exploracao: 'MENU', batalha: 'BATALHA', equipeExp: 'EQUIPE',
            equipeBat: 'TROCAR FERA', statusLista: 'STATUS', catalogo: 'CATÁLOGO DE GOLPES',
            compendio: 'COMPÊNDIO DE FERAS',
-           treinoP: 'TREINO · SUA FERA', treinoE: 'TREINO · OPONENTE' }[t] || 'MENU';
+           treinoP: 'TREINO · SUA FERA', treinoE: 'TREINO · OPONENTE' }[t]
+    || (t === 'treinoG' ? `TREINO · GOLPES ${treino ? treino.golpes.length : 0}/4` : 'MENU');
 }
 function itensDoMenu() {
   const t = menu.tipo;
@@ -327,10 +328,23 @@ function itensDoMenu() {
   if (t === 'treinoP' || t === 'treinoE') return Object.keys(especies).map((k) => ({
     txt: `${especies[k].nome} · ${especies[k].tipo}`,
     acao: () => {
-      if (t === 'treinoP') { treino = { p: k }; abreMenu('treinoE'); }
+      if (t === 'treinoP') { treino = { p: k, golpes: [] }; abreMenu('treinoG'); }
       else { treino.e = k; iniciaTreino(); }
     },
   }));
+  // ...e os 4 golpes que a SUA fera vai levar (o oponente usa os dele)
+  if (t === 'treinoG') return Object.entries(golpesCat)
+    .filter(([, g]) => !g.base) // as versões fortes entram junto com a base
+    .map(([id, g]) => ({
+      txt: `${treino.golpes.includes(id) ? '✓ ' : ''}${g.nome} · ${g.tipo}${g.fisico ? ' · físico' : ''}`,
+      acao: () => {
+        const i = treino.golpes.indexOf(id);
+        if (i >= 0) treino.golpes.splice(i, 1);
+        else if (treino.golpes.length < 4) treino.golpes.push(id);
+        if (treino.golpes.length === 4) { abreMenu('treinoE'); return; }
+        renderMenu();
+      },
+    }));
   if (t === 'exploracao') return [
     { txt: 'Equipe', acao: () => abreMenu('equipeExp') },
     { txt: 'Status', acao: () => abreMenu('statusLista') },
@@ -439,11 +453,18 @@ function fichaEspecie(k) {
   const e2 = especies[k];
   const locais = Object.values(dadosMapas.mapas)
     .filter((mp) => (mp.selvagens || []).includes(k)).map((mp) => mp.nome);
+  const numero = Object.keys(especies).indexOf(k) + 1;
+  const alt = e2.altura3d || 1.1;
+  const tamanho = alt < 1.15 ? `Pequeno (${alt.toFixed(1)}m)`
+    : alt < 1.75 ? `Médio (${alt.toFixed(1)}m)` : `Grande (${alt.toFixed(1)}m)`;
+  const stat = (v) => Math.round((v || 1) * 100);
   return {
-    nome: e2.nome, sub: 'Compêndio de Feras',
+    nome: `#${String(numero).padStart(2, '0')} ${e2.nome}`, sub: 'Compêndio de Feras',
     tipo: e2.tipo, raridade: e2.raridade.replace('_', ' '), corTipo: corCss(e2.tipo),
     linhas: [
-      `<b>Vida</b> ${e2.vida} · <b>Velocidade</b> ${e2.velocidade}`,
+      `<b>Tamanho</b> ${tamanho}${e2.voa ? ' · voadora' : ''}`,
+      `<b>Vida</b> ${e2.vida} · <b>Força</b> ${stat(e2.ataque)} · <b>Defesa</b> ${stat(e2.defesa)}`,
+      `<b>Velocidade</b> ${e2.velocidade}`,
       `<b>Habitat:</b> ${locais.length ? locais.join(', ') : 'ainda não avistada'}`,
     ],
     golpes: (e2.aprendizado || []).map((a) => `Lv.${a.nivel}: ${golpesCat[a.golpe].nome}`),
@@ -506,6 +527,13 @@ function abreMenu(tipo) {
     const ks = Object.keys(especies);
     mostraHoloEspecie(ks[menu.sel]);
     hud.ficha(fichaEspecie(ks[menu.sel]));
+  } else if (tipo === 'treinoG') {
+    // escolhendo golpes: a sua fera fica projetada de referência
+    mostraHoloEspecie(treino.p);
+    hud.ficha(fichaEspecie(treino.p));
+  } else if (tipo === 'compendio') {
+    const ks = Object.keys(especies);
+    if (ks[menu.sel]) { mostraHoloEspecie(ks[menu.sel]); hud.ficha(fichaEspecie(ks[menu.sel])); }
   } else escondeHolo();
 }
 // "fechar": na exploração o menu continua na lateral, só desativa a navegação
@@ -525,7 +553,8 @@ function voltaMenu() {
   else if (t === 'statusFera') abreMenu('statusLista');
   else if (t === 'lembrar') abreMenu('statusFera');
   else if (t === 'compendioFera') abreMenu('compendio');
-  else if (t === 'treinoE') abreMenu('treinoP');
+  else if (t === 'treinoE') abreMenu('treinoG');
+  else if (t === 'treinoG') abreMenu('treinoP');
   else fechaMenu();
 }
 function navegaMenu() {
@@ -536,13 +565,16 @@ function navegaMenu() {
     selLembrado[menu.tipo] = menu.sel;
     sfx.swing();
     renderMenu();
-    // no Ritual e na Arena de Treino, o holograma e a ficha acompanham
-    // a fera destacada
+    // no Ritual, na Arena de Treino e no COMPÊNDIO, o holograma e a ficha
+    // acompanham a fera destacada — sem precisar confirmar
     const ksHolo = menu.tipo === 'inicial' ? INICIAIS
-      : (menu.tipo === 'treinoP' || menu.tipo === 'treinoE') ? Object.keys(especies) : null;
+      : (menu.tipo === 'treinoP' || menu.tipo === 'treinoE' || menu.tipo === 'compendio')
+        ? Object.keys(especies) : null;
     if (ksHolo) {
-      mostraHoloEspecie(ksHolo[menu.sel]);
-      hud.ficha(fichaEspecie(ksHolo[menu.sel]));
+      if (ksHolo[menu.sel]) {
+        mostraHoloEspecie(ksHolo[menu.sel]);
+        hud.ficha(fichaEspecie(ksHolo[menu.sel]));
+      } else escondeHolo(); // o item "Voltar" no fim da lista
     }
   }
   if (kE || escE) { voltaMenu(); return; }
@@ -674,6 +706,18 @@ function iniciaTreino() {
   mostraArena(cena, true);
   MD.mostra(domador, false);
   const feraP = criarFera(especies, golpesCat, treino.p, NIVEL_TREINO);
+  // os 4 golpes escolhidos no menu substituem o aprendizado natural
+  // (as versões fortes das bases escolhidas vêm de brinde, via SHIFT)
+  if (treino.golpes && treino.golpes.length) {
+    feraP.golpes = [...treino.golpes];
+    feraP.conhecidos = [...treino.golpes];
+    for (const [gid, def] of Object.entries(golpesCat))
+      if (def.base && treino.golpes.includes(def.base)) feraP.conhecidos.push(gid);
+    feraP.usos = {};
+    for (const gid of feraP.conhecidos)
+      if (golpesCat[gid].usos != null)
+        feraP.usos[gid] = golpesCat[gid].usos + Math.max(0, NIVEL_TREINO - 10);
+  }
   const feraE = criarFera(especies, golpesCat, treino.e, NIVEL_TREINO);
   batalha = criarBatalha(especies,
     paraBatalha(feraP, especies, golpesCat),
@@ -958,16 +1002,20 @@ function efeitoSopro(M, f, alvoPos) {
 function atualizaClips(M, f, dt) {
   if (!M || !M.gltf) return;
   const c = M.clipes || {};
-  const parado = c.parado || 'Survey', andar = c.andar || 'Walk',
-        correr = c.correr || andar;
+  // só clipes que EXISTEM neste modelo contam (nem toda fera tem soco/forte)
+  const tem = (nome) => (nome && M.clips && M.clips[nome]) ? nome : null;
+  const parado = tem(c.parado) || 'Survey', andar = tem(c.andar) || 'Walk',
+        correr = tem(c.correr) || andar;
   if (f && f.estado === 'atk') {
-    // recomeça o golpe a cada ataque novo (f.t zera quando o golpe inicia)
-    const nome = (f.golpe && f.golpe.forte && c.forte) ? c.forte : (c.ataque || correr);
-    MD.tocaClip(M, nome, 0.08, { once: !!(c.ataque || c.forte), restart: f.t < dt * 2 });
+    // golpes podem pedir um clipe próprio ("clipe" no golpes.json — ex.: o
+    // soco do Arranhão); senão forte/ataque; recomeça a cada ataque novo
+    const nome = tem(f.golpe && f.golpe.clipe && c[f.golpe.clipe])
+      || (f.golpe && f.golpe.forte && tem(c.forte)) || tem(c.ataque) || correr;
+    MD.tocaClip(M, nome, 0.08, { once: nome !== correr, restart: f.t < dt * 2 });
   }
   else if (f && f.estado === 'dash') MD.tocaClip(M, correr, 0.1);
-  else if (f && f.estado === 'hurt') MD.tocaClip(M, c.dano || parado, 0.08, { once: !!c.dano });
-  else if (f && f.estado === 'ko') MD.tocaClip(M, c.ko || c.dano || parado, 0.15, { once: !!(c.ko || c.dano) });
+  else if (f && f.estado === 'hurt') MD.tocaClip(M, tem(c.dano) || parado, 0.08, { once: !!tem(c.dano) });
+  else if (f && f.estado === 'ko') MD.tocaClip(M, tem(c.ko) || tem(c.dano) || parado, 0.15, { once: !!(tem(c.ko) || tem(c.dano)) });
   else if (f && f.movendo && f.estado === 'idle') MD.tocaClip(M, andar);
   else MD.tocaClip(M, parado);
   MD.passoMixer(M, dt);

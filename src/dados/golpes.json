@@ -215,5 +215,112 @@
     "feixe": {
       "alcance": 8
     }
+  },
+  "garra": {
+    "nome": "Arranhão",
+    "tipo": "comum",
+    "fisico": true,
+    "clipe": "soco",
+    "dano": 6,
+    "alcance": 1.6,
+    "empurrao": 2.2,
+    "prep": 0.05,
+    "ativo": 0.1,
+    "recup": 0.12,
+    "forte": false,
+    "usos": null
+  },
+  "garras_furiosas": {
+    "nome": "Garras Furiosas",
+    "tipo": "comum",
+    "fisico": true,
+    "base": "garra",
+    "clipe": "soco",
+    "dano": 14,
+    "alcance": 1.9,
+    "empurrao": 5.5,
+    "prep": 0.24,
+    "ativo": 0.16,
+    "recup": 0.36,
+    "forte": true,
+    "usos": null
+  },
+  "mordida": {
+    "nome": "Mordida",
+    "tipo": "comum",
+    "fisico": true,
+    "dano": 9,
+    "alcance": 1.6,
+    "empurrao": 3.8,
+    "prep": 0.14,
+    "ativo": 0.12,
+    "recup": 0.26,
+    "forte": false,
+    "usos": null
+  },
+  "soco_trovao": {
+    "nome": "Soco-Trovão",
+    "tipo": "eletrico",
+    "fisico": true,
+    "clipe": "soco",
+    "dano": 12,
+    "alcance": 1.8,
+    "empurrao": 5.5,
+    "prep": 0.2,
+    "ativo": 0.14,
+    "recup": 0.3,
+    "forte": true,
+    "usos": 10
+  },
+  "pentachama": {
+    "nome": "Pentachama",
+    "tipo": "fogo",
+    "dano": 9,
+    "alcance": 2.6,
+    "empurrao": 4,
+    "prep": 0.34,
+    "ativo": 0.2,
+    "recup": 0.5,
+    "forte": true,
+    "usos": 8,
+    "projetil": {
+      "vel": 10,
+      "raio": 0.7
+    },
+    "formacao": {
+      "lados": 5,
+      "raio": 0.85
+    }
+  },
+  "hidrobomba": {
+    "nome": "Hidrobomba",
+    "tipo": "agua",
+    "visual": "bolha",
+    "dano": 17,
+    "alcance": 2.6,
+    "empurrao": 8,
+    "prep": 0.5,
+    "ativo": 0.2,
+    "recup": 0.6,
+    "forte": true,
+    "usos": 6,
+    "projetil": {
+      "vel": 7,
+      "raio": 1.05
+    }
+  },
+  "chicote_vinha": {
+    "nome": "Chicote de Vinha",
+    "tipo": "planta",
+    "visual": "folhas",
+    "fisico": true,
+    "dano": 10,
+    "alcance": 2.4,
+    "empurrao": 4.5,
+    "prep": 0.16,
+    "ativo": 0.16,
+    "recup": 0.3,
+    "forte": false,
+    "usos": 12
   }
 }

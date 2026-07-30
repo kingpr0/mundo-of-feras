@@ -105,6 +105,8 @@ export function chanceCaptura(b) {
 }
 
 function aplicaDano(b, vitima, dano, dirKb, empurrao, forte, emitir, invulnT = 0.5, eficaz = null) {
+  // DEFESA da espécie: casca grossa (>1) apara o golpe, pele fina (<1) sofre
+  dano = Math.max(1, Math.round(dano / (vitima.esp.defesa || 1)));
   // pego CARREGANDO ki: interrompe e ainda dói 25% a mais (punição real)
   if (vitima.carregando) dano = Math.round(dano * 1.25);
   vitima.hp = Math.max(0, vitima.hp - dano);
@@ -129,12 +131,18 @@ function acerta(b, vitima, atacante, g, emitir) {
 
 /* projéteis: golpes elementais voam até o alvo — inclusive disparados do
    ar, mirando na altura de quem recebe; pular na hora certa ainda esquiva */
-function disparaProjetil(b, f, outro, g, cfg, emitir) {
+function disparaProjetil(b, f, outro, g, cfg, emitir, desvio = null) {
   const dir = normXZ(sub(outro.pos, f.pos));
   const pos = soma(copia(f.pos), vec(dir.x * 0.7, f.pos.y + 0.9, dir.z * 0.7));
+  // desvio de formação (ex.: Pentachama): desloca no plano perpendicular ao
+  // voo e mira num alvo igualmente deslocado — os tiros viajam em paralelo
+  if (desvio) {
+    pos.x += -dir.z * desvio.lat; pos.z += dir.x * desvio.lat;
+    pos.y += desvio.alt;
+  }
   const vel = escala(dir, cfg.vel);
   const tVoo = Math.max(0.15, distXZ(pos, outro.pos) / cfg.vel);
-  vel.y = ((outro.pos.y + 0.6) - pos.y) / tVoo;
+  vel.y = ((outro.pos.y + 0.6 + (desvio ? desvio.alt * 0.4 : 0)) - pos.y) / tVoo;
   b.projeteis.push({
     id: b.projId++, dono: f, alvo: outro,
     pos, vel,
@@ -231,7 +239,15 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
     } else if (g.projetil) {
       if (!f.acertou && f.t >= g.prep) {
         f.acertou = true;
-        disparaProjetil(b, f, outro, g, g.projetil, emitir);
+        if (g.formacao) {
+          // salva de projéteis em FORMAÇÃO (Pentachama: 5 pontas, uma p/ cima)
+          const n = g.formacao.lados || 5, R = g.formacao.raio || 0.85;
+          for (let i = 0; i < n; i++) {
+            const a = Math.PI / 2 + i * (Math.PI * 2 / n);
+            disparaProjetil(b, f, outro, g, g.projetil, emitir,
+              { lat: Math.cos(a) * R, alt: Math.sin(a) * R });
+          }
+        } else disparaProjetil(b, f, outro, g, g.projetil, emitir);
       }
     } else if (f.t >= g.prep && f.t <= g.prep + g.ativo) {
       const frente = normXZ(sub(outro.pos, p));
