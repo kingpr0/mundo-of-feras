@@ -640,22 +640,32 @@ const FABRICAS = { brasinha: criarBrasinha, cascorro: criarCascorro, voltim: cri
 /* pipeline glTF: carrega modelo com esqueleto/animações, normaliza a escala
    pela altura desejada e apoia os pés no chão. Clipes viram ações nomeadas. */
 let _loader = null;
-// mede um modelo com esqueleto pela NUVEM DE OSSOS quando a malha "mente":
-// exports do Meshy vêm em centímetros (escala 0.01 no armature) e o Box3 da
-// geometria diria que o bicho tem 2cm — os vértices reais seguem os ossos
+// mede o tamanho REAL de um modelo com esqueleto: amostra os vértices já
+// "skinnados" (boneTransform). O Box3 da geometria mente nos exports do
+// Meshy (escala 0.01 no armature) e a nuvem de ossos superestima em rigs
+// com ossos espalhados — só os vértices dizem a verdade, e assim o
+// altura3d dos dados vale igualzinho para toda fera
 function caixaReal(obj) {
-  const cx = new THREE.Box3().setFromObject(obj);
-  if (cx.max.y - cx.min.y > 0.05) return cx;
   obj.updateMatrixWorld(true);
-  const c2 = new THREE.Box3();
-  let temOsso = false;
+  const cx = new THREE.Box3();
   const p = new THREE.Vector3();
-  obj.traverse((o) => {
-    if (o.isBone) { temOsso = true; c2.expandByPoint(p.setFromMatrixPosition(o.matrixWorld)); }
-  });
-  if (!temOsso) return cx;
-  c2.expandByScalar((c2.max.y - c2.min.y) * 0.12 + 0.005);
-  return c2;
+  let temSkin = false;
+  try {
+    obj.traverse((o) => {
+      if (o.isSkinnedMesh && o.geometry.attributes.position) {
+        temSkin = true;
+        if (o.skeleton && o.skeleton.update) o.skeleton.update();
+        const n = o.geometry.attributes.position.count;
+        const passo = Math.max(1, Math.floor(n / 240));
+        for (let i = 0; i < n; i += passo) {
+          o.boneTransform(i, p);
+          cx.expandByPoint(p.applyMatrix4(o.matrixWorld));
+        }
+      }
+    });
+  } catch (e) { temSkin = false; }
+  if (!temSkin || cx.isEmpty()) return new THREE.Box3().setFromObject(obj);
+  return cx;
 }
 
 export function criarFeraGltf(scene, url, alturaAlvo = 1.1, giroGraus = 0) {

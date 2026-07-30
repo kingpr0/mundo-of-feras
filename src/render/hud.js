@@ -1,4 +1,17 @@
 // HUD — camada DOM: barras de vida, toasts, números de dano, título.
+// miolo da ficha de fera (usado na ficha grande e no compêndio)
+function fichaHtml(d) {
+  const golpes = (d.golpes || [])
+    .map((g) => `<div class="fgolpe">• ${g}</div>`).join('');
+  return `
+    <h2>${d.nome}</h2>
+    <div class="fsub">${d.sub || ''}</div>
+    <span class="ftag" style="background:${d.corTipo || '#cbd0d8'}">${d.tipo}</span>
+    <span class="ftag">${d.raridade}</span>
+    ${d.linhas.map((l) => `<div class="flin">${l}</div>`).join('')}
+    ${golpes}`;
+}
+
 export function criarHUD() {
   const $ = (id) => document.getElementById(id);
   let toastT = null;
@@ -176,16 +189,19 @@ export function criarHUD() {
     ficha(d) {
       const f = $('ficha');
       if (!d) { f.style.display = 'none'; return; }
-      const golpes = (d.golpes || [])
-        .map((g) => `<div class="fgolpe">• ${g}</div>`).join('');
-      f.innerHTML = `
-        <h2>${d.nome}</h2>
-        <div class="fsub">${d.sub || ''}</div>
-        <span class="ftag" style="background:${d.corTipo || '#cbd0d8'}">${d.tipo}</span>
-        <span class="ftag">${d.raridade}</span>
-        ${d.linhas.map((l) => `<div class="flin">${l}</div>`).join('')}
-        ${golpes}`;
+      f.innerHTML = fichaHtml(d);
       f.style.display = 'block';
+    },
+    // COMPÊNDIO em tabela: ficha à esquerda, grade de nomes navegável à
+    // direita — d = { ficha, nomes: [..], sel }
+    compendio(d) {
+      const c = $('compendio');
+      if (!d) { c.style.display = 'none'; return; }
+      $('compFicha').innerHTML = fichaHtml(d.ficha);
+      $('compCelulas').innerHTML = d.nomes
+        .map((n, i) => `<div class="cel${i === d.sel ? ' sel' : ''}">${String(i + 1).padStart(2, '0')} ${n}</div>`)
+        .join('');
+      c.style.display = 'block';
     },
     escolha(v, sel = 0) {
       $('escolha').style.display = v ? 'flex' : 'none';

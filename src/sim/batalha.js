@@ -23,7 +23,8 @@ function novoLutador(l, esp, pos) {
     invuln: 0, flash: 0, kb: vec(),
     // energia estilo "ki" (economia tipo elixir): começa na METADE, pinga
     // devagar, carrega parado (vulnerável!) e golpe físico certeiro gera
-    energia: 50, espinhoT: 0, carregando: false, pulosAr: 0,
+    energia: 50, espinhoT: 0, carregando: false, pulosAr: 0, giroAr: 0,
+    dashDir: { x: 0, y: 0, z: 1 },
   };
 }
 
@@ -89,18 +90,19 @@ export function trocaFera(b, jogador, especies) {
   b.p = novoLutador(jogador, especies[jogador.chave], pos);
 }
 
-// captura: só fera SELVAGEM com metade da vida ou menos. A chance cresce de
-// 50% (na metade) até 100% (a 25% de vida) — e a raridade corta o teto
-// (muito rara captura no máximo 25% das vezes).
+// captura: o cristal pode ser lançado em fera selvagem A QUALQUER momento —
+// mas acima de metade da vida a chance é pequena. De 50% para baixo cresce
+// de 50% até 100% (a 25% de vida); a raridade corta o teto (muito rara
+// captura no máximo 25% das vezes).
 const FATOR_RARIDADE = { comum: 1, rara: 0.6, muito_rara: 0.25 };
 export function podeCapturar(b) {
-  return !b.fim && !b.captura && !b.treinador &&
-         b.e.estado !== 'ko' && b.e.hp / b.e.max <= 0.5;
+  return !b.fim && !b.captura && !b.treinador && b.e.estado !== 'ko';
 }
 export function chanceCaptura(b) {
   const hpr = b.e.hp / b.e.max;
-  if (hpr > 0.5) return 0;
-  const base = hpr <= 0.25 ? 1 : 0.5 + ((0.5 - hpr) / 0.25) * 0.5;
+  const base = hpr <= 0.25 ? 1
+    : hpr <= 0.5 ? 0.5 + ((0.5 - hpr) / 0.25) * 0.5
+      : 0.35 * (1 - hpr); // vida cheia = quase impossível, mas o arremesso vale
   return base * (FATOR_RARIDADE[b.e.esp.raridade] || 1);
 }
 
@@ -213,6 +215,14 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
     // salto-esquiva (dois toques na direção): rápido, com invulnerabilidade
     f.t += dt;
     f.pos = soma(p, escala(f.dashDir, f.esp.velocidade * 2.6 * dt));
+    // GIRO NO AR: pular durante a cambalhota lança o giro para o alto,
+    // continuando a deslizar na direção da esquiva (1x por cambalhota —
+    // o pulinho dela mesma deixa y > 0, então não dá para exigir chão)
+    if (inp.pulo && f.giroAr <= 0) {
+      f.vy = f.esp.impulso * 0.95;
+      f.giroAr = 0.4;
+      emitir({ tipo: 'pulo' });
+    }
     if (f.t > 0.28) f.estado = 'idle';
   } else if (f.estado === 'atk') {
     f.t += dt;
@@ -279,6 +289,7 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
         f.dashDir = normXZ(vec(inp.dash.x, 0, inp.dash.z));
         f.dashRel = inp.dashRel || null; // direção relativa (para a animação)
         f.invuln = Math.max(f.invuln, 0.3);
+        f.giroAr = 0; // cada cambalhota dá direito a UM giro no ar
         f.vy = 3.5; // pulinho da cambalhota
         emitir({ tipo: 'dash' });
       }
@@ -295,6 +306,11 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
     }
   }
   ganhaKi(f, 2 * dt); // o ki pinga sozinho, como elixir
+  // giro no ar: o impulso da cambalhota continua deslizando lá em cima
+  if (f.giroAr > 0) {
+    if (f.pos.y > 0.01) f.pos = soma(f.pos, escala(f.dashDir, f.esp.velocidade * 1.9 * dt));
+    f.giroAr -= dt;
+  }
   f.vy -= GRAVIDADE * dt;
   f.pos.y = Math.max(0, f.pos.y + f.vy * dt);
   if (f.pos.y === 0) { f.vy = Math.max(0, f.vy); f.pulosAr = 0; }

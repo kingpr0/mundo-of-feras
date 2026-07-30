@@ -96,6 +96,27 @@
     text-shadow:2px 2px 0 #26202e; }
   .dmg.forte { color:#ff6b4a; font-size:20px; }
   .dmg.super { color:#7dff6a; font-size:22px; }
+  /* COMPÊNDIO em tela cheia: ficha à esquerda, tabela de nomes à direita;
+     o mundo continua visível (escurecido por um véu 3D atrás da fera) */
+  #compendio { position:fixed; inset:0; display:none; pointer-events:none;
+    /* holofote: o mundo escurece, a fera girando fica no facho de luz */
+    background:radial-gradient(circle at 50% 46%, rgba(6,8,14,0) 170px,
+      rgba(6,8,14,.55) 320px, rgba(6,8,14,.78) 62%); }
+  #compFicha { position:absolute; left:3%; top:14%; width:280px; padding:14px 18px; }
+  #compFicha h2 { color:#ffd23f; font-size:18px; letter-spacing:1px; margin-bottom:2px; }
+  #compFicha .fsub { font-size:12px; color:#cfc7e6; margin-bottom:8px; }
+  #compFicha .ftag { display:inline-block; padding:2px 10px; border-radius:9px; font-size:11px;
+    font-weight:bold; color:#26202e; background:#cbd0d8; margin:0 6px 8px 0; }
+  #compFicha .flin { color:#fff6df; font-size:13px; margin:4px 0; }
+  #compFicha .flin b { color:#ffe9b0; }
+  #compFicha .fgolpe { color:#e8e3ff; font-size:12px; margin:3px 0; padding-left:10px; }
+  #compGrade { position:absolute; right:2%; top:10%; max-width:46%; padding:12px 14px; }
+  #compGradeTit { color:#ffd23f; font-size:12px; font-weight:bold; letter-spacing:1px;
+    margin-bottom:8px; border-bottom:1px solid #4a4066; padding-bottom:5px; }
+  #compCelulas { display:grid; grid-template-columns:repeat(4, 1fr); gap:3px 8px; }
+  #compCelulas .cel { font-size:12px; color:#e8e3ff; padding:3px 8px; border-radius:8px;
+    white-space:nowrap; }
+  #compCelulas .cel.sel { background:#ffcf5e; color:#26202e; font-weight:bold; }
 </style>
 </head>
 <body>
@@ -126,12 +147,19 @@
   <div class="hpwrap" id="hpE"><div class="hpname" id="nomeE">CASCORRO</div>
     <div class="hpbar"><div class="hpfill" id="fillE"></div></div>
     <div class="enbar"><div class="enfill" id="fillEnE"></div></div></div>
-  <div id="cap">! FERA FRACA — pressione F para CAPTURAR !</div>
+  <div id="cap">F — lançar Cristal de Captura (quanto mais fraca a fera, melhor!)</div>
   <div id="escolha" class="cartao">
     <div class="opt sel" id="optLutar">LUTAR</div>
     <div class="opt" id="optFugir">FUGIR</div>
   </div>
   <div id="ficha" class="cartao"></div>
+  <div id="compendio">
+    <div id="compFicha" class="cartao"></div>
+    <div id="compGrade" class="cartao">
+      <div id="compGradeTit">COMPÊNDIO DE FERAS · setas navegam · X fecha</div>
+      <div id="compCelulas"></div>
+    </div>
+  </div>
   <div id="interagir"></div>
   <div id="toast" class="cartao"></div>
   <div id="dica">Setas: andar · na luta: ↑/↓ aproxima-afasta · ←/→ orbita · ESPAÇO pula · Z golpe · X especial · C captura</div>

@@ -75,6 +75,10 @@ hud.mapaRegiao(dadosMapas, chaveMapa);
 // oferece as três iniciais (planta, fogo e água) — ver docs/HISTORIA.md
 const INICIAIS = ['folhito', 'brasinha', 'gotim'];
 let equipe = [];
+// ITENS: cristais são consumíveis — cada arremesso gasta um; a enfermeira
+// reabastece (caixas misteriosas e mercados virão depois)
+const CRISTAIS_MAX = 15;
+const itens = { cristal: CRISTAIS_MAX };
 let ativa = 0;
 const nomeDe = (f) => f.apelido || especies[f.especie].nome;
 function atualizaPainel() {
@@ -117,6 +121,7 @@ const keys = {};
 let jE = false, kE = false, cE = false, vE = false, fE = false, spE = false;
 let pJ = false, pK = false, pC = false, pV = false, pF = false, pS = false;
 let cimaE = false, baixoE = false, pCima = false, pBaixo = false;
+let esqE = false, dirE = false, pEsq = false, pDir = false;
 let mE = false, escE = false, pM = false, pEsc = false;
 addEventListener('keydown', (e) => {
   audioInit(); keys[e.code] = true;
@@ -141,6 +146,9 @@ function edges() {
   const CIMA = keys.ArrowUp, BAIXO = keys.ArrowDown;
   cimaE = CIMA && !pCima; baixoE = BAIXO && !pBaixo;
   pCima = CIMA; pBaixo = BAIXO;
+  const ESQ = keys.ArrowLeft, DIR = keys.ArrowRight;
+  esqE = ESQ && !pEsq; dirE = DIR && !pDir;
+  pEsq = ESQ; pDir = DIR;
   const M = keys.KeyM, ESC = keys.Escape;
   mE = M && !pM; escE = ESC && !pEsc;
   pM = M; pEsc = ESC;
@@ -220,7 +228,8 @@ function aoEvento(evt) {
     case 'feixe': sfx.especial(); cena.shake = 0.35;
       fx.raio(evt.de, evt.para, evt.elemento, evt.visual); break;
     case 'golpeUsado': hud.golpesPainel(linhasGolpes()); break;
-    case 'cristalVoa': sfx.cristalVoa(); MD.mostra(cristal, true); break;
+    case 'cristalVoa': sfx.cristalVoa(); MD.mostra(cristal, true);
+      itens.cristal--; hud.toast(`Cristal lançado! Restam ${itens.cristal}.`, 1300); break;
     case 'cristalSuga': poof(cena, evt.pos, 0x59e0d0, 14, 4); break;
     case 'cristalTreme': sfx.cristalTreme(); break;
     case 'capturado': sfx.capturado(); hitstop = 0.15;
@@ -313,7 +322,7 @@ function tituloMenu() {
   if (t === 'exploracao' && !menu.ativo) return 'MENU · aperte M';
   return { exploracao: 'MENU', batalha: 'BATALHA', equipeExp: 'EQUIPE',
            equipeBat: 'TROCAR FERA', statusLista: 'STATUS', catalogo: 'CATÁLOGO DE GOLPES',
-           compendio: 'COMPÊNDIO DE FERAS',
+           compendio: 'COMPÊNDIO DE FERAS', itens: 'ITENS',
            treinoP: 'TREINO · SUA FERA', treinoE: 'TREINO · OPONENTE' }[t]
     || (t === 'treinoG' ? `TREINO · GOLPES ${treino ? treino.golpes.length : 0}/4` : 'MENU');
 }
@@ -350,7 +359,7 @@ function itensDoMenu() {
     { txt: 'Status', acao: () => abreMenu('statusLista') },
     { txt: 'Compêndio', acao: () => abreMenu('compendio') },
     { txt: 'Catálogo', acao: () => abreMenu('catalogo') },
-    { txt: 'Itens', acao: () => hud.toast('Itens: em breve!') },
+    { txt: 'Itens', acao: () => abreMenu('itens') },
     { txt: 'Carteira', acao: () => hud.toast('Carteira: 0 moedas (economia em breve)') },
     { txt: 'Insígnias', acao: () => hud.toast('Insígnias: nenhuma ainda') },
     { txt: `Som: ${somLigado() ? 'ligado' : 'mudo'}`, acao: () => {
@@ -407,6 +416,12 @@ function itensDoMenu() {
     itens.push({ txt: 'Voltar', acao: () => abreMenu('statusFera') });
     return itens;
   }
+  if (t === 'itens') return [
+    { txt: `Cristal de Captura × ${itens.cristal}`, acao: () =>
+      hud.toast('Arremesse com F durante a luta — a enfermeira reabastece.', 2200) },
+    { txt: '(caixas misteriosas e mercados: em breve)', acao: nada },
+    { txt: 'Voltar', acao: () => abreMenu('exploracao') },
+  ];
   if (t === 'catalogo') return [
     ...Object.values(golpesCat).map((g) => ({
       txt: `${g.nome} · ${g.tipo}${g.base ? ' · forte' : ''} · ${g.usos == null ? '∞' : g.usos} usos`,
@@ -414,16 +429,7 @@ function itensDoMenu() {
     })),
     { txt: 'Voltar', acao: () => abreMenu('exploracao') },
   ];
-  if (t === 'compendio') return [
-    ...Object.keys(especies).map((k) => ({
-      txt: especies[k].nome,
-      acao: () => { menu.especie = k; abreMenu('compendioFera'); },
-    })),
-    { txt: 'Voltar', acao: () => abreMenu('exploracao') },
-  ];
-  if (t === 'compendioFera') return [
-    { txt: 'Voltar', acao: () => abreMenu('compendio') },
-  ];
+  // 'compendio' não usa a lista lateral: vira TABELA própria (navegaMenu)
   return [];
 }
 
@@ -470,15 +476,17 @@ function fichaEspecie(k) {
     golpes: (e2.aprendizado || []).map((a) => `Lv.${a.nivel}: ${golpesCat[a.golpe].nome}`),
   };
 }
-/* holograma GIGANTE: a fera aparece girando no centro da tela */
-function mostraHoloEspecie(chave) {
+/* holograma: a fera aparece girando no centro da tela. No compêndio
+   ("compacto") toda fera é projetada do MESMO tamanho — o porte real
+   é coisa de batalha (o "holofote" que escurece o resto é CSS puro) */
+function mostraHoloEspecie(chave, compacto = false) {
   escondeHolo();
   holoM = modelosIni[chave];
   // o domador dá lugar à projeção — o holograma fica no centro da tela
   MD.mostra(domador, false);
   const base = { x: mundo.domador.pos.x, y: mundo.domador.pos.y + 0.1, z: mundo.domador.pos.z };
   MD.setPos(holoM, base);
-  MD.setEscala(holoM, 4.5);
+  MD.setEscala(holoM, compacto ? 2.6 / (especies[chave].altura3d || 1.1) : 4.5);
   // sólido e com tinta azulada BEM sutil: as cores reais da fera aparecem
   MD.setOpacidade(holoM, 1);
   MD.flashCor(holoM, 0x06222a);
@@ -492,6 +500,7 @@ function mostraHoloEspecie(chave) {
 }
 function escondeHolo() {
   hud.ficha(null);
+  hud.compendio(null);
   if (!holoM) return;
   holoM.g.traverse((o) => { if (o.isMesh) o.castShadow = true; });
   MD.setOpacidade(holoM, 1);
@@ -503,13 +512,35 @@ function escondeHolo() {
   holoM = null;
 }
 
-// desenha o menu lateral (com destaque só quando está ativo)
+// desenha o menu lateral (com destaque só quando está ativo);
+// o compêndio tem interface própria — a lista lateral não aparece nele
 function renderMenu() {
+  if (menu.tipo === 'compendio') return;
   hud.menu(true, tituloMenu(), itensDoMenu().map((i) => i.txt), menu.ativo ? menu.sel : -1);
 }
 // cada lista lembra onde o cursor estava (voltar da ficha não recomeça do topo)
 const selLembrado = {};
+const COLS_COMPENDIO = 4;
+// COMPÊNDIO em tabela: nada de lista lateral — grade + ficha + holograma
+function mostraCompendio() {
+  const ks = Object.keys(especies);
+  const k = ks[menu.sel];
+  mostraHoloEspecie(k, true);
+  hud.menu(false);
+  hud.ficha(null);
+  hud.compendio({
+    ficha: fichaEspecie(k),
+    nomes: ks.map((kk) => especies[kk].nome),
+    sel: menu.sel,
+  });
+}
 function abreMenu(tipo) {
+  if (tipo === 'compendio') {
+    menu = { tipo, sel: Math.min(selLembrado.compendio || 0, Object.keys(especies).length - 1),
+             fera: menu.fera, especie: menu.especie, ativo: true };
+    mostraCompendio();
+    return;
+  }
   menu = { tipo, sel: selLembrado[tipo] || 0, fera: menu.fera, especie: menu.especie, ativo: true };
   menu.sel = Math.min(menu.sel, Math.max(0, itensDoMenu().length - 1));
   renderMenu();
@@ -531,9 +562,6 @@ function abreMenu(tipo) {
     // escolhendo golpes: a sua fera fica projetada de referência
     mostraHoloEspecie(treino.p);
     hud.ficha(fichaEspecie(treino.p));
-  } else if (tipo === 'compendio') {
-    const ks = Object.keys(especies);
-    if (ks[menu.sel]) { mostraHoloEspecie(ks[menu.sel]); hud.ficha(fichaEspecie(ks[menu.sel])); }
   } else escondeHolo();
 }
 // "fechar": na exploração o menu continua na lateral, só desativa a navegação
@@ -548,7 +576,7 @@ function voltaMenu() {
   const t = menu.tipo;
   if (t === 'inicial' && !equipe.length) return; // o Ritual não se recusa
 
-  if (t === 'equipeExp' || t === 'statusLista' || t === 'catalogo' || t === 'compendio') abreMenu('exploracao');
+  if (t === 'equipeExp' || t === 'statusLista' || t === 'catalogo' || t === 'compendio' || t === 'itens') abreMenu('exploracao');
   else if (t === 'equipeBat' || t === 'batalha') fechaMenu();
   else if (t === 'statusFera') abreMenu('statusLista');
   else if (t === 'lembrar') abreMenu('statusFera');
@@ -558,6 +586,23 @@ function voltaMenu() {
   else fechaMenu();
 }
 function navegaMenu() {
+  // COMPÊNDIO: navegação em TABELA (4 sentidos), só olhar — X/ESC fecha
+  if (menu.tipo === 'compendio') {
+    const total = Object.keys(especies).length;
+    let novoSel = menu.sel;
+    if (dirE) novoSel = (menu.sel + 1) % total;
+    else if (esqE) novoSel = (menu.sel - 1 + total) % total;
+    else if (baixoE) novoSel = Math.min(total - 1, menu.sel + COLS_COMPENDIO);
+    else if (cimaE) novoSel = Math.max(0, menu.sel - COLS_COMPENDIO);
+    if (novoSel !== menu.sel) {
+      menu.sel = novoSel;
+      selLembrado.compendio = novoSel;
+      sfx.swing();
+      mostraCompendio();
+    }
+    if (kE || escE || jE) voltaMenu();
+    return;
+  }
   const itens = itensDoMenu();
   if (!itens.length) { if (kE || escE) voltaMenu(); return; }
   if (baixoE || cimaE) {
@@ -565,16 +610,13 @@ function navegaMenu() {
     selLembrado[menu.tipo] = menu.sel;
     sfx.swing();
     renderMenu();
-    // no Ritual, na Arena de Treino e no COMPÊNDIO, o holograma e a ficha
-    // acompanham a fera destacada — sem precisar confirmar
+    // no Ritual e na Arena de Treino, o holograma e a ficha acompanham
+    // a fera destacada — sem precisar confirmar
     const ksHolo = menu.tipo === 'inicial' ? INICIAIS
-      : (menu.tipo === 'treinoP' || menu.tipo === 'treinoE' || menu.tipo === 'compendio')
-        ? Object.keys(especies) : null;
-    if (ksHolo) {
-      if (ksHolo[menu.sel]) {
-        mostraHoloEspecie(ksHolo[menu.sel]);
-        hud.ficha(fichaEspecie(ksHolo[menu.sel]));
-      } else escondeHolo(); // o item "Voltar" no fim da lista
+      : (menu.tipo === 'treinoP' || menu.tipo === 'treinoE') ? Object.keys(especies) : null;
+    if (ksHolo && ksHolo[menu.sel]) {
+      mostraHoloEspecie(ksHolo[menu.sel]);
+      hud.ficha(fichaEspecie(ksHolo[menu.sel]));
     }
   }
   if (kE || escE) { voltaMenu(); return; }
@@ -1118,8 +1160,9 @@ function loop(agora) {
       else if (evt === 'cura') {
         sfx.capturado(); hud.flash();
         for (const f of equipe) curaTotal(f, especies, golpesCat);
+        itens.cristal = CRISTAIS_MAX;
         atualizaPainel();
-        hud.toast('❤ Enfermeira: vida e golpes de todas as feras restaurados!', 3000);
+        hud.toast(`❤ Enfermeira: feras restauradas e ${CRISTAIS_MAX} Cristais de Captura na mochila!`, 3000);
       }
       else if (evt && evt.tipo === 'porta') {
         if (evt.destino === 'retorno' && retornoPorta.length) {
@@ -1147,10 +1190,12 @@ function loop(agora) {
       const press = jE ? 0 : kE ? 1 : cE ? 2 : vE ? 3 : null;
       const golpeIdx = press;
       const forte = press != null && shiftSegurado();
+      if (fE && itens.cristal <= 0)
+        hud.toast('Sem Cristais de Captura! A enfermeira do Centro reabastece.', 2000);
       const inpP = {
         mov: { x: eixo(['ArrowLeft'], ['ArrowRight']),
                z: eixo(['ArrowUp'], ['ArrowDown']) },
-        pulo: spE, golpe: golpeIdx, forte, dash, capturar: fE,
+        pulo: spE, golpe: golpeIdx, forte, dash, capturar: fE && itens.cristal > 0,
         carregar: !!keys.KeyA, // segurar A = carregar energia (ki)
       };
       const fim = passoBatalha(batalha, inpP, dt, aoEvento);

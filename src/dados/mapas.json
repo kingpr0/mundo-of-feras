@@ -183,7 +183,7 @@
         "z": 10
       },
       "selvagens": [
-        "cascorro"
+        "pedrusco"
       ],
       "saidas": [
         {
@@ -396,10 +396,10 @@
         "z": 0
       },
       "selvagens": [
-        "voltim",
+        "gelavim",
         "folhito",
-        "fofim",
-        "faiscat",
+        "furim",
+        "raiozim",
         "cogumim"
       ],
       "saidas": [
@@ -509,11 +509,10 @@
         "z": -19
       },
       "selvagens": [
-        "cascorro",
-        "raposa",
+        "pedrusco",
+        "furim",
         "espinhim",
-        "dunim",
-        "pedrusco"
+        "dunim"
       ],
       "saidas": [
         {
@@ -587,11 +586,11 @@
           "fala": "Você aí! Minhas feras estão coçando por um DUELO — e você não pode recusar!",
           "equipe": [
             {
-              "especie": "cascorro",
+              "especie": "pedrusco",
               "nivel": 6
             },
             {
-              "especie": "voltim",
+              "especie": "gelavim",
               "nivel": 6
             }
           ],
@@ -599,8 +598,8 @@
         }
       ],
       "selvagens": [
-        "cascorro",
-        "voltim",
+        "pedrusco",
+        "gelavim",
         "cogumim",
         "furim"
       ],
@@ -691,9 +690,8 @@
         "z": 14
       },
       "selvagens": [
-        "voltim",
-        "gotim",
-        "sapum"
+        "gelavim",
+        "gotim"
       ],
       "saidas": [
         {
@@ -810,7 +808,7 @@
           "fala": "Ninguém cruza o Campo Norte sem me enfrentar. Regra minha!",
           "equipe": [
             {
-              "especie": "salamandro",
+              "especie": "vulpim",
               "nivel": 9
             },
             {
@@ -832,12 +830,11 @@
         "z": 18
       },
       "selvagens": [
-        "cascorro",
-        "voltim",
+        "pedrusco",
+        "gelavim",
         "folhito",
-        "fofim",
-        "gravetim",
-        "furim"
+        "furim",
+        "gravetim"
       ],
       "saidas": [
         {
@@ -984,7 +981,7 @@
           "fala": "Minha magia forjou três feras imbatíveis. Prove que estou errada... se conseguir!",
           "equipe": [
             {
-              "especie": "voltim",
+              "especie": "gelavim",
               "nivel": 11
             },
             {
@@ -992,7 +989,7 @@
               "nivel": 11
             },
             {
-              "especie": "cascorro",
+              "especie": "pedrusco",
               "nivel": 12
             }
           ],
@@ -1000,11 +997,10 @@
         }
       ],
       "selvagens": [
-        "cascorro",
-        "voltim",
-        "salamandro",
-        "raposa",
-        "vulpim"
+        "pedrusco",
+        "gelavim",
+        "vulpim",
+        "furim"
       ],
       "saidas": [
         {
@@ -1104,12 +1100,11 @@
         "z": 13
       },
       "selvagens": [
-        "voltim",
-        "salamandro",
+        "gelavim",
+        "vulpim",
         "folhito",
         "draguim",
-        "diabrim",
-        "vulpim",
+        "dunim",
         "rochim"
       ],
       "saidas": [
@@ -1195,11 +1190,9 @@
         "z": 8
       },
       "selvagens": [
-        "voltim",
+        "gelavim",
         "gotim",
         "raiozim",
-        "sapum",
-        "faiscat",
         "rochim"
       ],
       "saidas": [
@@ -1378,15 +1371,14 @@
         "z": 0
       },
       "selvagens": [
-        "salamandro",
-        "cascorro",
+        "vulpim",
+        "pedrusco",
         "raiozim",
-        "assombrim",
+        "rochim",
         "draguim",
-        "yetao",
-        "dragolim",
-        "gelavim",
-        "pratim"
+        "nevim",
+        "pratim",
+        "gelavim"
       ],
       "saidas": [
         {
@@ -1471,9 +1463,9 @@
         "z": 5.5
       },
       "selvagens": [
-        "cascorro",
-        "assombrim",
-        "diabrim"
+        "pedrusco",
+        "rochim",
+        "dunim"
       ],
       "saidas": []
     },
@@ -1587,11 +1579,11 @@
           "fala": "A Guilda paga bem por feras raras. As SUAS, por exemplo... entregue ou duele!",
           "equipe": [
             {
-              "especie": "cascorro",
+              "especie": "pedrusco",
               "nivel": 12
             },
             {
-              "especie": "voltim",
+              "especie": "gelavim",
               "nivel": 12
             }
           ],
@@ -1609,10 +1601,9 @@
         "z": 21
       },
       "selvagens": [
-        "yetao",
-        "raiozim",
-        "cascorro",
         "nevim",
+        "raiozim",
+        "pedrusco",
         "gelavim"
       ],
       "saidas": [
@@ -1738,7 +1729,7 @@
         "z": 7
       },
       "selvagens": [
-        "cascorro"
+        "pedrusco"
       ],
       "saidas": [
         {
@@ -2004,9 +1995,7 @@
         "z": 5
       },
       "selvagens": [
-        "sapum",
         "gotim",
-        "voltim",
         "gelavim"
       ],
       "saidas": [
@@ -2063,7 +2052,7 @@
         "z": 5.6
       },
       "selvagens": [
-        "cascorro"
+        "pedrusco"
       ],
       "saidas": []
     },
@@ -2107,7 +2096,7 @@
         "z": 4.6
       },
       "selvagens": [
-        "cascorro"
+        "pedrusco"
       ],
       "saidas": []
     },
@@ -2133,7 +2122,7 @@
         "z": 3.6
       },
       "selvagens": [
-        "cascorro"
+        "pedrusco"
       ],
       "saidas": []
     }
