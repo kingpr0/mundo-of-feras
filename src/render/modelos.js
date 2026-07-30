@@ -4,6 +4,10 @@
 import * as THREE from 'three';
 import { GLTFLoader } from '../vendor/GLTFLoader.js';
 
+// o mesmo arquivo é carregado 2x (fera do jogador + selvagem) e o jogo agora
+// tem dezenas de modelos: o cache evita baixar cada .glb de novo
+THREE.Cache.enabled = true;
+
 const COR = {
   pele: 0xffd9b0, bone: 0x3fc5ba, boneEscuro: 0x2a8f88, olho: 0x26202e,
   tunica: 0xffcf4d, cachecol: 0xe05a41, calca: 0x4a68e0, sapato: 0x33313d,
@@ -636,6 +640,24 @@ const FABRICAS = { brasinha: criarBrasinha, cascorro: criarCascorro, voltim: cri
 /* pipeline glTF: carrega modelo com esqueleto/animações, normaliza a escala
    pela altura desejada e apoia os pés no chão. Clipes viram ações nomeadas. */
 let _loader = null;
+// mede um modelo com esqueleto pela NUVEM DE OSSOS quando a malha "mente":
+// exports do Meshy vêm em centímetros (escala 0.01 no armature) e o Box3 da
+// geometria diria que o bicho tem 2cm — os vértices reais seguem os ossos
+function caixaReal(obj) {
+  const cx = new THREE.Box3().setFromObject(obj);
+  if (cx.max.y - cx.min.y > 0.05) return cx;
+  obj.updateMatrixWorld(true);
+  const c2 = new THREE.Box3();
+  let temOsso = false;
+  const p = new THREE.Vector3();
+  obj.traverse((o) => {
+    if (o.isBone) { temOsso = true; c2.expandByPoint(p.setFromMatrixPosition(o.matrixWorld)); }
+  });
+  if (!temOsso) return cx;
+  c2.expandByScalar((c2.max.y - c2.min.y) * 0.12 + 0.005);
+  return c2;
+}
+
 export function criarFeraGltf(scene, url, alturaAlvo = 1.1, giroGraus = 0) {
   if (!_loader) _loader = new GLTFLoader();
   return new Promise((resolve, reject) => {
@@ -648,10 +670,10 @@ export function criarFeraGltf(scene, url, alturaAlvo = 1.1, giroGraus = 0) {
       // giro3d dos dados corrige modelos que "olham" para outro eixo
       // (nossa convenção: fera parada encara +z)
       if (giroGraus) interno.rotation.y = giroGraus * Math.PI / 180;
-      const box = new THREE.Box3().setFromObject(gltf.scene);
+      const box = caixaReal(gltf.scene);
       const alt = box.max.y - box.min.y || 1;
       interno.scale.setScalar(alturaAlvo / alt);
-      const box2 = new THREE.Box3().setFromObject(interno);
+      const box2 = caixaReal(interno);
       interno.position.y = -box2.min.y;
       marcaBoca(M, M.g, 0, alturaAlvo * 0.72, alturaAlvo * 0.55);
       gltf.scene.traverse((o) => {
@@ -680,6 +702,9 @@ export function criarFeraGltf(scene, url, alturaAlvo = 1.1, giroGraus = 0) {
           else o.material = troca(o.material);
           const mats = Array.isArray(o.material) ? o.material : [o.material];
           for (const mt of mats) M.materiais.push(mt);
+          // malha com esqueleto se move além da caixa da geometria — sem
+          // isso a câmera "corta" o modelo achando que saiu da tela
+          if (o.isSkinnedMesh) o.frustumCulled = false;
         }
       });
       M.mixer = new THREE.AnimationMixer(gltf.scene);
@@ -690,6 +715,16 @@ export function criarFeraGltf(scene, url, alturaAlvo = 1.1, giroGraus = 0) {
     }, undefined, reject);
   });
 }
+// humano glTF (jogador e treinadores do Meshy): mesmo pipeline das feras,
+// com os clipes padronizados parado/andar/correr embutidos no arquivo
+export function criarPersonagem(scene, url, alturaAlvo = 1.7) {
+  return criarFeraGltf(scene, url, alturaAlvo, 0).then((M) => {
+    M.clipes = { parado: 'parado', andar: 'andar', correr: 'correr' };
+    tocaClip(M, 'parado', 0);
+    return M;
+  });
+}
+
 // troca de animação com transição suave; "once" toca o clipe uma única vez
 // e congela no último quadro (golpes, dano, KO) — "restart" força recomeço
 // mesmo se já for o clipe atual (dois golpes seguidos)

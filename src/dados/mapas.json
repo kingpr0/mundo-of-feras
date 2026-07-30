@@ -218,7 +218,12 @@
           "alto": "norte",
           "h": 0.5
         }
-      ]
+      ],
+      "arenaTreino": {
+        "x": 14,
+        "z": 8,
+        "modelo": 3
+      }
     },
     "verdejante": {
       "nome": "Cidade Verdejante",
@@ -394,7 +399,8 @@
         "voltim",
         "folhito",
         "fofim",
-        "faiscat"
+        "faiscat",
+        "cogumim"
       ],
       "saidas": [
         {
@@ -505,7 +511,9 @@
       "selvagens": [
         "cascorro",
         "raposa",
-        "espinhim"
+        "espinhim",
+        "dunim",
+        "pedrusco"
       ],
       "saidas": [
         {
@@ -586,12 +594,15 @@
               "especie": "voltim",
               "nivel": 6
             }
-          ]
+          ],
+          "modelo": 2
         }
       ],
       "selvagens": [
         "cascorro",
-        "voltim"
+        "voltim",
+        "cogumim",
+        "furim"
       ],
       "saidas": [
         {
@@ -806,7 +817,8 @@
               "especie": "gotim",
               "nivel": 9
             }
-          ]
+          ],
+          "modelo": 6
         }
       ],
       "grama": {
@@ -823,7 +835,9 @@
         "cascorro",
         "voltim",
         "folhito",
-        "fofim"
+        "fofim",
+        "gravetim",
+        "furim"
       ],
       "saidas": [
         {
@@ -981,14 +995,16 @@
               "especie": "cascorro",
               "nivel": 12
             }
-          ]
+          ],
+          "modelo": 7
         }
       ],
       "selvagens": [
         "cascorro",
         "voltim",
         "salamandro",
-        "raposa"
+        "raposa",
+        "vulpim"
       ],
       "saidas": [
         {
@@ -1092,7 +1108,9 @@
         "salamandro",
         "folhito",
         "draguim",
-        "diabrim"
+        "diabrim",
+        "vulpim",
+        "rochim"
       ],
       "saidas": [
         {
@@ -1181,7 +1199,8 @@
         "gotim",
         "raiozim",
         "sapum",
-        "faiscat"
+        "faiscat",
+        "rochim"
       ],
       "saidas": [
         {
@@ -1365,7 +1384,9 @@
         "assombrim",
         "draguim",
         "yetao",
-        "dragolim"
+        "dragolim",
+        "gelavim",
+        "pratim"
       ],
       "saidas": [
         {
@@ -1573,7 +1594,8 @@
               "especie": "voltim",
               "nivel": 12
             }
-          ]
+          ],
+          "modelo": 9
         }
       ],
       "grama": {
@@ -1589,7 +1611,9 @@
       "selvagens": [
         "yetao",
         "raiozim",
-        "cascorro"
+        "cascorro",
+        "nevim",
+        "gelavim"
       ],
       "saidas": [
         {
@@ -1857,7 +1881,8 @@
         "z": 15
       },
       "selvagens": [
-        "gotim"
+        "gotim",
+        "gelavim"
       ],
       "saidas": [
         {
@@ -1981,7 +2006,8 @@
       "selvagens": [
         "sapum",
         "gotim",
-        "voltim"
+        "voltim",
+        "gelavim"
       ],
       "saidas": [
         {

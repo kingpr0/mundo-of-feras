@@ -2,7 +2,7 @@
 // arena de batalha, partículas e as duas câmeras (exploração e lock-on).
 import * as THREE from 'three';
 import { alturaTerreno, alturaSolo, alturaDegraus } from '../sim/mundo.js';
-import { criarNPC } from './modelos.js';
+import { criarNPC, criarPersonagem, tocaClip } from './modelos.js';
 import { texturaChamaAnimada } from './efeitos.js';
 
 export function criarCena(canvas) {
@@ -1248,6 +1248,28 @@ function descarta(obj) {
 }
 
 // (re)monta o cenário de um mapa de mapas.json
+// põe um humano glTF (treinador N) no mapa, com idle vivo; se o arquivo
+// falhar, o NPC procedural clássico entra no lugar
+function poePersonagem(g, modeloN, x, z, y, rot, tipoFallback) {
+  criarPersonagem(g, `./assets/treinadores/t${modeloN}.glb`, 1.72)
+    .then((M) => {
+      if (!g.parent) return; // o jogador já trocou de mapa
+      M.g.position.set(x, y, z);
+      M.g.rotation.y = rot;
+      tocaClip(M, 'parado', 0);
+      let tAnt = null;
+      (g.userData.anims || []).push((t) => {
+        if (M.mixer) M.mixer.update(tAnt === null ? 0 : Math.max(0, t - tAnt));
+        tAnt = t;
+      });
+    })
+    .catch(() => {
+      const npc = criarNPC(g, tipoFallback || 'aldeao');
+      npc.g.position.set(x, y, z);
+      npc.g.rotation.y = rot;
+    });
+}
+
 export function montaMapa(cena, mapa) {
   descarta(cena.mundoG);
   cena.scene.remove(cena.mundoG);
@@ -1296,12 +1318,33 @@ export function montaMapa(cena, mapa) {
     npc.g.position.set(x, alturaTerreno(mapa, { x, z }), z);
     npc.g.rotation.y = rot || 0;
   });
-  // treinadores desafiantes (dados do mapa: x, z, tipo do visual, equipe)
-  (mapa.treinadores || []).forEach((t) => {
-    const npc = criarNPC(g, t.tipo || 'aldeao');
-    npc.g.position.set(t.x, alturaTerreno(mapa, t), t.z);
-    npc.g.rotation.y = t.rot || 0;
+  // treinadores desafiantes (dados do mapa: x, z, "modelo" glTF, equipe);
+  // o modelo carrega assíncrono — se falhar, o boneco procedural assume
+  (mapa.treinadores || []).forEach((t, i) => {
+    poePersonagem(g, t.modelo || (2 + (i % 8)), t.x, t.z, alturaTerreno(mapa, t), t.rot || 0, t.tipo);
   });
+  // Arena de Treino: palco circular + o Mestre esperando desafiantes
+  if (mapa.arenaTreino) {
+    const a = mapa.arenaTreino;
+    const ya = alturaTerreno(mapa, a);
+    const palco = new THREE.Mesh(
+      new THREE.CylinderGeometry(2.5, 2.7, 0.12, 24),
+      new THREE.MeshLambertMaterial({ color: 0xc9b384 }));
+    palco.position.set(a.x, ya + 0.06, a.z);
+    palco.receiveShadow = true;
+    g.add(palco);
+    for (let k = 0; k < 8; k++) {
+      const ang = (k / 8) * Math.PI * 2;
+      const pedra = new THREE.Mesh(
+        new THREE.DodecahedronGeometry(0.22, 0),
+        new THREE.MeshLambertMaterial({ color: 0x8d939c }));
+      pedra.position.set(a.x + Math.cos(ang) * 2.85, ya + 0.16, a.z + Math.sin(ang) * 2.85);
+      pedra.castShadow = true;
+      g.add(pedra);
+    }
+    // o Mestre fica no lado norte do palco, de frente para quem chega (+z)
+    poePersonagem(g, a.modelo || 3, a.x, a.z - 1.4, ya + 0.12, 0, 'maga');
+  }
   for (const G of mapa.gramas || (mapa.grama ? [mapa.grama] : [])) montaGrama(g, G, mapa);
   for (const ag of mapa.aguas || (mapa.agua ? [mapa.agua] : [])) montaAgua(g, ag);
   if (mapa.balsa) montaBalsa(g, mapa.balsa, cena.anims);

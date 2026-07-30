@@ -28,7 +28,18 @@
         "nivel": 10,
         "golpe": "lanca_chamas"
       }
-    ]
+    ],
+    "modelo3d": "./assets/feras/brasinha.glb",
+    "altura3d": 1.05,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    }
   },
   "cascorro": {
     "nome": "Cascorro",
@@ -133,11 +144,12 @@
     "altura3d": 1.05,
     "giro3d": 0,
     "clipes": {
-      "parado": "CharacterArmature|Idle",
-      "andar": "CharacterArmature|Walk",
-      "ataque": "CharacterArmature|Bite_Front",
-      "dano": "CharacterArmature|HitRecieve",
-      "ko": "CharacterArmature|Death"
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
     },
     "aprendizado": [
       {
@@ -223,7 +235,18 @@
         "nivel": 10,
         "golpe": "trovao"
       }
-    ]
+    ],
+    "modelo3d": "./assets/feras/raiozim.glb",
+    "altura3d": 0.95,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    }
   },
   "draguim": {
     "nome": "Draguim",
@@ -432,14 +455,15 @@
       "frente"
     ],
     "modelo3d": "./assets/feras/espinhim.glb",
-    "altura3d": 0.95,
+    "altura3d": 1,
     "giro3d": 0,
     "clipes": {
-      "parado": "CharacterArmature|Idle",
-      "andar": "CharacterArmature|Walk",
-      "ataque": "CharacterArmature|Bite_Front",
-      "dano": "CharacterArmature|HitRecieve",
-      "ko": "CharacterArmature|Death"
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
     },
     "aprendizado": [
       {
@@ -485,7 +509,18 @@
         "nivel": 10,
         "golpe": "rajada_bolhas"
       }
-    ]
+    ],
+    "modelo3d": "./assets/feras/gotim.glb",
+    "altura3d": 1,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    }
   },
   "dragolim": {
     "nome": "Dragolim",
@@ -570,6 +605,1126 @@
       {
         "nivel": 7,
         "golpe": "investida_feroz"
+      }
+    ]
+  },
+  "brasurio": {
+    "nome": "Brasúrio",
+    "tipo": "fogo",
+    "raridade": "rara",
+    "vida": 88,
+    "velocidade": 4.4,
+    "ataque": 1.15,
+    "impulso": 7.5,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/brasurio.glb",
+    "altura3d": 1.3,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "bola_fogo"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "lanca_chamas"
+      }
+    ]
+  },
+  "dragobrasa": {
+    "nome": "Dragobrasa",
+    "tipo": "fogo",
+    "raridade": "muito_rara",
+    "voa": true,
+    "vida": 108,
+    "velocidade": 4,
+    "ataque": 1.28,
+    "impulso": 8,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/dragobrasa.glb",
+    "altura3d": 1.8,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "bola_fogo"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "lanca_chamas"
+      }
+    ]
+  },
+  "gotao": {
+    "nome": "Gotão",
+    "tipo": "agua",
+    "raridade": "rara",
+    "vida": 89,
+    "velocidade": 4.2,
+    "ataque": 1.15,
+    "impulso": 7.5,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/gotao.glb",
+    "altura3d": 1.3,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "jato_agua"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "rajada_bolhas"
+      }
+    ]
+  },
+  "gotorrente": {
+    "nome": "Gotorrente",
+    "tipo": "agua",
+    "raridade": "muito_rara",
+    "vida": 104,
+    "velocidade": 4.3,
+    "ataque": 1.28,
+    "impulso": 8,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/gotorrente.glb",
+    "altura3d": 1.6,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "jato_agua"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "rajada_bolhas"
+      }
+    ]
+  },
+  "folhardo": {
+    "nome": "Folhardo",
+    "tipo": "planta",
+    "raridade": "rara",
+    "vida": 86,
+    "velocidade": 4.3,
+    "ataque": 1.15,
+    "impulso": 7.5,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/folhardo.glb",
+    "altura3d": 1.3,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "folha_navalha"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "tempestade_folhas"
+      }
+    ]
+  },
+  "florasto": {
+    "nome": "Florasto",
+    "tipo": "planta",
+    "raridade": "muito_rara",
+    "vida": 111,
+    "velocidade": 4,
+    "ataque": 1.28,
+    "impulso": 8,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/florasto.glb",
+    "altura3d": 1.55,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "folha_navalha"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "tempestade_folhas"
+      },
+      {
+        "nivel": 12,
+        "golpe": "raio_esmeralda"
+      }
+    ]
+  },
+  "raiotron": {
+    "nome": "Raiotron",
+    "tipo": "eletrico",
+    "raridade": "rara",
+    "vida": 88,
+    "velocidade": 4.6,
+    "ataque": 1.15,
+    "impulso": 7.5,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/raiotron.glb",
+    "altura3d": 1.5,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "esfera_voltaica"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "rajada_voltaica"
+      },
+      {
+        "nivel": 12,
+        "golpe": "trovao"
+      }
+    ]
+  },
+  "espinharal": {
+    "nome": "Espinharal",
+    "tipo": "planta",
+    "raridade": "rara",
+    "vida": 88,
+    "velocidade": 4.8,
+    "ataque": 1.15,
+    "impulso": 7.5,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/espinharal.glb",
+    "altura3d": 1.4,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "folha_navalha"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "tempestade_folhas"
+      }
+    ]
+  },
+  "cascorao": {
+    "nome": "Cascorão",
+    "tipo": "comum",
+    "raridade": "rara",
+    "vida": 87,
+    "velocidade": 4.2,
+    "ataque": 1.15,
+    "impulso": 7.5,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/cascorao.glb",
+    "altura3d": 1.35,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "rolamento_demolidor"
+      }
+    ]
+  },
+  "gelavim": {
+    "nome": "Gelavim",
+    "tipo": "agua",
+    "raridade": "comum",
+    "selvagem": true,
+    "voa": true,
+    "vida": 71,
+    "velocidade": 4.3,
+    "ataque": 1.05,
+    "impulso": 7,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/gelavim.glb",
+    "altura3d": 1,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "jato_agua"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "rajada_bolhas"
+      }
+    ]
+  },
+  "gelavor": {
+    "nome": "Gelavor",
+    "tipo": "agua",
+    "raridade": "rara",
+    "voa": true,
+    "vida": 86,
+    "velocidade": 4.4,
+    "ataque": 1.15,
+    "impulso": 7.5,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/gelavor.glb",
+    "altura3d": 1.4,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "jato_agua"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "rajada_bolhas"
+      }
+    ]
+  },
+  "nevim": {
+    "nome": "Nevim",
+    "tipo": "comum",
+    "raridade": "comum",
+    "selvagem": true,
+    "vida": 63,
+    "velocidade": 4.4,
+    "ataque": 1.05,
+    "impulso": 7,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/nevim.glb",
+    "altura3d": 1.05,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "rolamento_demolidor"
+      }
+    ]
+  },
+  "nevurso": {
+    "nome": "Nevurso",
+    "tipo": "comum",
+    "raridade": "rara",
+    "vida": 88,
+    "velocidade": 4.7,
+    "ataque": 1.15,
+    "impulso": 7.5,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/nevurso.glb",
+    "altura3d": 1.7,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "rolamento_demolidor"
+      }
+    ]
+  },
+  "cogumim": {
+    "nome": "Cogumim",
+    "tipo": "planta",
+    "raridade": "comum",
+    "selvagem": true,
+    "vida": 67,
+    "velocidade": 4.6,
+    "ataque": 1.05,
+    "impulso": 7,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/cogumim.glb",
+    "altura3d": 1,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "folha_navalha"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "tempestade_folhas"
+      }
+    ]
+  },
+  "cogumal": {
+    "nome": "Cogumal",
+    "tipo": "planta",
+    "raridade": "rara",
+    "vida": 87,
+    "velocidade": 4.2,
+    "ataque": 1.15,
+    "impulso": 7.5,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/cogumal.glb",
+    "altura3d": 1.3,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "folha_navalha"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "tempestade_folhas"
+      }
+    ]
+  },
+  "dunim": {
+    "nome": "Dunim",
+    "tipo": "comum",
+    "raridade": "comum",
+    "selvagem": true,
+    "vida": 66,
+    "velocidade": 4.3,
+    "ataque": 1.05,
+    "impulso": 7,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/dunim.glb",
+    "altura3d": 0.9,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "rolamento_demolidor"
+      }
+    ]
+  },
+  "pratim": {
+    "nome": "Pratim",
+    "tipo": "comum",
+    "raridade": "comum",
+    "selvagem": true,
+    "vida": 63,
+    "velocidade": 4.4,
+    "ataque": 1.05,
+    "impulso": 7,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/pratim.glb",
+    "altura3d": 1,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "rolamento_demolidor"
+      }
+    ]
+  },
+  "pratagor": {
+    "nome": "Pratagor",
+    "tipo": "comum",
+    "raridade": "rara",
+    "voa": true,
+    "vida": 85,
+    "velocidade": 4.3,
+    "ataque": 1.15,
+    "impulso": 7.5,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/pratagor.glb",
+    "altura3d": 1.55,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "rolamento_demolidor"
+      }
+    ]
+  },
+  "furim": {
+    "nome": "Furim",
+    "tipo": "comum",
+    "raridade": "comum",
+    "selvagem": true,
+    "vida": 71,
+    "velocidade": 4.3,
+    "ataque": 1.05,
+    "impulso": 7,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/furim.glb",
+    "altura3d": 0.95,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "rolamento_demolidor"
+      }
+    ]
+  },
+  "gravetim": {
+    "nome": "Gravetim",
+    "tipo": "planta",
+    "raridade": "comum",
+    "selvagem": true,
+    "vida": 69,
+    "velocidade": 4.4,
+    "ataque": 1.05,
+    "impulso": 7,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/gravetim.glb",
+    "altura3d": 1.05,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "folha_navalha"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "tempestade_folhas"
+      }
+    ]
+  },
+  "rochim": {
+    "nome": "Rochim",
+    "tipo": "comum",
+    "raridade": "comum",
+    "selvagem": true,
+    "vida": 71,
+    "velocidade": 4.1,
+    "ataque": 1.05,
+    "impulso": 7,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/rochim.glb",
+    "altura3d": 1.1,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "rolamento_demolidor"
+      }
+    ]
+  },
+  "rochedo": {
+    "nome": "Rochedo",
+    "tipo": "comum",
+    "raridade": "rara",
+    "vida": 85,
+    "velocidade": 4.6,
+    "ataque": 1.15,
+    "impulso": 7.5,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/rochedo.glb",
+    "altura3d": 1.5,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "rolamento_demolidor"
+      }
+    ]
+  },
+  "pedrusco": {
+    "nome": "Pedrusco",
+    "tipo": "comum",
+    "raridade": "comum",
+    "selvagem": true,
+    "vida": 67,
+    "velocidade": 4.1,
+    "ataque": 1.05,
+    "impulso": 7,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/pedrusco.glb",
+    "altura3d": 1.2,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "rolamento_demolidor"
+      }
+    ]
+  },
+  "vulpim": {
+    "nome": "Vulpim",
+    "tipo": "fogo",
+    "raridade": "comum",
+    "selvagem": true,
+    "vida": 68,
+    "velocidade": 4.3,
+    "ataque": 1.05,
+    "impulso": 7,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/vulpim.glb",
+    "altura3d": 1.1,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "bola_fogo"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "lanca_chamas"
+      }
+    ]
+  },
+  "vulpiro": {
+    "nome": "Vulpiro",
+    "tipo": "fogo",
+    "raridade": "rara",
+    "vida": 90,
+    "velocidade": 4.2,
+    "ataque": 1.15,
+    "impulso": 7.5,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/vulpiro.glb",
+    "altura3d": 1.5,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "bola_fogo"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "lanca_chamas"
+      }
+    ]
+  },
+  "voltouro": {
+    "nome": "Voltouro",
+    "tipo": "eletrico",
+    "raridade": "rara",
+    "vida": 88,
+    "velocidade": 4.7,
+    "ataque": 1.15,
+    "impulso": 7.5,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/voltouro.glb",
+    "altura3d": 1.5,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "esfera_voltaica"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "rajada_voltaica"
+      },
+      {
+        "nivel": 12,
+        "golpe": "trovao"
+      }
+    ]
+  },
+  "brasouro": {
+    "nome": "Brasouro",
+    "tipo": "fogo",
+    "raridade": "rara",
+    "vida": 87,
+    "velocidade": 4.7,
+    "ataque": 1.15,
+    "impulso": 7.5,
+    "sequencia": [
+      "baixo",
+      "frente"
+    ],
+    "modelo3d": "./assets/feras/brasouro.glb",
+    "altura3d": 1.4,
+    "giro3d": 0,
+    "clipes": {
+      "parado": "parado",
+      "andar": "andar",
+      "correr": "correr",
+      "ataque": "ataque",
+      "dano": "dano",
+      "ko": "ko"
+    },
+    "aprendizado": [
+      {
+        "nivel": 1,
+        "golpe": "investida"
+      },
+      {
+        "nivel": 5,
+        "golpe": "bola_fogo"
+      },
+      {
+        "nivel": 8,
+        "golpe": "investida_feroz"
+      },
+      {
+        "nivel": 10,
+        "golpe": "lanca_chamas"
       }
     ]
   }

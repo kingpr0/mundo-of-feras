@@ -75,3 +75,35 @@ Tipos novos **(proposta)**: `sombra · pedra · gelo · vento` — entram no
 - Ordem de produção sugerida: #10 Raiozim (mascote) → linha #4–6 (fogo) → #1–3 → #7–9 → o resto.
 
 *Combos de ataques por fera: próxima etapa de design, depois que o catálogo visual existir.*
+
+## Lote Meshy de jul/2026 — 32 modelos INTEGRADOS no jogo
+
+Os 32 modelos criados no Meshy já estão no jogo (`assets/feras/`), otimizados
+(~0,5 MB cada) e com animações geradas por código (`parado/andar/correr/
+ataque/dano/ko`). O casamento com o catálogo:
+
+**Encaixaram no catálogo:** fogo 1→2→3 = Brasinha→Brasúrio→Dragobrasa ·
+água 1→2→3 = Gotim→Gotão→Gotorrente · grama 1→2→3 = Folhito→Folhardo→Florasto ·
+elétrico 1→2 = Raiozim→Raiotron · planta flor 1→2 = Espinhim→Espinharal ·
+besouro = Cascorão.
+
+**Espécies novas com NOMES PROVISÓRIOS (o Domador decide os definitivos):**
+
+| Arquivo | Nome provisório | Tipo | Linha |
+|---|---|---|---|
+| ave gelo 1/2 | **Gelavim → Gelavor** | agua (gelo no futuro) | voadores |
+| urso gelo 1/2 | **Nevim → Nevurso** | comum (gelo no futuro) | |
+| cogumelo 1/2 | **Cogumim → Cogumal** | planta | |
+| dragão prateado 1/2 | **Pratim → Pratagor** | comum | |
+| pedra 1/2 | **Rochim → Rochedo** | comum (pedra no futuro) | |
+| raposa fogo 1/2 | **Vulpim → Vulpiro** | fogo | |
+| deserto básico | **Dunim** | comum | solo |
+| furão | **Furim** | comum | solo |
+| grama terra pequeno | **Gravetim** | planta | solo |
+| pedregulho | **Pedrusco** | comum | solo |
+| touro elétrico | **Voltouro** | eletrico | solo |
+| touro fogo | **Brasouro** | fogo | solo |
+
+Tipos gelo/pedra/sombra ainda não existem em `tipos.json` — quando entrarem,
+essas espécies migram. Evolução como MECÂNICA ainda não existe; as linhas
+acima são catálogo/raridade por enquanto.

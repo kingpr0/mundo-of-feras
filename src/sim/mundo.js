@@ -108,6 +108,10 @@ function colideDecor(mapa, pos) {
     const dx = pos.x - n[0], dz = pos.z - n[1];
     if (dx * dx + dz * dz < 0.72 * 0.72) return true;
   }
+  if (mapa.arenaTreino) { // o Mestre da arena (fica 1.4 ao sul do centro dela)
+    const dx = pos.x - mapa.arenaTreino.x, dz = pos.z - (mapa.arenaTreino.z - 1.4);
+    if (dx * dx + dz * dz < 0.8 * 0.8) return true;
+  }
   return false;
 }
 
@@ -128,6 +132,8 @@ export function interacaoPerto(m) {
     if (!m.vencidos.has(t.nome) && perto(t.x, t.z, 1.9)) return `desafiar ${t.nome}`;
   const cura = m.mapa.cura;
   if (cura && perto(cura.x, cura.z, 1.9)) return 'falar com a enfermeira';
+  const at = m.mapa.arenaTreino;
+  if (at && perto(at.x, at.z, 2.4)) return 'Arena de Treino';
   const bal = m.mapa.balsa;
   if (bal && perto(bal.x, bal.z, 2.6)) return 'pegar a balsa';
   for (const n of m.mapa.npcs || [])
@@ -241,6 +247,9 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
     }
     const cura = m.mapa.cura;
     if (cura && perto(cura.x, cura.z, 1.9)) return 'cura';
+    // Arena de Treino: o Mestre monta duelos de mentira (modo de testes)
+    const at = m.mapa.arenaTreino;
+    if (at && perto(at.x, at.z, 2.4)) return { tipo: 'arenaTreino' };
     // a balsa cruza o Mar do Meio (falar com o barco embarca)
     const bal = m.mapa.balsa;
     if (bal && perto(bal.x, bal.z, 2.6)) return { tipo: 'balsa', destino: bal.destino };

@@ -24,7 +24,10 @@ const hud = criarHUD();
 
 // modelos 3D: um conjunto para a fera do jogador e outro para a selvagem
 // (criarFera é assíncrono — espécies com "modelo3d" carregam arquivos glTF)
-const domador = MD.criarDomador(cena.scene);
+// o HERÓI é o treinador 1 (modelo do Domador); se o arquivo faltar,
+// o boneco procedural clássico assume
+const domador = await MD.criarPersonagem(cena.scene, './assets/treinadores/t1.glb', 1.72)
+  .catch(() => MD.criarDomador(cena.scene));
 const modelosJog = {}, modelosIni = {};
 for (const k of Object.keys(especies)) {
   modelosJog[k] = await MD.criarFera(cena.scene, k, especies[k]); MD.mostra(modelosJog[k], false);
@@ -95,12 +98,19 @@ let playerM = null;
 let feraAtual = null;
 let escolha = 0;
 let desafio = null; // duelo de treinador em andamento: { nome, equipe, idx }
+// ARENA DE TREINO (modo de testes): { p: espécie sua, e: oponente }
+// — luta de mentira: sem captura, sem XP e sem risco de perder a equipe
+let treino = null;
+const NIVEL_TREINO = 20;
 // menu lateral: SEMPRE visível na exploração; "ativo" = navegando nele
 let menu = { tipo: 'exploracao', sel: 0, fera: 0, especie: null, ativo: false };
 // PILHA de retornos de porta: entrar em salas aninhadas (castelo!) empilha,
 // sair pela porta sul desempilha — andar por andar
 let retornoPorta = [];
 let hitstop = 0, tempo = 0;
+// trava curta do "falar": o Z que fecha uma batalha não pode, no mesmo
+// sopro, puxar conversa com quem estiver por perto (ex.: o Mestre da Arena)
+let falarTrava = 0;
 
 /* ---------- entrada (setas + Z/X/C/V golpes, F captura, M/ESC menu) ---- */
 const keys = {};
@@ -260,6 +270,7 @@ function linhasGolpes() {
 
 /* ---------- XP, nível e aprendizado ---------- */
 function premiaXp() {
+  if (treino) return ''; // treino não dá XP — é só exercício
   const fera = equipe[ativa];
   const ganho = xpPorVitoria(batalha.e.nivel);
   const antes = fera.nivel;
@@ -302,7 +313,8 @@ function tituloMenu() {
   if (t === 'exploracao' && !menu.ativo) return 'MENU · aperte M';
   return { exploracao: 'MENU', batalha: 'BATALHA', equipeExp: 'EQUIPE',
            equipeBat: 'TROCAR FERA', statusLista: 'STATUS', catalogo: 'CATÁLOGO DE GOLPES',
-           compendio: 'COMPÊNDIO DE FERAS' }[t] || 'MENU';
+           compendio: 'COMPÊNDIO DE FERAS',
+           treinoP: 'TREINO · SUA FERA', treinoE: 'TREINO · OPONENTE' }[t] || 'MENU';
 }
 function itensDoMenu() {
   const t = menu.tipo;
@@ -310,6 +322,14 @@ function itensDoMenu() {
   if (t === 'inicial') return INICIAIS.map((k) => ({
     txt: `${especies[k].nome} · ${especies[k].tipo}`,
     acao: () => escolheInicial(k),
+  }));
+  // Arena de Treino: qualquer espécie contra qualquer espécie
+  if (t === 'treinoP' || t === 'treinoE') return Object.keys(especies).map((k) => ({
+    txt: `${especies[k].nome} · ${especies[k].tipo}`,
+    acao: () => {
+      if (t === 'treinoP') { treino = { p: k }; abreMenu('treinoE'); }
+      else { treino.e = k; iniciaTreino(); }
+    },
   }));
   if (t === 'exploracao') return [
     { txt: 'Equipe', acao: () => abreMenu('equipeExp') },
@@ -326,7 +346,11 @@ function itensDoMenu() {
     } },
     { txt: 'Fechar', acao: fechaMenu },
   ];
-  if (t === 'batalha') return [
+  if (t === 'batalha') return treino ? [
+    // no treino não há equipe em jogo: só continuar ou encerrar
+    { txt: 'Continuar', acao: fechaMenu },
+    { txt: 'Encerrar treino', acao: () => { fechaMenu(); fugirBatalha(batalha); } },
+  ] : [
     { txt: 'Continuar', acao: fechaMenu },
     { txt: 'Trocar Fera', acao: () => abreMenu('equipeBat') },
     { txt: 'Itens', acao: () => hud.toast('Itens: em breve!') },
@@ -478,6 +502,10 @@ function abreMenu(tipo) {
     menu.sel = 0;
     mostraHoloEspecie(INICIAIS[0]);
     hud.ficha(fichaEspecie(INICIAIS[0]));
+  } else if (tipo === 'treinoP' || tipo === 'treinoE') {
+    const ks = Object.keys(especies);
+    mostraHoloEspecie(ks[menu.sel]);
+    hud.ficha(fichaEspecie(ks[menu.sel]));
   } else escondeHolo();
 }
 // "fechar": na exploração o menu continua na lateral, só desativa a navegação
@@ -497,6 +525,7 @@ function voltaMenu() {
   else if (t === 'statusFera') abreMenu('statusLista');
   else if (t === 'lembrar') abreMenu('statusFera');
   else if (t === 'compendioFera') abreMenu('compendio');
+  else if (t === 'treinoE') abreMenu('treinoP');
   else fechaMenu();
 }
 function navegaMenu() {
@@ -507,10 +536,13 @@ function navegaMenu() {
     selLembrado[menu.tipo] = menu.sel;
     sfx.swing();
     renderMenu();
-    // no Ritual, o holograma e a ficha acompanham a fera destacada
-    if (menu.tipo === 'inicial') {
-      mostraHoloEspecie(INICIAIS[menu.sel]);
-      hud.ficha(fichaEspecie(INICIAIS[menu.sel]));
+    // no Ritual e na Arena de Treino, o holograma e a ficha acompanham
+    // a fera destacada
+    const ksHolo = menu.tipo === 'inicial' ? INICIAIS
+      : (menu.tipo === 'treinoP' || menu.tipo === 'treinoE') ? Object.keys(especies) : null;
+    if (ksHolo) {
+      mostraHoloEspecie(ksHolo[menu.sel]);
+      hud.ficha(fichaEspecie(ksHolo[menu.sel]));
     }
   }
   if (kE || escE) { voltaMenu(); return; }
@@ -631,6 +663,41 @@ function iniciaBatalha() {
   hud.dica('Z/X/C/V golpe · SHIFT+botão = forte · segure A = carregar ki · 2 toques = cambalhota · ESPAÇO pula · F captura · ESC menu');
   hud.toast(`${nomeDe(fera)}, eu escolho você!`);
 }
+// ARENA DE TREINO: pula a fase de "encontro" e cai direto na luta, com
+// feras temporárias — a equipe de verdade nem entra em campo
+function iniciaTreino() {
+  sfx.encontro(); hud.flash();
+  musica('batalha');
+  escondeHolo(); hud.menu(false);
+  hud.exploracaoVisivel(false);
+  temaArena(cena, mundo.mapa.chao || 'grama');
+  mostraArena(cena, true);
+  MD.mostra(domador, false);
+  const feraP = criarFera(especies, golpesCat, treino.p, NIVEL_TREINO);
+  const feraE = criarFera(especies, golpesCat, treino.e, NIVEL_TREINO);
+  batalha = criarBatalha(especies,
+    paraBatalha(feraP, especies, golpesCat),
+    paraBatalha(feraE, especies, golpesCat),
+    RINGUE.dom, RINGUE.fera,
+    { tipos, bioma: mundo.mapa.chao || 'grama', treinador: true }); // sem captura
+  modo = 'batalha';
+  menu = { tipo: 'exploracao', sel: 0, fera: menu.fera, especie: menu.especie, ativo: false };
+  feraAtual = modelosIni[treino.e];
+  MD.setOpacidade(feraAtual, 1); MD.setEscala(feraAtual, 1);
+  MD.flashCor(feraAtual, 0); feraAtual.g.rotation.x = 0;
+  MD.setPos(feraAtual, RINGUE.fera);
+  MD.encara(feraAtual, RINGUE.dom.x, RINGUE.dom.z);
+  feraAtual.g.rotation.y = feraAtual.giro;
+  MD.mostra(feraAtual, true);
+  poof(cena, { ...RINGUE.fera, y: 0.9 }, 0xffffff, 14, 4);
+  trocaModeloJogador(feraP);
+  hud.nomeInimigo(especies[treino.e].nome.toUpperCase(), NIVEL_TREINO);
+  hud.batalhaVisivel(true); hud.atualizaHP(batalha);
+  hud.golpesPainel(linhasGolpes());
+  hud.dica('TREINO · Z/X/C/V golpe · SHIFT+botão = forte · A carrega ki · ESC menu');
+  hud.toast(`🥊 Treino: ${especies[treino.p].nome} contra ${especies[treino.e].nome}!`, 2600);
+}
+
 function fugir() {
   if (desafio) { hud.toast(`${desafio.nome}: "Volte quando tiver coragem!"`); desafio = null; }
   hud.flash();
@@ -639,6 +706,7 @@ function fugir() {
   MD.mostra(feraAtual, false); feraAtual = null;
   MD.mostra(domador, true);
   daImunidade(mundo);
+  falarTrava = tempo + 0.6;
   modo = 'explorar';
   hud.exploracaoVisivel(true);
   menu = { tipo: 'exploracao', sel: 0, fera: menu.fera, especie: menu.especie, ativo: false };
@@ -647,6 +715,34 @@ function fugir() {
   hud.toast('Você fugiu em segurança!');
 }
 function encerraBatalha() {
+  // TREINO: acabou, não aconteceu nada — sem XP, sem captura, sem permadeath
+  if (treino) {
+    const resultado = batalha.resultado;
+    hud.flash();
+    musica('explorar');
+    fechaMenu();
+    mostraArena(cena, false);
+    limpaProjeteis();
+    if (playerM) { MD.mostra(playerM, false); playerM = null; }
+    MD.mostra(cristal, false);
+    if (feraAtual) { MD.mostra(feraAtual, false); feraAtual = null; }
+    MD.mostra(domador, true);
+    hud.batalhaVisivel(false);
+    daImunidade(mundo);
+    falarTrava = tempo + 0.6;
+    hud.exploracaoVisivel(true);
+    hud.dica(DICA_EXPLORAR);
+    batalha = null; modo = 'explorar'; treino = null;
+    menu = { tipo: 'exploracao', sel: 0, fera: menu.fera, especie: menu.especie, ativo: false };
+    renderMenu();
+    hud.toast(resultado === 'vitoria'
+      ? '🥊 Mestre: "Bela luta! O treino forja campeões."'
+      : resultado === 'derrota'
+        ? '🥊 Mestre: "Caiu? Levanta! Aqui nada se perde — é só treino."'
+        : '🥊 Treino encerrado.', 3000);
+    atualizaPainel();
+    return;
+  }
   // duelo de treinador: caiu uma fera dele mas ainda tem outra? continua!
   if (batalha.resultado === 'vitoria' && desafio && desafio.idx < desafio.equipe.length - 1) {
     desafio.idx++;
@@ -709,6 +805,7 @@ function encerraBatalha() {
     desafio = null;
   }
   daImunidade(mundo);
+  falarTrava = tempo + 0.6;
   hud.exploracaoVisivel(true);
   hud.dica(DICA_EXPLORAR);
   batalha = null; modo = 'explorar';
@@ -745,7 +842,10 @@ function sincronizaVisual(dt) {
   if (modo === 'explorar' || modo === 'titulo' || modo === 'intro') {
     MD.setPos(domador, d.pos);
     MD.passoGiro(domador, dt);
-    MD.animaAndar(domador, d.animT * (d.correndo ? 1.45 : 1), d.andando);
+    if (domador.gltf) { // herói glTF: clipes de esqueleto de verdade
+      MD.tocaClip(domador, d.andando ? (d.correndo ? 'correr' : 'andar') : 'parado', 0.15);
+      MD.passoMixer(domador, dt);
+    } else MD.animaAndar(domador, d.animT * (d.correndo ? 1.45 : 1), d.andando);
   }
   if (modo === 'encontro' && feraAtual) {
     MD.setPos(feraAtual, RINGUE.fera);
@@ -924,7 +1024,7 @@ function loop(agora) {
       if (!equipe.length) daImunidade(mundo, 0.5);
       const inp = { mov: { x: eixo(['ArrowLeft'], ['ArrowRight']),
                            z: eixo(['ArrowUp'], ['ArrowDown']) },
-                    correr: correndo, falar: jE };
+                    correr: correndo, falar: jE && tempo > falarTrava };
       MD.giraDirecao(domador, inp.mov.x, inp.mov.z);
       const evt = passoMundo(mundo, inp, dt);
       if (mundo.domador.correndo && Math.random() < 0.25)
@@ -948,6 +1048,12 @@ function loop(agora) {
           hud.toast(`${t.nome}: "${t.fala || 'Vamos duelar!'}"`, 2400);
           setTimeout(() => { if (modo === 'explorar' && desafio) iniciaEncontro(); }, 2000);
         }
+      }
+      else if (evt && evt.tipo === 'arenaTreino') {
+        sfx.swing();
+        hud.toast('🥊 Mestre da Arena: "Escolha os dois lados do duelo — aqui é só treino, nada se perde."', 3000);
+        treino = null;
+        abreMenu('treinoP');
       }
       else if (evt && evt.tipo === 'balsa') {
         // a travessia do Mar do Meio: desembarca no píer do outro lado
@@ -1018,4 +1124,12 @@ function loop(agora) {
   cena.renderer.render(cena.scene, cena.camera);
 }
 cv.focus(); setTimeout(() => cv.focus(), 300);
+
+// gancho de TESTES (console do navegador) — não é interface do jogo
+window.DEV = {
+  teleporta(x, z) { mundo.domador.pos.x = x; mundo.domador.pos.z = z; },
+  estado: () => ({ modo, mapa: chaveMapa, pos: { ...mundo.domador.pos },
+                   equipe: equipe.length, menu: menu.tipo, menuAtivo: menu.ativo,
+                   treino: treino ? { ...treino } : null, batalha: !!batalha }),
+};
 requestAnimationFrame(loop);
