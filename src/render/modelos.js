@@ -932,10 +932,18 @@ export function animaLuta(M, f) {
   // PIRUETA AÉREA (cambalhota + pulo): roda 360° acompanhando o VOO inteiro
   // — a fase vem da física (vy vai de +v0 a -v0), então casa com o arco
   if (f.piruetando && f.pos.y > 0.02) {
+    const rel = f.dashRel || { x: 0, z: -1 };
+    // pirueta para TRÁS com clipe "mortal" (Backflip): o esqueleto anima
+    // sozinho — aqui só garantimos escala neutra
+    if (rel.z > 0.5 && M.clips && M.clips.mortal) {
+      M.g.scale.setScalar(1);
+      M.g.rotation.x = 0; M.g.rotation.z = 0;
+      M.g.userData._pirueta = true;
+      return;
+    }
     const v0 = (f.esp.impulso || 7) * 0.95;
     const fase = Math.min(1, Math.max(0, (v0 - f.vy) / (2 * v0)));
     const ang = fase * Math.PI * 2;
-    const rel = f.dashRel || { x: 0, z: -1 };
     M.g.scale.setScalar(0.82);
     if (Math.abs(rel.x) > Math.abs(rel.z)) {
       M.g.rotation.z = rel.x > 0 ? ang : -ang; M.g.rotation.x = 0;

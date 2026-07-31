@@ -310,8 +310,8 @@ export function criarEfeitos(scene) {
     // (ang inclina o rasgo: diagonal p/ garra, vertical p/ gancho...)
     talho(pos, ang, forte) {
       const e = novo('talho', {
-        escala: forte ? 2.6 : 1.9, dur: forte ? 0.24 : 0.18,
-        rot: ang, cresce: 2.2,
+        escala: forte ? 3.0 : 2.2, dur: forte ? 0.38 : 0.3,
+        rot: ang, cresce: 2.6,
       });
       e.sp.position.set(pos.x, pos.y, pos.z);
     },

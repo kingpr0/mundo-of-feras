@@ -280,8 +280,9 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
       }
     }
     // COMBO: apertar golpe de novo durante um físico ENCAIXA o próximo da
-    // cadeia (golpe.proximo), cancelando parte da recuperação
-    if (inp.golpe != null && g.fisico && g.proximo && f.t >= g.prep) f.comboQ = true;
+    // cadeia (golpe.proximo), cancelando parte da recuperação — o aperto
+    // vale em QUALQUER momento do golpe (buffer, como em jogo de luta)
+    if (inp.golpe != null && g.fisico && g.proximo) f.comboQ = true;
     const encaixa = f.comboQ && g.proximo && b.catalogo && b.catalogo[g.proximo];
     if (encaixa && f.t >= g.prep + g.ativo + g.recup * 0.4) {
       f.golpe = b.catalogo[g.proximo];

@@ -27,7 +27,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -80,7 +84,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -133,7 +141,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -189,10 +201,6 @@
         "golpe": "garras_furiosas"
       },
       {
-        "nivel": 9,
-        "golpe": "gancho"
-      },
-      {
         "nivel": 10,
         "golpe": "lanca_chamas"
       }
@@ -212,7 +220,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "defesa": 0.95
   },
@@ -243,7 +255,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -257,10 +273,6 @@
       {
         "nivel": 8,
         "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 9,
-        "golpe": "gancho"
       },
       {
         "nivel": 10,
@@ -301,7 +313,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -315,10 +331,6 @@
       {
         "nivel": 8,
         "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 9,
-        "golpe": "gancho"
       },
       {
         "nivel": 10,
@@ -372,7 +384,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "defesa": 0.9
   },
@@ -403,7 +419,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -456,7 +476,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -470,10 +494,6 @@
       {
         "nivel": 8,
         "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 9,
-        "golpe": "gancho"
       },
       {
         "nivel": 10,
@@ -512,10 +532,6 @@
         "golpe": "garras_furiosas"
       },
       {
-        "nivel": 9,
-        "golpe": "gancho"
-      },
-      {
         "nivel": 10,
         "golpe": "trovao"
       },
@@ -539,7 +555,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "defesa": 0.85
   },
@@ -570,7 +590,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -584,10 +608,6 @@
       {
         "nivel": 8,
         "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 9,
-        "golpe": "gancho"
       },
       {
         "nivel": 10,
@@ -631,7 +651,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -684,7 +708,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -742,7 +770,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -791,7 +823,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -845,7 +881,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -855,10 +895,6 @@
       {
         "nivel": 5,
         "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 9,
-        "golpe": "gancho"
       },
       {
         "nivel": 10,
@@ -894,7 +930,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -904,10 +944,6 @@
       {
         "nivel": 5,
         "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 9,
-        "golpe": "gancho"
       },
       {
         "nivel": 10,
@@ -945,7 +981,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -995,7 +1035,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -1049,7 +1093,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -1095,7 +1143,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -1141,7 +1193,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -1190,7 +1246,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -1204,10 +1264,6 @@
       {
         "nivel": 8,
         "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 9,
-        "golpe": "gancho"
       },
       {
         "nivel": 10,
@@ -1248,7 +1304,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -1293,7 +1353,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -1303,10 +1367,6 @@
       {
         "nivel": 5,
         "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 9,
-        "golpe": "gancho"
       },
       {
         "nivel": 10,
@@ -1343,7 +1403,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -1389,7 +1453,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -1435,7 +1503,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -1493,7 +1565,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -1538,7 +1614,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -1583,7 +1663,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -1640,7 +1724,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {
@@ -1694,7 +1782,11 @@
       "dano": "dano",
       "ko": "ko",
       "arremesso": "arremesso",
-      "soco": "soco"
+      "soco": "soco",
+      "combo1": "combo1",
+      "combo2": "combo2",
+      "combo3": "combo3",
+      "mortal": "mortal"
     },
     "aprendizado": [
       {

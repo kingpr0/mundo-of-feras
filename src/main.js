@@ -1069,6 +1069,9 @@ function atualizaClips(M, f, dt) {
       || (f.golpe && f.golpe.forte && tem(c.forte)) || tem(c.ataque) || correr;
     MD.tocaClip(M, nome, 0.08, { once: nome !== correr, restart: f.t < dt * 2 });
   }
+  // pirueta para TRÁS com clipe real (Backflip do Meshy), quando existir
+  else if (f && f.piruetando && f.pos.y > 0.02 && f.dashRel && f.dashRel.z > 0.5 && tem(c.mortal))
+    MD.tocaClip(M, c.mortal, 0.05, { once: true });
   else if (f && f.estado === 'dash') MD.tocaClip(M, correr, 0.1);
   else if (f && f.estado === 'hurt') MD.tocaClip(M, tem(c.dano) || parado, 0.08, { once: !!tem(c.dano) });
   else if (f && f.estado === 'ko') MD.tocaClip(M, tem(c.ko) || tem(c.dano) || parado, 0.15, { once: !!(tem(c.ko) || tem(c.dano)) });
