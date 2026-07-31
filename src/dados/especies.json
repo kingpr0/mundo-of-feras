@@ -532,12 +532,12 @@
         "golpe": "garras_furiosas"
       },
       {
-        "nivel": 10,
-        "golpe": "trovao"
-      },
-      {
         "nivel": 12,
         "golpe": "soco_trovao"
+      },
+      {
+        "nivel": 16,
+        "golpe": "trovao"
       }
     ],
     "modelo3d": "./assets/feras/raiozim.glb",
@@ -615,11 +615,11 @@
       },
       {
         "nivel": 12,
-        "golpe": "trovao"
+        "golpe": "soco_trovao"
       },
       {
-        "nivel": 12,
-        "golpe": "soco_trovao"
+        "nivel": 16,
+        "golpe": "trovao"
       }
     ],
     "defesa": 1.05
@@ -839,6 +839,10 @@
         "golpe": "folha_navalha"
       },
       {
+        "nivel": 6,
+        "golpe": "chicote_vinha"
+      },
+      {
         "nivel": 8,
         "golpe": "garras_furiosas"
       },
@@ -895,10 +899,6 @@
       {
         "nivel": 5,
         "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 10,
-        "golpe": "rolamento_demolidor"
       }
     ],
     "defesa": 0.95
@@ -944,10 +944,6 @@
       {
         "nivel": 5,
         "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 10,
-        "golpe": "rolamento_demolidor"
       }
     ],
     "defesa": 1.25
@@ -1107,10 +1103,6 @@
       {
         "nivel": 5,
         "golpe": "investida_feroz"
-      },
-      {
-        "nivel": 10,
-        "golpe": "rolamento_demolidor"
       }
     ],
     "defesa": 0.9
@@ -1157,10 +1149,6 @@
       {
         "nivel": 5,
         "golpe": "investida_feroz"
-      },
-      {
-        "nivel": 10,
-        "golpe": "rolamento_demolidor"
       }
     ],
     "defesa": 1.1
@@ -1318,10 +1306,6 @@
       {
         "nivel": 5,
         "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 10,
-        "golpe": "rolamento_demolidor"
       }
     ],
     "defesa": 1.15
@@ -1367,10 +1351,6 @@
       {
         "nivel": 5,
         "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 10,
-        "golpe": "rolamento_demolidor"
       }
     ],
     "defesa": 1.25
@@ -1417,10 +1397,6 @@
       {
         "nivel": 5,
         "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 10,
-        "golpe": "rolamento_demolidor"
       }
     ],
     "defesa": 1
@@ -1467,10 +1443,6 @@
       {
         "nivel": 5,
         "golpe": "investida_feroz"
-      },
-      {
-        "nivel": 10,
-        "golpe": "rolamento_demolidor"
       }
     ],
     "defesa": 0.85
@@ -1579,10 +1551,6 @@
       {
         "nivel": 5,
         "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 10,
-        "golpe": "rolamento_demolidor"
       }
     ],
     "defesa": 1.2
@@ -1628,10 +1596,6 @@
       {
         "nivel": 5,
         "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 10,
-        "golpe": "rolamento_demolidor"
       }
     ],
     "defesa": 1.25
@@ -1688,11 +1652,11 @@
       },
       {
         "nivel": 12,
-        "golpe": "trovao"
+        "golpe": "soco_trovao"
       },
       {
-        "nivel": 12,
-        "golpe": "soco_trovao"
+        "nivel": 16,
+        "golpe": "trovao"
       }
     ],
     "defesa": 1.15

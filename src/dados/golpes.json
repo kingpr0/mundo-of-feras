@@ -28,20 +28,6 @@
     "usos": null,
     "avanco": 12
   },
-  "rolamento_demolidor": {
-    "nome": "Rolamento Demolidor",
-    "tipo": "comum",
-    "fisico": true,
-    "base": "investida",
-    "dano": 18,
-    "alcance": 2,
-    "empurrao": 7.5,
-    "prep": 0.4,
-    "ativo": 0.2,
-    "recup": 0.55,
-    "forte": true,
-    "usos": null
-  },
   "bola_fogo": {
     "nome": "Bola de Fogo",
     "tipo": "fogo",
@@ -158,7 +144,7 @@
   "raio_esmeralda": {
     "nome": "Raio Esmeralda",
     "tipo": "planta",
-    "base": "folha_navalha",
+    "base": "chicote_vinha",
     "dano": 16,
     "alcance": 8,
     "empurrao": 5,
@@ -214,7 +200,7 @@
   "trovao": {
     "nome": "Trovão",
     "tipo": "eletrico",
-    "base": "esfera_voltaica",
+    "base": "soco_trovao",
     "dano": 18,
     "alcance": 8,
     "empurrao": 6,
