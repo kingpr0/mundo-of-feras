@@ -1259,6 +1259,7 @@ cv.focus(); setTimeout(() => cv.focus(), 300);
 // gancho de TESTES (console do navegador) — não é interface do jogo
 window.DEV = {
   teleporta(x, z) { mundo.domador.pos.x = x; mundo.domador.pos.z = z; },
+  vaiPara(destino) { trocaMapa(destino); },
   estado: () => ({ modo, mapa: chaveMapa, pos: { ...mundo.domador.pos },
                    equipe: equipe.length, menu: menu.tipo, menuAtivo: menu.ativo,
                    treino: treino ? { ...treino } : null, batalha: !!batalha }),

@@ -1248,6 +1248,150 @@ function descarta(obj) {
 }
 
 // (re)monta o cenário de um mapa de mapas.json
+/* ---------- travessias épicas: desfiladeiro, ponte pênsil, cenário ---- */
+// rio no fundo do cânion + espuma nas margens (o cânion em si é o próprio
+// chão deslocado — ver fundoDesfiladeiro na sim)
+function montaDesfiladeiro(g, df, mapa, anims) {
+  const rim = alturaDegraus(mapa, { x: 0, z: df.z1 + 0.5 });
+  const yRio = rim - df.prof + 0.35;
+  const larg = mapa.limite.x * 2 + 64;
+  const zMeio = (df.z0 + df.z1) / 2;
+  const wRio = Math.max(2.5, df.z1 - df.z0 - 5.6);
+  // véu de PROFUNDIDADE: o fundo inteiro escurece (leitura de "é fundo")
+  const veu = new THREE.Mesh(
+    new THREE.PlaneGeometry(larg, df.z1 - df.z0 - 2.0),
+    new THREE.MeshBasicMaterial({ color: 0x1a1424, transparent: true,
+      opacity: 0.32, depthWrite: false }));
+  veu.rotation.x = -Math.PI / 2;
+  veu.position.set(0, yRio + 0.22, zMeio);
+  g.add(veu);
+  const rio = new THREE.Mesh(
+    new THREE.PlaneGeometry(larg, wRio),
+    new THREE.MeshLambertMaterial({ color: 0x2f6fb4, transparent: true, opacity: 0.95 }));
+  rio.rotation.x = -Math.PI / 2;
+  rio.position.set(0, yRio, zMeio);
+  g.add(rio);
+  // cristas de correnteza deslizando rio abaixo (fluxo para oeste)
+  const tex = texturaOndas();
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(larg / 3.2, wRio / 3.2);
+  const fluxo = new THREE.Mesh(
+    new THREE.PlaneGeometry(larg, wRio),
+    new THREE.MeshLambertMaterial({ map: tex, transparent: true, opacity: 0.45, depthWrite: false }));
+  fluxo.rotation.x = -Math.PI / 2;
+  fluxo.position.set(0, yRio + 0.03, zMeio);
+  g.add(fluxo);
+  if (anims) anims.push((t) => { tex.offset.x = -t * 0.25; });
+  // LÁBIOS do rim: linha escura marcando a beirada dos dois lados
+  for (const zr of [df.z0, df.z1]) {
+    const labio = new THREE.Mesh(new THREE.BoxGeometry(larg, 0.22, 0.34),
+      new THREE.MeshLambertMaterial({ color: 0x4a3a30 }));
+    labio.position.set(0, alturaDegraus(mapa, { x: 0, z: zr }) + 0.06, zr + (zr === df.z0 ? 0.12 : -0.12));
+    g.add(labio);
+  }
+  // pedras no leito, nas margens do rio
+  for (let i = 0; i < 11; i++) {
+    const px = -larg / 2 + (i + 0.5) * (larg / 11) + ((i * 37) % 11) - 5;
+    const pedra = new THREE.Mesh(new THREE.DodecahedronGeometry(0.45 + (i % 3) * 0.28),
+      new THREE.MeshLambertMaterial({ color: 0x6b7480 }));
+    pedra.position.set(px, yRio + 0.1, zMeio + (i % 2 ? wRio / 2 + 0.5 : -wRio / 2 - 0.5));
+    g.add(pedra);
+  }
+}
+
+// CACHOEIRA: afluente que despenca da parede NORTE do cânion (de frente
+// para a câmera) e desagua no rio
+function montaCachoeira(g, c, df, mapa, anims) {
+  const rim = alturaDegraus(mapa, { x: c.x, z: df.z0 - 0.5 });
+  const alt = df.prof - 0.3;
+  const tex = texturaOndas();
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set((c.largura || 3) / 1.8, alt / 2.2);
+  const veu = new THREE.Mesh(
+    new THREE.PlaneGeometry(c.largura || 3, alt),
+    new THREE.MeshLambertMaterial({ color: 0xcfe8ff, map: tex, transparent: true,
+      opacity: 0.85, side: THREE.DoubleSide, depthWrite: false }));
+  veu.position.set(c.x, rim - alt / 2 + 0.15, df.z0 + 0.62);
+  g.add(veu);
+  if (anims) anims.push((t) => { tex.offset.y = t * 0.9; });
+  // espuma onde o véu encontra o rio
+  const espuma = new THREE.Mesh(
+    new THREE.CylinderGeometry((c.largura || 3) * 0.55, (c.largura || 3) * 0.65, 0.22, 12),
+    new THREE.MeshLambertMaterial({ color: 0xf2fbff, transparent: true, opacity: 0.8 }));
+  espuma.position.set(c.x, rim - df.prof + 0.55, df.z0 + 1.1);
+  g.add(espuma);
+}
+
+// PONTE PÊNSIL: tabuleiro de tábuas com flecha, postes e cordas laterais
+function montaPonte(g, pt, df, mapa) {
+  const lamb = (cor) => new THREE.MeshLambertMaterial({ color: cor });
+  const z0 = df.z0 - 0.8, z1 = df.z1 + 0.8;
+  const vao = z1 - z0;
+  const N = Math.round(vao / 0.55);
+  const deckY = (t) => pt.y - 0.28 * Math.sin(Math.PI * Math.max(0, Math.min(1,
+    ((z0 + t * vao) - df.z0) / (df.z1 - df.z0))));
+  for (let i = 0; i < N; i++) { // tábuas
+    const t = (i + 0.5) / N;
+    const tabua = new THREE.Mesh(new THREE.BoxGeometry(pt.largura, 0.09, vao / N * 0.82), lamb(0x9a6f43));
+    tabua.position.set(pt.x, deckY(t) - 0.05, z0 + t * vao);
+    tabua.castShadow = true;
+    g.add(tabua);
+  }
+  for (const lado of [-1, 1]) {
+    // postes nas cabeceiras
+    for (const zc of [z0 - 0.3, z1 + 0.3]) {
+      const poste = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.17, 1.9, 8), lamb(0x6d4b2c));
+      poste.position.set(pt.x + lado * pt.largura / 2, pt.y + 0.75, zc);
+      poste.castShadow = true;
+      g.add(poste);
+    }
+    // corda superior (catenária) + cordinhas verticais
+    for (let i = 0; i < N; i++) {
+      const t0 = i / N, t1 = (i + 1) / N;
+      const y0 = deckY(t0) + 1.0 - 0.18 * Math.sin(Math.PI * t0);
+      const y1 = deckY(t1) + 1.0 - 0.18 * Math.sin(Math.PI * t1);
+      const za = z0 + t0 * vao, zb = z0 + t1 * vao;
+      const seg = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035,
+        Math.hypot(zb - za, y1 - y0), 5), lamb(0xd8c49a));
+      seg.position.set(pt.x + lado * pt.largura / 2, (y0 + y1) / 2, (za + zb) / 2);
+      seg.rotation.x = Math.PI / 2 - Math.atan2(y1 - y0, zb - za);
+      g.add(seg);
+      if (i % 2 === 0) {
+        const corda = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, y0 - deckY(t0) + 0.02, 4), lamb(0xd8c49a));
+        corda.position.set(pt.x + lado * pt.largura / 2, (y0 + deckY(t0)) / 2, za);
+        g.add(corda);
+      }
+    }
+  }
+}
+
+// horizonte ÉPICO do norte: montanhas azuladas e a silhueta da MURALHA —
+// puro cenário, ninguém chega lá (ainda)
+function montaFundoNorte(g, mapa) {
+  // cordilheira na borda norte: picos ÍNGREMES e agrupados (cones largos
+  // viram "parede lisa" na câmera de cima — aprendido na prática)
+  const L = mapa.limite;
+  const base = alturaDegraus(mapa, { x: 0, z: -L.z + 1 });
+  const rocha = [0x6e5140, 0x7d5a48, 0x8a6a55];
+  for (let i = 0; i < 9; i++) {
+    const px = -L.x * 1.4 + i * (L.x * 2.8 / 8) + ((i * 29) % 7) - 3;
+    const alt = 11 + ((i * 17) % 6);
+    const raio = 4.2 + (i % 3) * 1.3;
+    const pz = -L.z - 3 - ((i * 7) % 5);
+    const monte = new THREE.Mesh(new THREE.ConeGeometry(raio, alt, 6),
+      new THREE.MeshLambertMaterial({ color: rocha[i % 3] }));
+    monte.position.set(px, base + alt / 2 - 0.5, pz);
+    monte.rotation.y = (i * 1.3) % 1.5;
+    monte.castShadow = true;
+    g.add(monte);
+    const neve = new THREE.Mesh(new THREE.ConeGeometry(raio * 0.32, alt * 0.3, 6),
+      new THREE.MeshLambertMaterial({ color: 0xf0f6fa }));
+    neve.position.set(px, base + alt - alt * 0.15 - 0.5, pz);
+    neve.rotation.y = monte.rotation.y;
+    g.add(neve);
+  }
+}
+
 // põe um humano glTF (treinador N) no mapa, com idle vivo; se o arquivo
 // falhar, o NPC procedural clássico entra no lugar
 function poePersonagem(g, modeloN, x, z, y, rot, tipoFallback) {
@@ -1279,6 +1423,10 @@ export function montaMapa(cena, mapa) {
   cena.mundoG = g;
   // as peças do cenário registram aqui suas animações (fogueira, água...)
   cena.anims = [];
+  // névoa de distância (mapas de travessia épica): o horizonte esmaece
+  cena.scene.fog = mapa.nevoa
+    ? new THREE.Fog(mapa.nevoa.cor, mapa.nevoa.perto, mapa.nevoa.longe)
+    : null;
   g.userData.anims = cena.anims;
   if (mapa.tipo === 'interior') {
     montaInterior(g, mapa);
@@ -1347,6 +1495,14 @@ export function montaMapa(cena, mapa) {
   }
   for (const G of mapa.gramas || (mapa.grama ? [mapa.grama] : [])) montaGrama(g, G, mapa);
   for (const ag of mapa.aguas || (mapa.agua ? [mapa.agua] : [])) montaAgua(g, ag);
+  // travessias épicas: cânion com rio, ponte pênsil, cachoeira, horizonte
+  for (const df of mapa.desfiladeiros || []) {
+    montaDesfiladeiro(g, df, mapa, cena.anims);
+    for (const pt of mapa.pontes || []) montaPonte(g, pt, df, mapa);
+  }
+  if (mapa.cachoeira && (mapa.desfiladeiros || []).length)
+    montaCachoeira(g, mapa.cachoeira, mapa.desfiladeiros[0], mapa, cena.anims);
+  if (mapa.fundoNorte) montaFundoNorte(g, mapa);
   if (mapa.balsa) montaBalsa(g, mapa.balsa, cena.anims);
   if (mapa.caverna) bocaCaverna(g, mapa.caverna);
   montaBorda(g, mapa);

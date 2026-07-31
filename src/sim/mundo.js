@@ -70,11 +70,41 @@ export function alturaDegraus(mapa, pos) {
   }
   return h;
 }
-// o "solo" (degraus + morros) — o render desloca a malha do chão com isso
+// DESFILADEIRO: cânion cavado no próprio chão (banda em z que corta o
+// mapa inteiro). O fundo fica -prof abaixo da cota do rim; as paredes
+// nascem DENTRO da banda (1.8 de encosta), então a beirada é firme.
+export function fundoDesfiladeiro(mapa, pos) {
+  let h = 0;
+  for (const df of mapa.desfiladeiros || []) {
+    if (pos.z > df.z0 && pos.z < df.z1) {
+      const dz = Math.min(pos.z - df.z0, df.z1 - pos.z);
+      const t = Math.min(1, dz / 2.6);
+      h -= df.prof * t * t;
+    }
+  }
+  return h;
+}
+// PONTE PÊNSIL sobre o desfiladeiro: tabuleiro em cota fixa com uma leve
+// flecha (barriga) no meio — devolve a altura ABSOLUTA do deck ou null
+export function alturaPonte(mapa, pos) {
+  for (const pt of mapa.pontes || []) {
+    if (Math.abs(pos.x - pt.x) > (pt.largura || 2.8) / 2) continue;
+    for (const df of mapa.desfiladeiros || []) {
+      if (pos.z > df.z0 - 0.8 && pos.z < df.z1 + 0.8) {
+        const t = Math.max(0, Math.min(1, (pos.z - df.z0) / (df.z1 - df.z0)));
+        return pt.y - 0.28 * Math.sin(Math.PI * t);
+      }
+    }
+  }
+  return null;
+}
+// o "solo" (degraus + morros - cânions) — o render desloca o chão com isso
 export function alturaSolo(mapa, pos) {
-  return alturaDegraus(mapa, pos) + alturaMorros(mapa, pos);
+  return alturaDegraus(mapa, pos) + alturaMorros(mapa, pos) + fundoDesfiladeiro(mapa, pos);
 }
 export function alturaTerreno(mapa, pos) {
+  const deck = alturaPonte(mapa, pos);
+  if (deck !== null) return deck;
   const base = alturaDegraus(mapa, pos);
   let h = base + Math.max(alturaMorros(mapa, pos), alturaGrama(mapa, pos));
   for (const p of mapa.platos || []) {
@@ -188,6 +218,11 @@ function colide(mapa, pos) {
   if (ct && Math.abs(pos.x - ct.x) < CENTRO_MEIA.x && Math.abs(pos.z - ct.z) < CENTRO_MEIA.z) return true;
   for (const ag of zonasAgua(mapa))
     if (pos.x > ag.x0 && pos.x < ag.x1 && pos.z > ag.z0 && pos.z < ag.z1) return true;
+  // DESFILADEIRO: ninguém desce o cânion — só a ponte pênsil atravessa
+  for (const df of mapa.desfiladeiros || []) {
+    if (pos.z > df.z0 && pos.z < df.z1 &&
+        alturaPonte(mapa, pos) === null) return true;
+  }
   if (colideDecor(mapa, pos)) return true;
   for (const t of mapa.treinadores || []) {
     const dx = pos.x - t.x, dz = pos.z - t.z;

@@ -1458,7 +1458,7 @@
           "borda": "norte",
           "de": -2,
           "ate": 2,
-          "destino": "fiorde"
+          "destino": "crista"
         }
       ],
       "degraus": [
@@ -1540,7 +1540,7 @@
       "nome": "Fiorde Ventania",
       "regiao": {
         "x": 2,
-        "y": -3
+        "y": -4
       },
       "chao": "penhasco",
       "borda": "montanha",
@@ -1678,7 +1678,7 @@
           "borda": "sul",
           "de": -2,
           "ate": 2,
-          "destino": "penhasco"
+          "destino": "crista"
         },
         {
           "borda": "oeste",
@@ -1706,7 +1706,7 @@
       "nome": "Castelo Ventania",
       "regiao": {
         "x": 1,
-        "y": -3
+        "y": -4
       },
       "chao": "vila",
       "borda": "montanha",
@@ -2192,6 +2192,259 @@
         "pedrusco"
       ],
       "saidas": []
+    },
+    "crista": {
+      "nome": "Crista do Vento",
+      "regiao": {
+        "x": 2,
+        "y": -3
+      },
+      "chao": "penhasco",
+      "limite": {
+        "x": 24,
+        "z": 24
+      },
+      "spawn": {
+        "x": 0,
+        "z": 20
+      },
+      "degraus": [
+        {
+          "eixo": "z",
+          "em": 8,
+          "alto": "norte",
+          "h": 2.4
+        },
+        {
+          "eixo": "z",
+          "em": -8,
+          "alto": "norte",
+          "h": 2.6
+        }
+      ],
+      "desfiladeiros": [
+        {
+          "z0": -5,
+          "z1": 6,
+          "prof": 7
+        }
+      ],
+      "pontes": [
+        {
+          "x": 0,
+          "largura": 2.8,
+          "y": 2.4
+        }
+      ],
+      "nevoa": {
+        "cor": 14544880,
+        "perto": 34,
+        "longe": 92
+      },
+      "fundoNorte": true,
+      "cachoeira": {
+        "x": 13,
+        "largura": 3.2
+      },
+      "arvores": [
+        [
+          -14,
+          18,
+          1
+        ],
+        [
+          10,
+          16,
+          1
+        ],
+        [
+          -8,
+          12,
+          1
+        ],
+        [
+          16,
+          12,
+          1
+        ],
+        [
+          -18,
+          6,
+          1
+        ],
+        [
+          12,
+          6,
+          1
+        ],
+        [
+          -12,
+          -12,
+          1
+        ],
+        [
+          14,
+          -14,
+          1
+        ],
+        [
+          -16,
+          -18,
+          1
+        ],
+        [
+          8,
+          -20,
+          1
+        ],
+        [
+          -6,
+          -16,
+          1
+        ]
+      ],
+      "pedras": [
+        [
+          -4,
+          7.6,
+          1.1
+        ],
+        [
+          5,
+          7.6,
+          0.9
+        ],
+        [
+          -9,
+          7.6,
+          0.8
+        ],
+        [
+          11,
+          7.6,
+          1.2
+        ],
+        [
+          -16,
+          7.6,
+          1
+        ],
+        [
+          -4,
+          -6.4,
+          1
+        ],
+        [
+          6,
+          -6.4,
+          0.9
+        ],
+        [
+          -11,
+          -6.4,
+          1.1
+        ],
+        [
+          15,
+          -6.4,
+          0.8
+        ],
+        [
+          -20,
+          12,
+          1.3
+        ],
+        [
+          20,
+          -10,
+          1.4
+        ],
+        [
+          -19,
+          -8,
+          1.1
+        ],
+        [
+          6,
+          12,
+          0.9
+        ]
+      ],
+      "morros": [
+        {
+          "x": -18,
+          "z": -14,
+          "r": 5,
+          "h": 1.1
+        },
+        {
+          "x": 18,
+          "z": -18,
+          "r": 6,
+          "h": 1.4
+        },
+        {
+          "x": -16,
+          "z": 16,
+          "r": 5,
+          "h": 0.9
+        }
+      ],
+      "decor": [
+        [
+          "placa",
+          3.6,
+          9.2,
+          "PONTE DO SERPENTINA — lá embaixo, o rio corre para o Mar do Meio. Segure firme nas cordas!"
+        ],
+        [
+          "placa",
+          4,
+          -12.5,
+          "MIRANTE DA CRISTA — ao norte, o Fiorde Ventania. Além dele, dizem, ergue-se a MURALHA."
+        ]
+      ],
+      "selvagens": [
+        "gelavim",
+        "pratim",
+        "rochim",
+        "vulpim"
+      ],
+      "treinadores": [
+        {
+          "nome": "Escaladora Ida",
+          "tipo": "aldea",
+          "modelo": 5,
+          "x": -5,
+          "z": -14,
+          "rot": 1.2,
+          "fala": "Poucos cruzam a ponte... menos ainda me vencem aqui em cima!",
+          "equipe": [
+            {
+              "especie": "nevim",
+              "nivel": 13
+            },
+            {
+              "especie": "rochim",
+              "nivel": 14
+            }
+          ]
+        }
+      ],
+      "saidas": [
+        {
+          "borda": "sul",
+          "de": -2,
+          "ate": 2,
+          "destino": "penhasco"
+        },
+        {
+          "borda": "norte",
+          "de": -2,
+          "ate": 2,
+          "destino": "fiorde"
+        }
+      ]
     }
   }
 }
