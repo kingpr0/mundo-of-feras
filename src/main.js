@@ -782,6 +782,9 @@ function iniciaTreino() {
     paraBatalha(feraE, especies, golpesCat),
     RINGUE.dom, RINGUE.fera,
     { tipos, bioma: mundo.mapa.chao || 'grama', treinador: true, golpes: golpesCat }); // sem captura
+  // arena de TESTE: ki cheio dos dois lados — os golpes caros saem na hora
+  batalha.p.energia = 100;
+  batalha.e.energia = 100;
   modo = 'batalha';
   menu = { tipo: 'exploracao', sel: 0, fera: menu.fera, especie: menu.especie, ativo: false };
   feraAtual = modelosIni[treino.e];
@@ -1243,5 +1246,13 @@ window.DEV = {
   estado: () => ({ modo, mapa: chaveMapa, pos: { ...mundo.domador.pos },
                    equipe: equipe.length, menu: menu.tipo, menuAtivo: menu.ativo,
                    treino: treino ? { ...treino } : null, batalha: !!batalha }),
+  enche: () => { if (batalha) batalha.p.energia = 100; },
+  luta: () => batalha && {
+    golpe: batalha.p.golpe ? batalha.p.golpe.nome : null,
+    estado: batalha.p.estado, t: +batalha.p.t.toFixed(2),
+    comboQ: !!batalha.p.comboQ, catalogo: !!batalha.catalogo,
+    clip: playerM ? playerM.clipAtual : null,
+    clips: playerM && playerM.clips ? Object.keys(playerM.clips) : null,
+  },
 };
 requestAnimationFrame(loop);

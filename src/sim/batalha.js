@@ -25,6 +25,7 @@ function novoLutador(l, esp, pos) {
     // devagar, carrega parado (vulnerável!) e golpe físico certeiro gera
     energia: 50, espinhoT: 0, carregando: false, pulosAr: 0, giroAr: 0,
     piruetando: false, dashDir: { x: 0, y: 0, z: 1 },
+    comboJanela: 0, comboProximo: null,
   };
 }
 
@@ -114,6 +115,7 @@ function aplicaDano(b, vitima, dano, dirKb, empurrao, forte, emitir, invulnT = 0
   if (vitima.carregando) dano = Math.round(dano * 1.25);
   vitima.hp = Math.max(0, vitima.hp - dano);
   vitima.estado = 'hurt'; vitima.t = 0;
+  vitima.comboJanela = 0; vitima.comboProximo = null;
   vitima.invuln = invulnT; vitima.flash = 1;
   vitima.kb = escala(dirKb, empurrao);
   emitir({ tipo: forte ? 'hitForte' : 'hit', pos: copia(vitima.pos), dano, forte, eficaz });
@@ -178,9 +180,21 @@ function passoProjeteis(b, dt, emitir) {
 
 // tenta iniciar o golpe do slot pedido (forte = via combo de direções).
 // Golpes com usos limitados gastam 1 por acionamento; sem usos, nega.
-function tentaGolpe(f, inp, emitir) {
+function tentaGolpe(b, f, inp, emitir) {
   const s = f.slots[inp.golpe];
   if (!s || !s.def) return;
+  // CONTINUAÇÃO de combo ("coyote"): aperto no físico logo APÓS o golpe
+  // anterior terminar ainda encadeia o próximo — mashing progride sempre
+  if (!inp.forte && f.comboJanela > 0 && f.comboProximo && b.catalogo &&
+      b.catalogo[f.comboProximo] && s.def.fisico) {
+    const g = b.catalogo[f.comboProximo];
+    f.comboJanela = 0; f.comboProximo = null;
+    f.estado = 'atk'; f.golpe = g; f.t = 0; f.acertou = false; f.tiros = 0;
+    f.talhou = false; f.comboQ = false;
+    emitir({ tipo: 'combo', nome: g.nome, pos: copia(f.pos) });
+    emitir({ tipo: 'golpeUsado' });
+    return;
+  }
   const escolhido = (inp.forte && s.forte) ? s.forte : s;
   const g = escolhido.def;
   const podeNoAr = !!(g.projetil || g.rajada || g.feixe);
@@ -284,11 +298,17 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
     // vale em QUALQUER momento do golpe (buffer, como em jogo de luta)
     if (inp.golpe != null && g.fisico && g.proximo) f.comboQ = true;
     const encaixa = f.comboQ && g.proximo && b.catalogo && b.catalogo[g.proximo];
-    if (encaixa && f.t >= g.prep + g.ativo + g.recup * 0.4) {
+    if (encaixa && f.t >= g.prep + g.ativo + g.recup * 0.15) {
       f.golpe = b.catalogo[g.proximo];
       f.t = 0; f.acertou = false; f.talhou = false; f.comboQ = false; f.tiros = 0;
       emitir({ tipo: 'combo', nome: f.golpe.nome, pos: copia(f.pos) });
-    } else if (f.t >= g.prep + g.ativo + g.recup) { f.estado = 'idle'; f.golpe = null; }
+    } else if (f.t >= g.prep + g.ativo + g.recup) {
+      f.estado = 'idle'; f.golpe = null;
+      // janela "coyote": um aperto atrasado ainda continua a cadeia
+      if (g.proximo && b.catalogo && b.catalogo[g.proximo]) {
+        f.comboProximo = g.proximo; f.comboJanela = 0.32;
+      } else { f.comboProximo = null; f.comboJanela = 0; }
+    }
   } else {
     // CARREGAR ki: parado no chão, segurando o botão — lento e vulnerável.
     // Depois de 45s de luta, a "fúria do crepúsculo" dobra a carga.
@@ -321,7 +341,7 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
           emitir({ tipo: 'pulo' });
         }
       }
-      else if (inp.golpe != null) tentaGolpe(f, inp, emitir);
+      else if (inp.golpe != null) tentaGolpe(b, f, inp, emitir);
     }
   }
   ganhaKi(f, 2 * dt); // o ki pinga sozinho, como elixir
@@ -351,6 +371,7 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
       }
     }
   }
+  if (f.comboJanela > 0) f.comboJanela -= dt;
   if (f.espinhoT > 0) f.espinhoT -= dt;
   if (f.invuln > 0) f.invuln -= dt;
   if (f.flash > 0) f.flash -= dt * 4;
