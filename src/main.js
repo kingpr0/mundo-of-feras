@@ -220,10 +220,18 @@ function aoEvento(evt) {
     case 'dash': sfx.pulo();
       if (batalha) poof(cena, { ...batalha.p.pos, y: 0.3 }, 0xcbd0d8, 6, 2.5); break;
     case 'swing': sfx.swing(); break;
-    case 'talho': { // rasgo branco do golpe físico, inclinado pelo movimento
-      const ANG = { garra: -0.75, soco: 0.05, gancho: 1.35, mordida: 0.25 };
+    case 'talho': { // rasgo branco do golpe, com o LADO do braço que bate
+      const ESTILO = {
+        combo1: { ang: -1.15 },              // corte ascendente (direita, subindo)
+        combo2: { ang: -0.45 },              // corte diagonal (direita)
+        combo3: { ang: 0.35, esp: true },    // gancho de ESQUERDA: espelhado
+        garra: { ang: -0.75 },
+        soco: { ang: 0.05 },
+        forte: { ang: 1.35 },
+      };
+      const et = ESTILO[evt.clipe] || { ang: 0.15 };
       fx.talho({ x: evt.pos.x, y: evt.pos.y + ARENA_Y + 1.0, z: evt.pos.z },
-        (ANG[evt.clipe] ?? 0.15) + (Math.random() - 0.5) * 0.15, evt.forte);
+        et.ang + (Math.random() - 0.5) * 0.12, evt.forte, !!et.esp);
       break;
     }
     case 'combo': sfx.especial(); cena.shake = 0.18;
@@ -1069,17 +1077,20 @@ function atualizaClips(M, f, dt) {
         correr = tem(c.correr) || andar;
   if (f && f.estado === 'atk') {
     // golpes podem pedir um clipe próprio ("clipe" no golpes.json — ex.: o
-    // soco do Arranhão); senão forte/ataque; recomeça a cada ataque novo
-    const nome = tem(f.golpe && f.golpe.clipe && c[f.golpe.clipe])
-      || (f.golpe && f.golpe.forte && tem(c.forte)) || tem(c.ataque) || correr;
-    MD.tocaClip(M, nome, 0.08, { once: nome !== correr, restart: f.t < dt * 2 });
+    // soco do Arranhão); senão forte/ataque; recomeça a cada ataque novo.
+    // "dur" avisa a janela do golpe: clipes longos pulam a preparação
+    const g = f.golpe;
+    const nome = tem(g && g.clipe && c[g.clipe])
+      || (g && g.forte && tem(c.forte)) || tem(c.ataque) || correr;
+    const dur = g ? g.prep + g.ativo + g.recup : 0;
+    MD.tocaClip(M, nome, 0.08, { once: nome !== correr, restart: f.t < dt * 2, dur });
   }
   // pirueta para TRÁS com clipe real (Backflip do Meshy), quando existir
   else if (f && f.piruetando && f.pos.y > 0.02 && f.dashRel && f.dashRel.z > 0.5 && tem(c.mortal))
-    MD.tocaClip(M, c.mortal, 0.05, { once: true });
+    MD.tocaClip(M, c.mortal, 0.05, { once: true, dur: 1.1 });
   else if (f && f.estado === 'dash') MD.tocaClip(M, correr, 0.1);
-  else if (f && f.estado === 'hurt') MD.tocaClip(M, tem(c.dano) || parado, 0.08, { once: !!tem(c.dano) });
-  else if (f && f.estado === 'ko') MD.tocaClip(M, tem(c.ko) || tem(c.dano) || parado, 0.15, { once: !!(tem(c.ko) || tem(c.dano)) });
+  else if (f && f.estado === 'hurt') MD.tocaClip(M, tem(c.dano) || parado, 0.08, { once: !!tem(c.dano), dur: 0.45 });
+  else if (f && f.estado === 'ko') MD.tocaClip(M, tem(c.ko) || tem(c.dano) || parado, 0.15, { once: !!(tem(c.ko) || tem(c.dano)), dur: 1.3 });
   else if (f && f.movendo && f.estado === 'idle') MD.tocaClip(M, andar);
   else MD.tocaClip(M, parado);
   MD.passoMixer(M, dt);

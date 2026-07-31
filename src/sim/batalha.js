@@ -190,7 +190,7 @@ function tentaGolpe(b, f, inp, emitir) {
     const g = b.catalogo[f.comboProximo];
     f.comboJanela = 0; f.comboProximo = null;
     f.estado = 'atk'; f.golpe = g; f.t = 0; f.acertou = false; f.tiros = 0;
-    f.talhou = false; f.comboQ = false;
+    f.talhou = false; f.comboQ = false; f.feixeT = 0;
     emitir({ tipo: 'combo', nome: g.nome, pos: copia(f.pos) });
     emitir({ tipo: 'golpeUsado' });
     return;
@@ -211,7 +211,7 @@ function tentaGolpe(b, f, inp, emitir) {
   }
   f.energia -= custo;
   f.estado = 'atk'; f.golpe = g; f.t = 0; f.acertou = false; f.tiros = 0;
-  f.talhou = false; f.comboQ = false;
+  f.talhou = false; f.comboQ = false; f.feixeT = 0;
   if (inp.forte && s.forte) emitir({ tipo: 'comando', nome: g.nome, pos: copia(f.pos) });
   else if (podeNoAr) emitir({ tipo: 'especial' });
   else emitir({ tipo: 'swing' });
@@ -245,14 +245,18 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
     f.t += dt;
     const g = f.golpe;
     if (g.feixe) {
-      // FEIXE instantâneo (trovão/energia): telegrafa na preparação e crava
-      if (!f.acertou && f.t >= g.prep) {
-        f.acertou = true;
+      // FEIXE: crava no fim da preparação e CONTINUA queimando durante a
+      // janela ativa (o Raio Esmeralda dura ~1.5s de raio contínuo)
+      if (f.t >= g.prep && f.t <= g.prep + g.ativo) {
         const de = { x: f.pos.x, y: f.pos.y + 1.1, z: f.pos.z };
         const para = { x: outro.pos.x, y: outro.pos.y + 0.7, z: outro.pos.z };
-        emitir({ tipo: 'feixe', de, para, elemento: g.tipo || f.esp.tipo, visual: g.visual || null });
-        if (outro.estado !== 'ko' && outro.invuln <= 0 &&
+        if (f.t - (f.feixeT || 0) > 0.09) { // pulso visual do raio
+          f.feixeT = f.t;
+          emitir({ tipo: 'feixe', de, para, elemento: g.tipo || f.esp.tipo, visual: g.visual || null });
+        }
+        if (!f.acertou && outro.estado !== 'ko' && outro.invuln <= 0 &&
             distXZ(f.pos, outro.pos) <= (g.feixe.alcance || 8)) {
+          f.acertou = true;
           const { m, ef } = eficacia(b.tipos, g.tipo || f.esp.tipo, outro.esp.tipo);
           aplicaDano(b, outro, Math.round(g.dano * f.forca * m),
             normXZ(sub(outro.pos, f.pos)), g.empurrao, true, emitir, 0.5, ef);
@@ -300,7 +304,7 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
     const encaixa = f.comboQ && g.proximo && b.catalogo && b.catalogo[g.proximo];
     if (encaixa && f.t >= g.prep + g.ativo + g.recup * 0.15) {
       f.golpe = b.catalogo[g.proximo];
-      f.t = 0; f.acertou = false; f.talhou = false; f.comboQ = false; f.tiros = 0;
+      f.t = 0; f.acertou = false; f.talhou = false; f.comboQ = false; f.feixeT = 0; f.tiros = 0;
       emitir({ tipo: 'combo', nome: f.golpe.nome, pos: copia(f.pos) });
     } else if (f.t >= g.prep + g.ativo + g.recup) {
       f.estado = 'idle'; f.golpe = null;

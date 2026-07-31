@@ -259,6 +259,7 @@ export function criarEfeitos(scene) {
     e.vel = o.vel; e.cresce = o.cresce || 0; e.gira = o.gira || 0;
     e.op0 = o.op == null ? 1 : o.op; e.escala0 = o.escala;
     e.engorda = false; // (setado por quem cria, ex.: projétil)
+    e.espelha = false;
     ativos.push(e);
     return e;
   }
@@ -308,11 +309,12 @@ export function criarEfeitos(scene) {
 
     // TALHO branco do golpe físico: crescente que varre na frente da fera
     // (ang inclina o rasgo: diagonal p/ garra, vertical p/ gancho...)
-    talho(pos, ang, forte) {
+    talho(pos, ang, forte, espelha = false) {
       const e = novo('talho', {
         escala: forte ? 3.0 : 2.2, dur: forte ? 0.38 : 0.3,
-        rot: ang, cresce: 2.6,
+        rot: espelha ? -ang : ang, cresce: 2.6,
       });
+      e.espelha = espelha; // golpe de ESQUERDA: o crescente varre ao contrário
       e.sp.position.set(pos.x, pos.y, pos.z);
     },
 
@@ -357,7 +359,7 @@ export function criarEfeitos(scene) {
         // projétil nasce fino na boca e incha até o tamanho cheio
         if (e.engorda) s *= Math.min(1, 0.2 + (e.t / 0.3) * 0.8);
         if (e.loop) s *= 0.92 + Math.random() * 0.16; // tremeluz
-        e.sp.scale.set(s, s, 1);
+        e.sp.scale.set(e.espelha ? -s : s, s, 1);
         if (!e.loop) {
           const k = e.t / e.dur;
           e.mat.opacity = e.op0 * (1 - k * k);

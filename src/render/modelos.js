@@ -760,6 +760,14 @@ export function tocaClip(M, nome, fade = 0.2, opts = {}) {
     acao.clampWhenFinished = true;
   } else acao.setLoop(THREE.LoopRepeat, Infinity);
   acao.reset().fadeIn(fade).play();
+  // clipe LONGO do Meshy num golpe curto: os clipes "charged" têm segundos
+  // de preparação — pulamos direto para o MIOLO (a ação de verdade) e
+  // ajustamos a velocidade para caber na janela do golpe
+  const clip = acao.getClip ? acao.getClip() : acao._clip;
+  if (opts.once && opts.dur && clip && clip.duration > opts.dur * 1.5) {
+    acao.time = clip.duration * 0.22;
+    acao.timeScale = (clip.duration * 0.62) / opts.dur;
+  } else acao.timeScale = 1;
   M.clipAtual = nome;
 }
 export function passoMixer(M, dt) { if (M && M.mixer) M.mixer.update(dt); }
