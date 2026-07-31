@@ -1008,6 +1008,14 @@ export function animaLuta(M, f) {
     return;
   }
   if (f.estado === 'atk' && f.golpe) {
+    // modelo glTF com clipes: o GOLPE é atuado pelo esqueleto — nenhuma
+    // pose procedural por cima (o "giro 360 do forte" virava pião durante
+    // o kame do Raio Esmeralda!)
+    if (M.gltf && M.clips && M.clipAtual) {
+      M.g.rotation.x = 0;
+      M.g.rotation.z = 0;
+      return;
+    }
     const g = f.golpe;
     const cab = M.cabeca;
     if (g.rajada) {

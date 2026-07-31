@@ -1268,6 +1268,7 @@ window.DEV = {
     estado: batalha.p.estado, t: +batalha.p.t.toFixed(2),
     comboQ: !!batalha.p.comboQ, catalogo: !!batalha.catalogo,
     clip: playerM ? playerM.clipAtual : null,
+    rotY: playerM ? +playerM.g.rotation.y.toFixed(2) : null,
     clips: playerM && playerM.clips ? Object.keys(playerM.clips) : null,
   },
 };
