@@ -15,33 +15,33 @@
           12.5
         ],
         [
+          "placa",
+          -8.8,
+          6.3,
+          "A FOGUEIRA ETERNA — arde desde a fundação de Ferândia. Diante dela, todo domador escolhe sua primeira companheira."
+        ],
+        [
           "poco",
-          -13.5,
-          18
+          -19.5,
+          14.5
         ],
         [
           "banca",
           -4,
           15
-        ],
-        [
-          "placa",
-          3,
-          8,
-          "Vila Clareira — trate suas feras no Centro de Curas. Ao norte, o Campo; ao sul, as Dunas."
         ]
       ],
       "npcs": [
         [
-          -12.5,
-          11,
+          -11,
+          17.6,
           "maga",
-          2.6,
-          "Sinto uma energia estranha vinda do Penhasco do Vento... feras muito raras vivem lá."
+          3.14,
+          "Sinto cheiro de cinza e sal no vento... A chama reconhece você, jovem domador."
         ],
         [
-          -9,
-          17,
+          -6.5,
+          19,
           "aldeao",
           3.4,
           "Dizem que um DRAGÃO ronda as Colinas Rochosas. Eu? Eu nunca saí da vila."
@@ -54,7 +54,7 @@
           "Minha banca em breve terá cristais e poções! Volte quando a economia chegar ao jogo."
         ],
         [
-          -16.5,
+          -19,
           9.5,
           "aldea",
           1.4,
@@ -66,6 +66,36 @@
         "z": 24
       },
       "arvores": [
+        [
+          -4,
+          14.4,
+          0
+        ],
+        [
+          -8,
+          19,
+          1
+        ],
+        [
+          -14,
+          19,
+          0
+        ],
+        [
+          -18,
+          14.4,
+          1
+        ],
+        [
+          -16.9,
+          8.4,
+          0
+        ],
+        [
+          -5.1,
+          8.4,
+          1
+        ],
         [
           -4,
           -8,
@@ -139,18 +169,18 @@
       ],
       "casas": [
         [
-          -15,
-          14,
+          -21,
+          18,
           "vermelho"
         ],
         [
-          -7,
-          16,
+          -1.5,
+          21,
           "azul"
         ],
         [
-          -17,
-          6,
+          -21,
+          5,
           "vermelho"
         ]
       ],
@@ -162,7 +192,7 @@
         {
           "x": -11,
           "z": 12.5,
-          "r": 3.5,
+          "r": 5.2,
           "h": 0.55
         },
         {
@@ -180,7 +210,7 @@
       },
       "spawn": {
         "x": -11,
-        "z": 10
+        "z": 4.5
       },
       "selvagens": [
         "pedrusco"
@@ -223,7 +253,44 @@
         "x": 14,
         "z": 8,
         "modelo": 3
-      }
+      },
+      "pedras": [
+        [
+          -6.7,
+          12.5,
+          0.7
+        ],
+        [
+          -8,
+          15.5,
+          0.7
+        ],
+        [
+          -11,
+          16.8,
+          0.7
+        ],
+        [
+          -14,
+          15.5,
+          0.7
+        ],
+        [
+          -15.3,
+          12.5,
+          0.7
+        ],
+        [
+          -14,
+          9.5,
+          0.7
+        ],
+        [
+          -8,
+          9.5,
+          0.7
+        ]
+      ]
     },
     "verdejante": {
       "nome": "Cidade Verdejante",

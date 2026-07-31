@@ -270,7 +270,8 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
         emitir({ tipo: 'talho', pos: soma(copia(f.pos), escala(frente, 1.0)),
                  clipe: g.clipe || null, forte: !!g.forte });
       }
-      f.pos = soma(p, escala(frente, (g.forte ? 3 : 4.5) * dt));
+      // "avanco" nos dados: a Investida dispara o corpo firme para a frente
+      f.pos = soma(p, escala(frente, (g.avanco || (g.forte ? 3 : 4.5)) * dt));
       if (g.forte) emitir({ tipo: 'rastroFogo', pos: soma(copia(f.pos), escala(frente, 1.1)) });
       if (!f.acertou && distXZ(f.pos, outro.pos) < g.alcance &&
           outro.invuln <= 0 && outro.estado !== 'ko') {
@@ -479,6 +480,21 @@ export function passoBatalha(b, inpP, dt, emitir, rnd = Math.random) {
   passoLutador(b, b.p, { mov, pulo: inpP.pulo, golpe: inpP.golpe, forte: inpP.forte,
     carregar: inpP.carregar, dash, dashRel: inpP.dash }, b.e, dt, emitir);
   passoLutador(b, b.e, iaSelvagem(b, dt, rnd), b.p, dt, emitir);
+  separaCorpos(b);
   if (inpP.capturar && podeCapturar(b)) lancaCristal(b, emitir);
   return null;
+}
+
+// os corpos são SÓLIDOS: uma fera não atravessa a outra — cada uma cede
+// metade do empurrão (pular por CIMA continua valendo)
+function separaCorpos(b) {
+  const p = b.p, e = b.e;
+  if (p.estado === 'ko' || e.estado === 'ko') return;
+  if (Math.abs(p.pos.y - e.pos.y) > 1.0) return;
+  const d = distXZ(p.pos, e.pos), MIN = 1.15;
+  if (d >= MIN || d < 0.001) return;
+  const dir = normXZ(sub(e.pos, p.pos));
+  const emp = (MIN - d) / 2;
+  p.pos.x -= dir.x * emp; p.pos.z -= dir.z * emp;
+  e.pos.x += dir.x * emp; e.pos.z += dir.z * emp;
 }

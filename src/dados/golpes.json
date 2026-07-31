@@ -6,12 +6,12 @@
     "dano": 7,
     "alcance": 1.7,
     "empurrao": 3.2,
-    "prep": 0.08,
-    "ativo": 0.12,
-    "recup": 0.18,
+    "prep": 0.1,
+    "ativo": 0.3,
+    "recup": 0.22,
     "forte": false,
     "usos": null,
-    "proximo": "mordida"
+    "avanco": 10
   },
   "investida_feroz": {
     "nome": "Investida Feroz",
@@ -25,7 +25,8 @@
     "ativo": 0.18,
     "recup": 0.46,
     "forte": true,
-    "usos": null
+    "usos": null,
+    "avanco": 12
   },
   "rolamento_demolidor": {
     "nome": "Rolamento Demolidor",
@@ -55,7 +56,8 @@
     "projetil": {
       "vel": 11,
       "raio": 0.85
-    }
+    },
+    "clipe": "arremesso"
   },
   "lanca_chamas": {
     "nome": "Lança-Chamas",
@@ -74,7 +76,8 @@
       "intervalo": 0.11,
       "vel": 12,
       "raio": 0.7
-    }
+    },
+    "clipe": "arremesso"
   },
   "esfera_voltaica": {
     "nome": "Esfera Voltaica",
@@ -90,7 +93,8 @@
     "projetil": {
       "vel": 13,
       "raio": 0.8
-    }
+    },
+    "clipe": "arremesso"
   },
   "rajada_voltaica": {
     "nome": "Rajada Voltaica",
@@ -109,7 +113,8 @@
       "intervalo": 0.12,
       "vel": 14,
       "raio": 0.65
-    }
+    },
+    "clipe": "arremesso"
   },
   "folha_navalha": {
     "nome": "Folha Navalha",
@@ -126,7 +131,8 @@
     "projetil": {
       "vel": 12,
       "raio": 0.8
-    }
+    },
+    "clipe": "arremesso"
   },
   "tempestade_folhas": {
     "nome": "Tempestade de Folhas",
@@ -146,7 +152,8 @@
       "intervalo": 0.12,
       "vel": 12,
       "raio": 0.7
-    }
+    },
+    "clipe": "arremesso"
   },
   "raio_esmeralda": {
     "nome": "Raio Esmeralda",
@@ -180,7 +187,8 @@
     "projetil": {
       "vel": 8,
       "raio": 0.85
-    }
+    },
+    "clipe": "arremesso"
   },
   "rajada_bolhas": {
     "nome": "Rajada de Bolhas",
@@ -200,7 +208,8 @@
       "intervalo": 0.16,
       "vel": 6.5,
       "raio": 0.8
-    }
+    },
+    "clipe": "arremesso"
   },
   "trovao": {
     "nome": "Trovão",
@@ -216,7 +225,8 @@
     "usos": null,
     "feixe": {
       "alcance": 8
-    }
+    },
+    "clipe": "kame"
   },
   "garra": {
     "nome": "Arranhão",
@@ -231,7 +241,7 @@
     "recup": 0.12,
     "forte": false,
     "usos": null,
-    "proximo": "soco"
+    "proximo": "gancho"
   },
   "garras_furiosas": {
     "nome": "Garras Furiosas",
@@ -247,20 +257,6 @@
     "recup": 0.36,
     "forte": true,
     "usos": null
-  },
-  "mordida": {
-    "nome": "Mordida",
-    "tipo": "comum",
-    "fisico": true,
-    "dano": 9,
-    "alcance": 1.6,
-    "empurrao": 3.8,
-    "prep": 0.14,
-    "ativo": 0.12,
-    "recup": 0.26,
-    "forte": false,
-    "usos": null,
-    "clipe": "mordida"
   },
   "soco_trovao": {
     "nome": "Soco-Trovão",
@@ -294,7 +290,8 @@
     "formacao": {
       "lados": 5,
       "raio": 0.85
-    }
+    },
+    "clipe": "kame"
   },
   "hidrobomba": {
     "nome": "Hidrobomba",
@@ -311,7 +308,8 @@
     "projetil": {
       "vel": 7,
       "raio": 1.05
-    }
+    },
+    "clipe": "kame"
   },
   "chicote_vinha": {
     "nome": "Chicote de Vinha",
@@ -327,26 +325,10 @@
     "forte": false,
     "usos": 12
   },
-  "soco": {
-    "nome": "Soco",
-    "tipo": "comum",
-    "fisico": true,
-    "clipe": "soco",
-    "dano": 8,
-    "alcance": 1.7,
-    "empurrao": 3,
-    "prep": 0.08,
-    "ativo": 0.12,
-    "recup": 0.16,
-    "forte": false,
-    "usos": null,
-    "proximo": "gancho"
-  },
   "gancho": {
     "nome": "Gancho",
     "tipo": "comum",
     "fisico": true,
-    "base": "soco",
     "clipe": "gancho",
     "dano": 15,
     "alcance": 1.9,

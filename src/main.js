@@ -353,11 +353,11 @@ function itensDoMenu() {
       else { treino.e = k; iniciaTreino(); }
     },
   }));
-  // ...e os 4 golpes que a SUA fera vai levar (o oponente usa os dele)
+  // ...e os 4 golpes que a SUA fera vai levar (o oponente usa os dele);
+  // TODOS os golpes aparecem — inclusive as versões fortes, para teste
   if (t === 'treinoG') return Object.entries(golpesCat)
-    .filter(([, g]) => !g.base) // as versões fortes entram junto com a base
     .map(([id, g]) => ({
-      txt: `${treino.golpes.includes(id) ? '✓ ' : ''}${g.nome} · ${g.tipo}${g.fisico ? ' · físico' : ''}`,
+      txt: `${treino.golpes.includes(id) ? '✓ ' : ''}${g.nome} · ${g.tipo}${g.fisico ? ' · físico' : ''}${g.base ? ' · forte (60⚡)' : ''}`,
       acao: () => {
         const i = treino.golpes.indexOf(id);
         if (i >= 0) treino.golpes.splice(i, 1);
