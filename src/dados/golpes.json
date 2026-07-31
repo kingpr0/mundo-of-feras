@@ -10,7 +10,8 @@
     "ativo": 0.12,
     "recup": 0.18,
     "forte": false,
-    "usos": null
+    "usos": null,
+    "proximo": "mordida"
   },
   "investida_feroz": {
     "nome": "Investida Feroz",
@@ -229,7 +230,8 @@
     "ativo": 0.1,
     "recup": 0.12,
     "forte": false,
-    "usos": null
+    "usos": null,
+    "proximo": "soco"
   },
   "garras_furiosas": {
     "nome": "Garras Furiosas",
@@ -337,7 +339,8 @@
     "ativo": 0.12,
     "recup": 0.16,
     "forte": false,
-    "usos": null
+    "usos": null,
+    "proximo": "gancho"
   },
   "gancho": {
     "nome": "Gancho",

@@ -45,6 +45,7 @@ export function criarBatalha(especies, jogador, selvagem, posDomador, posSelvage
     tipos: extras.tipos || null,
     bioma: extras.bioma || null,
     treinador: !!extras.treinador, // duelo de treinador: captura proibida
+    catalogo: extras.golpes || null, // p/ encadear COMBOS (golpe.proximo)
   };
 }
 
@@ -196,6 +197,7 @@ function tentaGolpe(f, inp, emitir) {
   }
   f.energia -= custo;
   f.estado = 'atk'; f.golpe = g; f.t = 0; f.acertou = false; f.tiros = 0;
+  f.talhou = false; f.comboQ = false;
   if (inp.forte && s.forte) emitir({ tipo: 'comando', nome: g.nome, pos: copia(f.pos) });
   else if (podeNoAr) emitir({ tipo: 'especial' });
   else emitir({ tipo: 'swing' });
@@ -262,6 +264,12 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
       }
     } else if (f.t >= g.prep && f.t <= g.prep + g.ativo) {
       const frente = normXZ(sub(outro.pos, p));
+      // o TALHO branco nasce no instante em que o golpe corta o ar
+      if (!f.talhou && g.fisico) {
+        f.talhou = true;
+        emitir({ tipo: 'talho', pos: soma(copia(f.pos), escala(frente, 1.0)),
+                 clipe: g.clipe || null, forte: !!g.forte });
+      }
       f.pos = soma(p, escala(frente, (g.forte ? 3 : 4.5) * dt));
       if (g.forte) emitir({ tipo: 'rastroFogo', pos: soma(copia(f.pos), escala(frente, 1.1)) });
       if (!f.acertou && distXZ(f.pos, outro.pos) < g.alcance &&
@@ -270,7 +278,15 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
         acerta(b, outro, f, g, emitir);
       }
     }
-    if (f.t >= g.prep + g.ativo + g.recup) { f.estado = 'idle'; f.golpe = null; }
+    // COMBO: apertar golpe de novo durante um físico ENCAIXA o próximo da
+    // cadeia (golpe.proximo), cancelando parte da recuperação
+    if (inp.golpe != null && g.fisico && g.proximo && f.t >= g.prep) f.comboQ = true;
+    const encaixa = f.comboQ && g.proximo && b.catalogo && b.catalogo[g.proximo];
+    if (encaixa && f.t >= g.prep + g.ativo + g.recup * 0.4) {
+      f.golpe = b.catalogo[g.proximo];
+      f.t = 0; f.acertou = false; f.talhou = false; f.comboQ = false; f.tiros = 0;
+      emitir({ tipo: 'combo', nome: f.golpe.nome, pos: copia(f.pos) });
+    } else if (f.t >= g.prep + g.ativo + g.recup) { f.estado = 'idle'; f.golpe = null; }
   } else {
     // CARREGAR ki: parado no chão, segurando o botão — lento e vulnerável.
     // Depois de 45s de luta, a "fúria do crepúsculo" dobra a carga.

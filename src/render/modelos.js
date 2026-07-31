@@ -681,7 +681,17 @@ export function criarFeraGltf(scene, url, alturaAlvo = 1.1, giroGraus = 0) {
       // (nossa convenção: fera parada encara +z)
       if (giroGraus) interno.rotation.y = giroGraus * Math.PI / 180;
       const box = caixaReal(gltf.scene);
-      const alt = box.max.y - box.min.y || 1;
+      let alt = box.max.y - box.min.y || 1;
+      // asas e galhadas NÃO contam como altura: se o rig tem osso 'Head',
+      // o altura3d vale até o topo do crânio (dragões de asas altas ficam
+      // do tamanho imponente que merecem)
+      let cabeca = null;
+      gltf.scene.traverse((o) => { if (!cabeca && o.isBone && o.name === 'Head') cabeca = o; });
+      if (cabeca) {
+        const topoCranio = (new THREE.Vector3().setFromMatrixPosition(cabeca.matrixWorld).y
+          - box.min.y) * 1.22;
+        if (topoCranio > alt * 0.35) alt = Math.min(alt, topoCranio);
+      }
       interno.scale.setScalar(alturaAlvo / alt);
       const box2 = caixaReal(interno);
       interno.position.y = -box2.min.y;

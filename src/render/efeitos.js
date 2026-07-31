@@ -165,6 +165,27 @@ function pintaImpacto(ctx, k, s) {
   }
 }
 
+function pintaTalho(ctx, k, s) {
+  // TALHO de jogo de luta: crescente branco que varre e some num sopro
+  ctx.globalCompositeOperation = 'lighter';
+  const cx = s / 2, cy = s / 2, vida = 1 - k;
+  const R = s * 0.36, esp = s * 0.11 * (0.55 + 0.45 * vida);
+  const a0 = -2.0 + k * 1.5, a1 = a0 + 1.4 + k * 0.9;
+  ctx.lineCap = 'round';
+  for (let i = 0; i < 3; i++) { // gume + dois rastros
+    ctx.strokeStyle = `rgba(255,255,255,${(0.95 - i * 0.3) * vida})`;
+    ctx.lineWidth = Math.max(1, esp * (1 - i * 0.32));
+    ctx.beginPath();
+    ctx.arc(cx, cy, R - i * s * 0.045, a0 - i * 0.16, a1 - i * 0.22);
+    ctx.stroke();
+  }
+  const gx = cx + Math.cos(a1) * R, gy = cy + Math.sin(a1) * R;
+  const g = ctx.createRadialGradient(gx, gy, 0, gx, gy, s * 0.1);
+  g.addColorStop(0, `rgba(255,255,255,${0.9 * vida})`);
+  g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, s, s);
+}
+
 /* ---------- montagem das folhas e texturas ---------- */
 
 function desenhaSheet(pinta) {
@@ -207,6 +228,7 @@ export function criarEfeitos(scene) {
     bolha: desenhaSheet(pintaBolha),
     folhas: desenhaSheet(pintaFolhas),
     impacto: desenhaSheet(pintaImpacto),
+    talho: desenhaSheet(pintaTalho),
   };
   // POOL de efeitos inteiros (sprite+material+textura): reciclar em vez de
   // criar/destruir evita picos de coletor de lixo e uploads à GPU
@@ -283,6 +305,16 @@ export function criarEfeitos(scene) {
     },
     posiciona(e, pos) { e.sp.position.set(pos.x, pos.y, pos.z); },
     removeProjetil(e) { mata(e); },
+
+    // TALHO branco do golpe físico: crescente que varre na frente da fera
+    // (ang inclina o rasgo: diagonal p/ garra, vertical p/ gancho...)
+    talho(pos, ang, forte) {
+      const e = novo('talho', {
+        escala: forte ? 2.6 : 1.9, dur: forte ? 0.24 : 0.18,
+        rot: ang, cresce: 2.2,
+      });
+      e.sp.position.set(pos.x, pos.y, pos.z);
+    },
 
     // estouro de acerto (anel + lascas), maior no golpe forte
     impacto(pos, forte) {

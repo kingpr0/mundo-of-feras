@@ -38,6 +38,9 @@ const discoHolo = MD.criarDiscoHolo(cena.scene); MD.mostra(discoHolo, false);
 let holoM = null; // fera projetada no menu de status/compêndio
 
 const RINGUE = { dom: { x: -5, y: 0, z: 0 }, fera: { x: 3.5, y: 0, z: 0 } };
+// o tablado da arena tem topo em y ≈ 0.12 — os lutadores sobem junto
+const ARENA_Y = 0.12;
+const sobreTablado = (pos) => ({ x: pos.x, y: pos.y + ARENA_Y, z: pos.z });
 const DICA_EXPLORAR = 'Setas: andar (2 toques = correr) · M abre o menu';
 const CORES_TIPO = { fogo: 0xff8a3d, eletrico: 0xffe94d, agua: 0x4da3ff, planta: 0x5fd35a, comum: 0xcbd0d8 };
 const SIMBOLO = { baixo: '↓', frente: '→' };
@@ -217,6 +220,15 @@ function aoEvento(evt) {
     case 'dash': sfx.pulo();
       if (batalha) poof(cena, { ...batalha.p.pos, y: 0.3 }, 0xcbd0d8, 6, 2.5); break;
     case 'swing': sfx.swing(); break;
+    case 'talho': { // rasgo branco do golpe físico, inclinado pelo movimento
+      const ANG = { garra: -0.75, soco: 0.05, gancho: 1.35, mordida: 0.25 };
+      fx.talho({ x: evt.pos.x, y: evt.pos.y + ARENA_Y + 1.0, z: evt.pos.z },
+        (ANG[evt.clipe] ?? 0.15) + (Math.random() - 0.5) * 0.15, evt.forte);
+      break;
+    }
+    case 'combo': sfx.especial(); cena.shake = 0.18;
+      poof(cena, { ...evt.pos, y: evt.pos.y + 1 }, 0xffffff, 6, 3);
+      hud.toast(`▶ Combo: ${evt.nome}!`, 800); break;
     case 'especial': sfx.especial(); break;
     case 'comando': sfx.especial(); cena.shake = 0.22;
       poof(cena, { ...evt.pos, y: 1 }, 0xffffff, 8, 3.5);
@@ -671,7 +683,7 @@ function trocaModeloInimigo(chave) {
   feraAtual = modelosIni[chave];
   MD.setOpacidade(feraAtual, 1); MD.setEscala(feraAtual, 1);
   MD.flashCor(feraAtual, 0); feraAtual.g.rotation.x = 0;
-  MD.setPos(feraAtual, batalha.e.pos);
+  MD.setPos(feraAtual, sobreTablado(batalha.e.pos));
   MD.mostra(feraAtual, true);
   poof(cena, { ...batalha.e.pos, y: 0.9 }, 0xffffff, 14, 4);
 }
@@ -680,7 +692,7 @@ function trocaModeloJogador(f) {
   playerM = modelosJog[f.especie];
   MD.setOpacidade(playerM, 1); MD.setEscala(playerM, 1);
   MD.flashCor(playerM, 0); playerM.g.rotation.x = 0;
-  MD.setPos(playerM, batalha.p.pos); MD.mostra(playerM, true);
+  MD.setPos(playerM, sobreTablado(batalha.p.pos)); MD.mostra(playerM, true);
   poof(cena, { ...batalha.p.pos, y: 0.9 }, 0xffd23f, 14, 4);
   hud.nomeJogador(nomeDe(f), f.nivel);
   hud.xp(f.xp / xpParaSubir(f.nivel));
@@ -707,7 +719,7 @@ function iniciaEncontro() {
   feraAtual = modelosIni[mundo.selvagem.especie];
   MD.setOpacidade(feraAtual, 1); MD.setEscala(feraAtual, 1);
   MD.flashCor(feraAtual, 0); feraAtual.g.rotation.x = 0;
-  MD.setPos(feraAtual, RINGUE.fera);
+  MD.setPos(feraAtual, sobreTablado(RINGUE.fera));
   MD.encara(feraAtual, RINGUE.dom.x, RINGUE.dom.z);
   feraAtual.g.rotation.y = feraAtual.giro;
   MD.mostra(feraAtual, true);
@@ -731,7 +743,7 @@ function iniciaBatalha() {
     paraBatalha(fera, especies, golpesCat),
     paraBatalha(inimigo, especies, golpesCat),
     RINGUE.dom, RINGUE.fera,
-    { tipos, bioma: mundo.mapa.chao || 'grama', treinador: !!desafio });
+    { tipos, bioma: mundo.mapa.chao || 'grama', treinador: !!desafio, golpes: golpesCat });
   modo = 'batalha';
   trocaModeloJogador(fera);
   hud.batalhaVisivel(true); hud.atualizaHP(batalha);
@@ -767,13 +779,13 @@ function iniciaTreino() {
     paraBatalha(feraP, especies, golpesCat),
     paraBatalha(feraE, especies, golpesCat),
     RINGUE.dom, RINGUE.fera,
-    { tipos, bioma: mundo.mapa.chao || 'grama', treinador: true }); // sem captura
+    { tipos, bioma: mundo.mapa.chao || 'grama', treinador: true, golpes: golpesCat }); // sem captura
   modo = 'batalha';
   menu = { tipo: 'exploracao', sel: 0, fera: menu.fera, especie: menu.especie, ativo: false };
   feraAtual = modelosIni[treino.e];
   MD.setOpacidade(feraAtual, 1); MD.setEscala(feraAtual, 1);
   MD.flashCor(feraAtual, 0); feraAtual.g.rotation.x = 0;
-  MD.setPos(feraAtual, RINGUE.fera);
+  MD.setPos(feraAtual, sobreTablado(RINGUE.fera));
   MD.encara(feraAtual, RINGUE.dom.x, RINGUE.dom.z);
   feraAtual.g.rotation.y = feraAtual.giro;
   MD.mostra(feraAtual, true);
@@ -936,14 +948,14 @@ function sincronizaVisual(dt) {
     } else MD.animaAndar(domador, d.animT * (d.correndo ? 1.45 : 1), d.andando);
   }
   if (modo === 'encontro' && feraAtual) {
-    MD.setPos(feraAtual, RINGUE.fera);
-    feraAtual.g.position.y = Math.abs(Math.sin(tempo * 3)) * 0.05;
+    MD.setPos(feraAtual, sobreTablado(RINGUE.fera));
+    feraAtual.g.position.y = ARENA_Y + Math.abs(Math.sin(tempo * 3)) * 0.05;
     MD.animaIdle(feraAtual, tempo);
     atualizaClips(feraAtual, null, dt);
   }
   if (holoM) { MD.animaIdle(holoM, tempo); atualizaClips(holoM, null, dt); }
   if (modo === 'batalha' && batalha && playerM) {
-    MD.setPos(playerM, batalha.p.pos);
+    MD.setPos(playerM, sobreTablado(batalha.p.pos));
     MD.encara(playerM, batalha.e.pos.x, batalha.e.pos.z);
     MD.passoGiro(playerM, dt);
     MD.animaIdle(playerM, tempo);
@@ -954,7 +966,7 @@ function sincronizaVisual(dt) {
     if (batalha.p.estado === 'ko') MD.setOpacidade(playerM, Math.max(0, 1 - batalha.p.t * 1.1));
     aplicaFlash(playerM, batalha.p);
 
-    MD.setPos(feraAtual, batalha.e.pos);
+    MD.setPos(feraAtual, sobreTablado(batalha.e.pos));
     MD.encara(feraAtual, batalha.p.pos.x, batalha.p.pos.z);
     MD.passoGiro(feraAtual, dt);
     MD.animaIdle(feraAtual, tempo);
@@ -968,7 +980,7 @@ function sincronizaVisual(dt) {
     if (batalha.captura) MD.flashCor(feraAtual, 0);
     else aplicaFlash(feraAtual, batalha.e);
 
-    if (batalha.captura) { MD.setPos(cristal, batalha.captura.pos); cristal.g.rotation.y += dt * 5; }
+    if (batalha.captura) { MD.setPos(cristal, sobreTablado(batalha.captura.pos)); cristal.g.rotation.y += dt * 5; }
 
     // rastro de poeira da cambalhota
     if (batalha.p.estado === 'dash' && Math.random() < 0.7)
