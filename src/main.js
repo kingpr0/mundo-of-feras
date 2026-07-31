@@ -1080,7 +1080,12 @@ function atualizaClips(M, f, dt) {
     // soco do Arranhão); senão forte/ataque; recomeça a cada ataque novo.
     // "dur" avisa a janela do golpe: clipes longos pulam a preparação
     const g = f.golpe;
+    const ranged = !!(g && (g.projetil || g.rajada || g.feixe));
+    // fallback por família: golpe de PODER sem clipe próprio cai na
+    // conjuração (arremesso), nunca no "forte" físico (que pode ser um
+    // giro 360 — ficava esquisito num feixe!)
     const nome = tem(g && g.clipe && c[g.clipe])
+      || (ranged ? (tem(c.arremesso) || tem(c.ataque)) : null)
       || (g && g.forte && tem(c.forte)) || tem(c.ataque) || correr;
     const dur = g ? g.prep + g.ativo + g.recup : 0;
     MD.tocaClip(M, nome, 0.08, { once: nome !== correr, restart: f.t < dt * 2, dur });
