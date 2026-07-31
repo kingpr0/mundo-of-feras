@@ -336,7 +336,7 @@ function tituloMenu() {
            equipeBat: 'TROCAR FERA', statusLista: 'STATUS', catalogo: 'CATÁLOGO DE GOLPES',
            compendio: 'COMPÊNDIO DE FERAS', itens: 'ITENS',
            treinoP: 'TREINO · SUA FERA', treinoE: 'TREINO · OPONENTE' }[t]
-    || (t === 'treinoG' ? `TREINO · GOLPES ${treino ? treino.golpes.length : 0}/4` : 'MENU');
+    || (t === 'treinoG' ? `TREINO · PODERES ${treino ? treino.golpes.length : 0}/3 (o físico do Z é o da fera)` : 'MENU');
 }
 function itensDoMenu() {
   const t = menu.tipo;
@@ -353,16 +353,17 @@ function itensDoMenu() {
       else { treino.e = k; iniciaTreino(); }
     },
   }));
-  // ...e os 4 golpes que a SUA fera vai levar (o oponente usa os dele);
-  // TODOS os golpes aparecem — inclusive as versões fortes, para teste
+  // ...e os 3 PODERES que a SUA fera leva (X/C/V) — o físico do Z é o
+  // dela por direito, seguindo a diretriz "um físico por fera"
   if (t === 'treinoG') return Object.entries(golpesCat)
+    .filter(([, g]) => !g.fisico)
     .map(([id, g]) => ({
-      txt: `${treino.golpes.includes(id) ? '✓ ' : ''}${g.nome} · ${g.tipo}${g.fisico ? ' · físico' : ''}${g.base ? ' · forte (60⚡)' : ''}`,
+      txt: `${treino.golpes.includes(id) ? '✓ ' : ''}${g.nome} · ${g.tipo}${g.base ? ' · forte (60⚡)' : ''}`,
       acao: () => {
         const i = treino.golpes.indexOf(id);
         if (i >= 0) treino.golpes.splice(i, 1);
-        else if (treino.golpes.length < 4) treino.golpes.push(id);
-        if (treino.golpes.length === 4) { abreMenu('treinoE'); return; }
+        else if (treino.golpes.length < 3) treino.golpes.push(id);
+        if (treino.golpes.length === 3) { abreMenu('treinoE'); return; }
         renderMenu();
       },
     }));
@@ -762,13 +763,14 @@ function iniciaTreino() {
   mostraArena(cena, true);
   MD.mostra(domador, false);
   const feraP = criarFera(especies, golpesCat, treino.p, NIVEL_TREINO);
-  // os 4 golpes escolhidos no menu substituem o aprendizado natural
-  // (as versões fortes das bases escolhidas vêm de brinde, via SHIFT)
+  // slot Z = o FÍSICO da própria fera (diretriz: um físico por fera);
+  // X/C/V = os 3 poderes escolhidos (fortes das bases vêm via SHIFT)
   if (treino.golpes && treino.golpes.length) {
-    feraP.golpes = [...treino.golpes];
-    feraP.conhecidos = [...treino.golpes];
+    const fisico = feraP.golpes.find((id) => golpesCat[id] && golpesCat[id].fisico) || 'garra';
+    feraP.golpes = [fisico, ...treino.golpes];
+    feraP.conhecidos = [...feraP.golpes];
     for (const [gid, def] of Object.entries(golpesCat))
-      if (def.base && treino.golpes.includes(def.base)) feraP.conhecidos.push(gid);
+      if (def.base && feraP.golpes.includes(def.base)) feraP.conhecidos.push(gid);
     feraP.usos = {};
     for (const gid of feraP.conhecidos)
       if (golpesCat[gid].usos != null)
