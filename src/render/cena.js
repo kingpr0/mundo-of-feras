@@ -63,7 +63,10 @@ export function criarCena(canvas) {
 // por bioma, com cache e aviso de carga; fotos não-seamless usam espelho
 const TEX_CHAO = {
   grama: { arq: 'grama', tile: 9 },
-  vila: { arq: 'vila', tile: 9 },
+  // a textura de ladrilhos (vila.jpg) ficou reservada para praças/castelos
+  // no futuro — por ora a vila usa a mesma grama pintada dos campos
+  vila: { arq: 'grama', tile: 9 },
+  folhas: { arq: 'folhas', tile: 1 }, // copas de árvores e arbustos
   terra: { arq: 'terra', tile: 8 },
   deserto: { arq: 'deserto', tile: 16, espelha: true },
   penhasco: { arq: 'penhasco', tile: 9 },
@@ -139,9 +142,10 @@ function montaChao(scene, tam = 70, tipo = 'grama', mapa = null) {
   }
   const t = new THREE.CanvasTexture(c);
   t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(tam / 22, tam / 22);
-  // chão com RELEVO: a malha é deslocada por morros E degraus (terraços)
-  const temRelevo = mapa &&
-    ((mapa.morros && mapa.morros.length) || (mapa.degraus && mapa.degraus.length));
+  // chão com RELEVO: a malha é deslocada por morros, degraus, platôs e
+  // canteiros de grama alta — tudo vira elevação de terreno de verdade
+  const temRelevo = mapa && ['morros', 'degraus', 'platos', 'gramas'].some(
+    (k) => mapa[k] && mapa[k].length) || (mapa && mapa.grama);
   const geo = new THREE.PlaneGeometry(tam, tam, temRelevo ? 176 : 1, temRelevo ? 176 : 1);
   geo.rotateX(-Math.PI / 2);
   if (temRelevo) {
@@ -600,22 +604,41 @@ export function passoOclusores(cena, alvos, lista) {
   }
 }
 
+// aplica a textura de folhas quando ela chega; a cor vira um TINGIMENTO
+// claro (o Lambert multiplica mapa × cor, então tons claros ≈ a cor antiga)
+function garanteFolhas(mats, tons) {
+  carregaTexturaChao('folhas', (tex) => {
+    mats.forEach((mat, i) => {
+      const t = tex.clone(); t.needsUpdate = true;
+      t.repeat.set(2, 1.4);
+      mat.map = t; mat.color.set(tons[i % tons.length]); mat.needsUpdate = true;
+    });
+  });
+}
+// materiais COMPARTILHADOS das árvores (uma textura para a floresta inteira
+// — antes cada árvore criava os próprios materiais)
+const MAT_TRONCO = new THREE.MeshLambertMaterial({ color: 0x7a5233 });
+const MAT_COPA = new THREE.MeshLambertMaterial({ color: 0x2f7a33 });
+const MAT_PINHEIRO = new THREE.MeshLambertMaterial({ color: 0x2a6e3e });
+[MAT_TRONCO, MAT_COPA, MAT_PINHEIRO].forEach((m) => { m.userData.vivePraSempre = true; });
+let _folhasPedidas = false;
 function arvore(scene, x, z, pinheiro) {
+  if (!_folhasPedidas) {
+    _folhasPedidas = true;
+    garanteFolhas([MAT_COPA, MAT_PINHEIRO], [0x8fd080, 0x7cc06c]);
+  }
   const g = new THREE.Group();
-  const tr = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.22, 1.1, 6),
-    new THREE.MeshLambertMaterial({ color: 0x7a5233 }));
+  const tr = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.22, 1.1, 6), MAT_TRONCO);
   tr.position.y = 0.55; tr.castShadow = true; tr.userData.oclusor = true; g.add(tr);
   if (pinheiro) {
     [[1.5, 1.2], [2.2, 0.9], [2.9, 0.6]].forEach(([y, r]) => {
-      const cone = new THREE.Mesh(new THREE.ConeGeometry(r, 1.2, 7),
-        new THREE.MeshLambertMaterial({ color: 0x2a6e3e }));
+      const cone = new THREE.Mesh(new THREE.ConeGeometry(r, 1.2, 7), MAT_PINHEIRO);
       cone.position.y = y; cone.castShadow = true; cone.userData.oclusor = true; g.add(cone);
     });
   } else {
     [[1.6, 0.9, 0, 0], [2.3, 1.05, 0, 0], [1.9, 0.7, 0.7, 0.2], [1.9, 0.7, -0.7, -0.2]]
       .forEach(([y, r, dx, dz]) => {
-        const s = new THREE.Mesh(new THREE.SphereGeometry(r, 8, 6),
-          new THREE.MeshLambertMaterial({ color: 0x2f7a33 }));
+        const s = new THREE.Mesh(new THREE.SphereGeometry(r, 8, 6), MAT_COPA);
         s.position.set(dx, y, dz); s.castShadow = true; s.userData.oclusor = true; g.add(s);
       });
   }
@@ -627,48 +650,23 @@ function arvore(scene, x, z, pinheiro) {
    com leve variação) — quem entra some da cintura para baixo, estilo
    Pokémon/ClaudeCraft */
 function montaGrama(scene, G, mapa) {
+  // sem plataforma artificial: o PRÓPRIO terreno sobe sob a grama (a malha
+  // do chão inclui alturaGrama) — os arbustos plantam direto na cota local
   const mats = [0x3d8a35, 0x46983c, 0x51a746]
     .map((c) => new THREE.MeshLambertMaterial({ color: c }));
-  // PLATAFORMA verde contínua (canteiro elevado de cantos redondos, com
-  // laterais em degradê) — os arbustos ficam plantados EM CIMA dela
-  const wG = G.x1 - G.x0 + 2.4, dG = G.z1 - G.z0 + 2.4;
-  const cxG = (G.x0 + G.x1) / 2, czG = (G.z0 + G.z1) / 2;
-  // assenta na cota do terraço em que a grama vive
-  const baseY = mapa ? alturaDegraus(mapa, { x: cxG, z: czG }) : 0;
-  const c0 = new THREE.Color(0x7d5f3e), c1 = new THREE.Color(0xbc9668);
-  for (let i = 0; i < 2; i++) {
-    const folga = (1 - i) * 0.4;
-    const geo = new THREE.ExtrudeGeometry(
-      formaArredondada(wG + folga, dG + folga, 1.3),
-      { depth: 0.11, bevelEnabled: false });
-    const m = new THREE.Mesh(geo,
-      new THREE.MeshLambertMaterial({ color: c0.clone().lerp(c1, i) }));
-    m.rotation.x = -Math.PI / 2;
-    m.position.set(cxG, baseY + i * 0.11, czG);
-    m.castShadow = m.receiveShadow = true;
-    scene.add(m);
-  }
-  // topo verde CONTÍNUO cobrindo a plataforma inteira
-  const cap = new THREE.Mesh(
-    new THREE.ExtrudeGeometry(formaArredondada(wG - 0.12, dG - 0.12, 1.3),
-      { depth: 0.05, bevelEnabled: false }),
-    new THREE.MeshLambertMaterial({ color: 0x57a441 }));
-  cap.rotation.x = -Math.PI / 2;
-  cap.position.set(cxG, baseY + 0.22, czG);
-  cap.receiveShadow = true;
-  scene.add(cap);
-  const TOPO = baseY + 0.27; // altura do topo (a sim sobe junto: alturaGrama)
+  garanteFolhas(mats, [0x9dd489, 0xa8de92, 0xb4e89e]);
   const geoArb = new THREE.SphereGeometry(0.78, 10, 7);
   const passo = 1.05;
   let i = 0;
-  // os arbustos vão ATÉ a borda da plataforma, sem faixa verde sobrando
   for (let px = G.x0 - 0.3; px <= G.x1 + 0.3; px += passo) {
     for (let pz = G.z0 - 0.3; pz <= G.z1 + 0.3; pz += passo, i++) {
       const m = new THREE.Mesh(geoArb, mats[(i * 7) % mats.length]);
       const esc = 0.9 + ((i * 13) % 10) / 45;
       m.scale.set(esc, 0.62 * esc, esc);
-      m.position.set(px + (((i * 31) % 7) - 3) * 0.06, TOPO + 0.34,
-                     pz + (((i * 17) % 7) - 3) * 0.06);
+      const x2 = px + (((i * 31) % 7) - 3) * 0.06;
+      const z2 = pz + (((i * 17) % 7) - 3) * 0.06;
+      const solo = mapa ? alturaTerreno(mapa, { x: x2, z: z2 }) : 0;
+      m.position.set(x2, solo + 0.34, z2);
       m.castShadow = true;
       scene.add(m);
     }
@@ -698,9 +696,18 @@ function texturaOndas() {
   return new THREE.CanvasTexture(c);
 }
 function montaAgua(g, ag) {
+  const wA = ag.x1 - ag.x0 + 1.6, dA = ag.z1 - ag.z0 + 1.6;
   const areia = new THREE.Mesh(
-    new THREE.PlaneGeometry(ag.x1 - ag.x0 + 1.6, ag.z1 - ag.z0 + 1.6),
+    new THREE.PlaneGeometry(wA, dA),
     new THREE.MeshLambertMaterial({ color: 0xe8d9a8 }));
+  // a faixa de areia da margem usa a textura real (a mesma do deserto,
+  // clareada) — grão mais fino que no deserto para ler como praia
+  carregaTexturaChao('deserto', (tex) => {
+    const t = tex.clone(); t.needsUpdate = true;
+    t.repeat.set(wA / 4.5, dA / 4.5);
+    areia.material.map = t; areia.material.color.set(0xfdf3cf);
+    areia.material.needsUpdate = true;
+  });
   areia.rotation.x = -Math.PI / 2;
   areia.position.set((ag.x0 + ag.x1) / 2, 0.02, (ag.z0 + ag.z1) / 2);
   areia.receiveShadow = true; g.add(areia);
@@ -742,37 +749,8 @@ function formaArredondada(w, d, r) {
   s.lineTo(-hw, -hd + r); s.absarc(-hw + r, -hd + r, r, Math.PI, Math.PI * 1.5);
   return s;
 }
-function plato(g, p, mapa = {}) {
-  // morro de CANTOS ARREDONDADOS em camadas que clareiam aos poucos
-  // (base larga escura -> topo estreito claro), com o topo gramado
-  const pen = mapa.chao === 'penhasco';
-  const c0 = new THREE.Color(pen ? 0x6e3c32 : 0x7d5f3e);
-  const c1 = new THREE.Color(pen ? 0xb06552 : 0xbc9668);
-  const w = p.x1 - p.x0, d = p.z1 - p.z0;
-  const cx = (p.x0 + p.x1) / 2, cz = (p.z0 + p.z1) / 2;
-  // o platô assenta na COTA do terraço em que está
-  const baseY = alturaDegraus(mapa, { x: cx, z: cz });
-  const r = Math.min(1.6, Math.min(w, d) * 0.22);
-  const camadas = 4;
-  for (let i = 0; i < camadas; i++) {
-    const cor = c0.clone().lerp(c1, i / (camadas - 1));
-    const folga = (camadas - 1 - i) * 0.45;
-    const shape = formaArredondada(w + folga, d + folga, r);
-    const geo = new THREE.ExtrudeGeometry(shape, { depth: p.h / camadas, bevelEnabled: false });
-    const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ color: cor }));
-    m.rotation.x = -Math.PI / 2;
-    m.position.set(cx, baseY + (i * p.h) / camadas, cz);
-    m.castShadow = m.receiveShadow = true;
-    m.userData.oclusor = true;
-    g.add(m);
-  }
-  const topoGeo = new THREE.ExtrudeGeometry(formaArredondada(w - 0.15, d - 0.15, r), { depth: 0.09, bevelEnabled: false });
-  const topo = new THREE.Mesh(topoGeo, new THREE.MeshLambertMaterial({ color: 0x67b34f }));
-  topo.rotation.x = -Math.PI / 2;
-  topo.position.set(cx, baseY + p.h, cz);
-  topo.receiveShadow = true;
-  g.add(topo);
-}
+/* o platô virou elevação de TERRENO de verdade: a malha do chão sobe com
+   alturaPlatos (sim/mundo.js) na textura do bioma — nada a desenhar aqui */
 
 /* CASTELO VENTANIA — muralhas com ameias, torres nos cantos, torreão
    central com bandeira ao vento e portão ao sul (colisão em sim/mundo.js) */
@@ -1279,6 +1257,7 @@ function descarta(obj) {
     if (o.geometry) o.geometry.dispose();
     if (o.material)
       (Array.isArray(o.material) ? o.material : [o.material]).forEach((mt) => {
+        if (mt.userData.vivePraSempre) return; // compartilhado entre mapas
         if (mt.map) mt.map.dispose();
         mt.dispose();
       });
@@ -1494,7 +1473,6 @@ export function montaMapa(cena, mapa) {
   if (mapa.centro)
     centroCura(g, mapa.centro, alturaTerreno(mapa, mapa.centro));
   if (mapa.castelo) montaCastelo(g, mapa.castelo, cena.anims, mapa);
-  (mapa.platos || []).forEach((p) => plato(g, p, mapa));
   (mapa.escadas || []).forEach((e) => escada(g, e, mapa));
   (mapa.decor || []).forEach(([tipo, x, z]) => {
     if (DECOR[tipo]) DECOR[tipo](g, x, z, alturaTerreno(mapa, { x, z }));

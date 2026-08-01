@@ -53,6 +53,23 @@ export function alturaGrama(mapa, pos) {
   }
   return h;
 }
+// PLATÔS: morrotes de topo plano com SAIA suave nas bordas — elevação de
+// terreno de verdade (sobe-se andando por qualquer lado); as escadas nos
+// dados viram só decoração/atalho visual
+export function alturaPlatos(mapa, pos) {
+  let h = 0;
+  for (const p of mapa.platos || []) {
+    const m = 1.6; // alcance da saia além do retângulo do topo
+    const dx = Math.min(pos.x - (p.x0 - m), (p.x1 + m) - pos.x);
+    const dz = Math.min(pos.z - (p.z0 - m), (p.z1 + m) - pos.z);
+    const dentro = Math.min(dx, dz);
+    if (dentro > 0) {
+      const t = Math.min(1, dentro / (m + 0.9));
+      h = Math.max(h, p.h * t * t * (3 - 2 * t)); // suavizado (smoothstep)
+    }
+  }
+  return h;
+}
 // DEGRAUS: linhas de cota que cortam o mapa INTEIRO (terraços). Cada
 // degrau eleva todo um lado do mapa; vários degraus empilham (carta
 // topográfica). { eixo:'z'|'x', em: coordenada, alto: lado, h, rampa? }
@@ -98,19 +115,21 @@ export function alturaPonte(mapa, pos) {
   }
   return null;
 }
-// o "solo" (degraus + morros - cânions) — o render desloca o chão com isso
+// o "solo" (degraus + relevo suave - cânions) — o render desloca o chão com
+// isso; espelha o que a sim considera chão para o pé nunca flutuar/afundar
 export function alturaSolo(mapa, pos) {
-  return alturaDegraus(mapa, pos) + alturaMorros(mapa, pos) + fundoDesfiladeiro(mapa, pos);
+  const base = alturaDegraus(mapa, pos);
+  let h = base + Math.max(alturaMorros(mapa, pos), alturaGrama(mapa, pos));
+  h = Math.max(h, base + alturaPlatos(mapa, pos));
+  return h + fundoDesfiladeiro(mapa, pos);
 }
 export function alturaTerreno(mapa, pos) {
   const deck = alturaPonte(mapa, pos);
   if (deck !== null) return deck;
   const base = alturaDegraus(mapa, pos);
   let h = base + Math.max(alturaMorros(mapa, pos), alturaGrama(mapa, pos));
-  for (const p of mapa.platos || []) {
-    if (pos.x > p.x0 && pos.x < p.x1 && pos.z > p.z0 && pos.z < p.z1)
-      h = Math.max(h, base + p.h);
-  }
+  // platô = morrote de saia suave: sobe-se andando por qualquer lado
+  h = Math.max(h, base + alturaPlatos(mapa, pos));
   for (const e of mapa.escadas || []) {
     const dv = DV_ESCADA[e.dir];
     const dx = pos.x - e.x, dz = pos.z - e.z;
