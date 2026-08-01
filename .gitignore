@@ -144,3 +144,6 @@ vite.config.ts.timestamp-*
 /Feras/
 /Treinadores/
 ferramentas/node_modules/
+
+# texturas-fonte baixadas pelo Domador (os 512px otimizados vivem em assets/texturas)
+/Texturas/

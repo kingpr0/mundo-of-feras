@@ -59,6 +59,35 @@ export function criarCena(canvas) {
   return estado;
 }
 
+// texturas REAIS de chão (curadas pelo Domador em assets/texturas) — uma
+// por bioma, com cache e aviso de carga; fotos não-seamless usam espelho
+const TEX_CHAO = {
+  grama: { arq: 'grama', tile: 9 },
+  vila: { arq: 'vila', tile: 9 },
+  terra: { arq: 'terra', tile: 8 },
+  deserto: { arq: 'deserto', tile: 16, espelha: true },
+  penhasco: { arq: 'penhasco', tile: 9 },
+  gelo: { arq: 'gelo', tile: 9, espelha: true },
+};
+const _texChao = {};
+function carregaTexturaChao(tipo, aoCarregar) {
+  const cfg = TEX_CHAO[tipo] || TEX_CHAO.grama;
+  let reg = _texChao[cfg.arq];
+  if (!reg) {
+    reg = { tex: null, fila: [] };
+    _texChao[cfg.arq] = reg;
+    new THREE.TextureLoader().load(`./assets/texturas/${cfg.arq}.jpg`, (t) => {
+      t.encoding = THREE.LinearEncoding;
+      t.wrapS = t.wrapT = cfg.espelha ? THREE.MirroredRepeatWrapping : THREE.RepeatWrapping;
+      reg.tex = t;
+      for (const cb of reg.fila) cb(t, cfg);
+      reg.fila = [];
+    });
+  }
+  if (reg.tex) aoCarregar(reg.tex, cfg);
+  else reg.fila.push((t) => aoCarregar(t, cfg));
+}
+
 function montaChao(scene, tam = 70, tipo = 'grama', mapa = null) {
   const c = document.createElement('canvas'); c.width = c.height = 512;
   const x = c.getContext('2d');
@@ -121,7 +150,16 @@ function montaChao(scene, tam = 70, tipo = 'grama', mapa = null) {
       p.setY(i, alturaSolo(mapa, { x: p.getX(i), z: p.getZ(i) }));
     geo.computeVertexNormals();
   }
-  const ch = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ map: t }));
+  // o canvas procedural segura a tela por um instante; a textura REAL
+  // do bioma entra no lugar assim que o arquivo termina de carregar
+  const mat = new THREE.MeshLambertMaterial({ map: t });
+  carregaTexturaChao(tipo, (tex, cfg) => {
+    const minha = tex.clone(); // clone: cada mapa tem seu próprio repeat
+    minha.needsUpdate = true;
+    minha.repeat.set(tam / cfg.tile, tam / cfg.tile);
+    mat.map = minha; mat.needsUpdate = true;
+  });
+  const ch = new THREE.Mesh(geo, mat);
   ch.receiveShadow = true; scene.add(ch);
 }
 
@@ -1559,6 +1597,13 @@ export function temaArena(cena, bioma = 'grama') {
                   penhasco: 0x9c5242, deserto: 0xdcc084 };
   const base = new THREE.Mesh(new THREE.CircleGeometry(34, 24), lamb(CORES[bioma] || 0x578f43));
   base.rotation.x = -Math.PI / 2; base.position.y = 0.004; base.receiveShadow = true; tema.add(base);
+  // mesma textura de chão do bioma no piso da arena (o UV do círculo cobre o diâmetro)
+  carregaTexturaChao(bioma, (tex, cfg) => {
+    const minha = tex.clone(); minha.needsUpdate = true;
+    minha.repeat.set(68 / cfg.tile, 68 / cfg.tile);
+    base.material.map = minha; base.material.color.set(0xffffff);
+    base.material.needsUpdate = true;
+  });
   // moldura externa do ringue conforme o bioma
   for (let i = 0; i < 18; i++) {
     const a = (i / 18) * Math.PI * 2 + 0.17;
