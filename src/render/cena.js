@@ -69,6 +69,7 @@ const TEX_CHAO = {
   folhas: { arq: 'folhas', tile: 1 }, // copas de árvores e arbustos
   terra: { arq: 'terra', tile: 8 },
   deserto: { arq: 'deserto', tile: 16, espelha: true },
+  pedra: { arq: 'pedra', tile: 3.2 }, // pavês dos caminhos de vila
   penhasco: { arq: 'penhasco', tile: 9 },
   gelo: { arq: 'gelo', tile: 9, espelha: true },
 };
@@ -146,12 +147,29 @@ function montaChao(scene, tam = 70, tipo = 'grama', mapa = null) {
   // canteiros de grama alta — tudo vira elevação de terreno de verdade
   const temRelevo = mapa && ['morros', 'degraus', 'platos', 'gramas'].some(
     (k) => mapa[k] && mapa[k].length) || (mapa && mapa.grama);
-  const geo = new THREE.PlaneGeometry(tam, tam, temRelevo ? 176 : 1, temRelevo ? 176 : 1);
+  const segs = temRelevo ? 176 : 1;
+  const geo = new THREE.PlaneGeometry(tam, tam, segs, segs);
   geo.rotateX(-Math.PI / 2);
   if (temRelevo) {
     const p = geo.attributes.position;
     for (let i = 0; i < p.count; i++)
       p.setY(i, alturaSolo(mapa, { x: p.getX(i), z: p.getZ(i) }));
+    // nas PAREDES (cânion, encostas) o UV planar estica a textura feio:
+    // o V de cada coluna vira o comprimento de ARCO percorrido de norte a
+    // sul — descer 7 unidades de parede gasta 7 unidades de textura
+    const uv = geo.attributes.uv;
+    const cols = segs + 1;
+    for (let ix = 0; ix < cols; ix++) {
+      let acc = 0;
+      for (let iy = 0; iy < cols; iy++) {
+        const i = iy * cols + ix;
+        if (iy > 0) {
+          const a = (iy - 1) * cols + ix;
+          acc += Math.hypot(p.getZ(i) - p.getZ(a), p.getY(i) - p.getY(a));
+        }
+        uv.setY(i, acc / tam);
+      }
+    }
     geo.computeVertexNormals();
   }
   // o canvas procedural segura a tela por um instante; a textura REAL
@@ -615,30 +633,25 @@ function garanteFolhas(mats, tons) {
     });
   });
 }
-// materiais COMPARTILHADOS das árvores (uma textura para a floresta inteira
-// — antes cada árvore criava os próprios materiais)
-const MAT_TRONCO = new THREE.MeshLambertMaterial({ color: 0x7a5233 });
-const MAT_COPA = new THREE.MeshLambertMaterial({ color: 0x2f7a33 });
-const MAT_PINHEIRO = new THREE.MeshLambertMaterial({ color: 0x2a6e3e });
-[MAT_TRONCO, MAT_COPA, MAT_PINHEIRO].forEach((m) => { m.userData.vivePraSempre = true; });
-let _folhasPedidas = false;
+// árvores em verde LISO com materiais PRÓPRIOS por malha: o efeito "vidro"
+// do oclusor mexe na opacidade do material — compartilhar material faria a
+// floresta inteira sumir junto; a textura de folhas ficou só nos arbustos
 function arvore(scene, x, z, pinheiro) {
-  if (!_folhasPedidas) {
-    _folhasPedidas = true;
-    garanteFolhas([MAT_COPA, MAT_PINHEIRO], [0x8fd080, 0x7cc06c]);
-  }
   const g = new THREE.Group();
-  const tr = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.22, 1.1, 6), MAT_TRONCO);
+  const tr = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.22, 1.1, 6),
+    new THREE.MeshLambertMaterial({ color: 0x7a5233 }));
   tr.position.y = 0.55; tr.castShadow = true; tr.userData.oclusor = true; g.add(tr);
   if (pinheiro) {
     [[1.5, 1.2], [2.2, 0.9], [2.9, 0.6]].forEach(([y, r]) => {
-      const cone = new THREE.Mesh(new THREE.ConeGeometry(r, 1.2, 7), MAT_PINHEIRO);
+      const cone = new THREE.Mesh(new THREE.ConeGeometry(r, 1.2, 7),
+        new THREE.MeshLambertMaterial({ color: 0x2a6e3e }));
       cone.position.y = y; cone.castShadow = true; cone.userData.oclusor = true; g.add(cone);
     });
   } else {
     [[1.6, 0.9, 0, 0], [2.3, 1.05, 0, 0], [1.9, 0.7, 0.7, 0.2], [1.9, 0.7, -0.7, -0.2]]
       .forEach(([y, r, dx, dz]) => {
-        const s = new THREE.Mesh(new THREE.SphereGeometry(r, 8, 6), MAT_COPA);
+        const s = new THREE.Mesh(new THREE.SphereGeometry(r, 8, 6),
+          new THREE.MeshLambertMaterial({ color: 0x2f7a33 }));
         s.position.set(dx, y, dz); s.castShadow = true; s.userData.oclusor = true; g.add(s);
       });
   }
@@ -1147,6 +1160,17 @@ function montaCaminhos(g, mapa) {
     const geo = new THREE.ExtrudeGeometry(formaArredondada(w, d, r),
       { depth: 0.05, bevelEnabled: false });
     const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ map: tex }));
+    // textura REAL por cima do canvas: pavês na vila, terra batida no campo
+    // (o UV do Extrude é em unidades de mundo — repeat/offset alinham os
+    // cruzamentos, cada laje continua o desenho da vizinha)
+    carregaTexturaChao(vila ? 'pedra' : 'terra', (t0) => {
+      const T = vila ? 3.2 : 4.2;
+      const t2 = t0.clone(); t2.needsUpdate = true;
+      t2.wrapS = t2.wrapT = THREE.RepeatWrapping;
+      t2.repeat.set(1 / T, 1 / T);
+      t2.offset.set(((cx / T) % 1 + 1) % 1, ((cz / T) % 1 + 1) % 1);
+      m.material.map = t2; m.material.needsUpdate = true;
+    });
     m.rotation.x = -Math.PI / 2;
     // assenta na cota do terreno; cada caminho um fiapo acima do anterior
     m.position.set(cx,
@@ -1257,7 +1281,6 @@ function descarta(obj) {
     if (o.geometry) o.geometry.dispose();
     if (o.material)
       (Array.isArray(o.material) ? o.material : [o.material]).forEach((mt) => {
-        if (mt.userData.vivePraSempre) return; // compartilhado entre mapas
         if (mt.map) mt.map.dispose();
         mt.dispose();
       });
@@ -1409,6 +1432,9 @@ function montaFundoNorte(g, mapa) {
   }
 }
 
+// os moradores usam os MESMOS modelos glTF dos treinadores (os NPCs
+// procedurais antigos aposentaram) — cada papel tem um modelo fixo
+const MODELO_NPC = { maga: 3, aldeao: 4, mercador: 5, aldea: 6, enfermeira: 7, senhor: 8 };
 // põe um humano glTF (treinador N) no mapa, com idle vivo; se o arquivo
 // falhar, o NPC procedural clássico entra no lugar
 function poePersonagem(g, modeloN, x, z, y, rot, tipoFallback) {
@@ -1448,10 +1474,8 @@ export function montaMapa(cena, mapa) {
   if (mapa.tipo === 'interior') {
     montaInterior(g, mapa);
     // interiores também têm moradores e decoração (braseiros do castelo...)
-    (mapa.npcs || []).forEach(([x, z, tipo, rot]) => {
-      const npc = criarNPC(g, tipo);
-      npc.g.position.set(x, 0, z);
-      npc.g.rotation.y = rot || 0;
+    (mapa.npcs || []).forEach(([x, z, tipo, rot], i) => {
+      poePersonagem(g, MODELO_NPC[tipo] || (2 + (i % 8)), x, z, 0, rot || 0, tipo);
     });
     (mapa.decor || []).forEach(([tipo, x, z]) => {
       if (DECOR[tipo]) DECOR[tipo](g, x, z, 0);
@@ -1477,10 +1501,9 @@ export function montaMapa(cena, mapa) {
   (mapa.decor || []).forEach(([tipo, x, z]) => {
     if (DECOR[tipo]) DECOR[tipo](g, x, z, alturaTerreno(mapa, { x, z }));
   });
-  (mapa.npcs || []).forEach(([x, z, tipo, rot]) => {
-    const npc = criarNPC(g, tipo);
-    npc.g.position.set(x, alturaTerreno(mapa, { x, z }), z);
-    npc.g.rotation.y = rot || 0;
+  (mapa.npcs || []).forEach(([x, z, tipo, rot], i) => {
+    poePersonagem(g, MODELO_NPC[tipo] || (2 + (i % 8)), x, z,
+      alturaTerreno(mapa, { x, z }), rot || 0, tipo);
   });
   // treinadores desafiantes (dados do mapa: x, z, "modelo" glTF, equipe);
   // o modelo carrega assíncrono — se falhar, o boneco procedural assume
