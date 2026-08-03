@@ -932,7 +932,61 @@ export function animaAndar(M, t, andando) {
 
 // pose de luta com cabeça viva: rajada/projétil = cabeça recua carregando e
 // CUSPINDO para a frente; físico = corpo lançado; cambalhota em 3 fases
+// listras da bola-esquiva: meridianos claros para o giro APARECER
+// (esfera lisa girando parece parada)
+let _texBola = null;
+function texturaBola() {
+  if (_texBola) return _texBola;
+  const c = document.createElement('canvas'); c.width = 64; c.height = 32;
+  const x = c.getContext('2d');
+  x.fillStyle = '#cfd6de'; x.fillRect(0, 0, 64, 32);
+  x.fillStyle = '#ffffff';
+  for (let i = 0; i < 4; i++) x.fillRect(i * 16, 0, 7, 32);
+  _texBola = new THREE.CanvasTexture(c);
+  _texBola.wrapS = THREE.RepeatWrapping;
+  return _texBola;
+}
+const COR_BOLA = { fogo: 0xff8a50, agua: 0x5fb2e8, planta: 0x6fc45f,
+                   eletrico: 0xf2d84a, gelo: 0xa8dcef, pedra: 0xb0a284,
+                   metal: 0xb8c2cc, normal: 0xd8cdb8 };
 export function animaLuta(M, f) {
+  // BOLA-ESQUIVA estilo Sonic: na cambalhota lateral o corpo VIRA uma
+  // esfera girando do tamanho da fera; ao sair do dash, volta ao normal
+  if (f.estado === 'dash') {
+    const ud = M.g.userData;
+    if (!M.bolaEsq) {
+      const r = Math.max(0.32, (f.esp.altura3d || 1.2) * 0.42);
+      M.bolaEsq = new THREE.Mesh(
+        new THREE.SphereGeometry(r, 14, 10),
+        new THREE.MeshLambertMaterial({ map: texturaBola(),
+          color: COR_BOLA[f.esp.tipo] || 0xd8cdb8 }));
+      M.bolaEsq.position.y = r * 1.05;
+      M.bolaEsq.castShadow = true;
+      M.bolaEsq.visible = false;
+      M.g.add(M.bolaEsq);
+    }
+    if (!ud._emBola) {
+      ud._corpoOculto = M.g.children.filter((c) => c !== M.bolaEsq && c.visible);
+      for (const c of ud._corpoOculto) c.visible = false;
+      M.bolaEsq.visible = true;
+      ud._emBola = true;
+    }
+    // gira no eixo do rolamento (lateral = cartwheel, frente/trás = mortal)
+    const rel = f.dashRel || { x: 1, z: 0 };
+    const ang = f.t * 26;
+    if (Math.abs(rel.x) >= Math.abs(rel.z)) {
+      M.bolaEsq.rotation.set(0, 0, rel.x > 0 ? -ang : ang);
+    } else {
+      M.bolaEsq.rotation.set(rel.z > 0 ? ang : -ang, 0, 0);
+    }
+    M.g.scale.setScalar(1);
+    return;
+  }
+  if (M.g.userData._emBola) {
+    for (const c of M.g.userData._corpoOculto || []) c.visible = true;
+    if (M.bolaEsq) M.bolaEsq.visible = false;
+    M.g.userData._emBola = false;
+  }
   if (f.estado !== 'dash' && M.g.userData._emDash) {
     M.g.scale.setScalar(1);
     M.g.userData._emDash = false;

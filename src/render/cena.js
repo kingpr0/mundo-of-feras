@@ -1589,6 +1589,48 @@ function montaArena(scene) {
   return g;
 }
 // (re)veste a arena com o bioma do mapa atual
+// céu da arena (skydome): gradiente + nuvens pintados em canvas, um clima
+// por bioma — dia claro nos campos, entardecer no deserto, crepúsculo no
+// penhasco, gruta escura nos interiores
+function texturaCeu(bioma) {
+  const c = document.createElement('canvas'); c.width = 512; c.height = 256;
+  const x = c.getContext('2d');
+  const CEUS = {
+    grama:    { topo: '#3f8fe0', meio: '#7bbcee', chao: '#c8e4f7', nuvem: 'rgba(255,255,255,0.8)' },
+    vila:     { topo: '#3f8fe0', meio: '#7bbcee', chao: '#c8e4f7', nuvem: 'rgba(255,255,255,0.8)' },
+    terra:    { topo: '#4866a8', meio: '#d9a86a', chao: '#f2dca8', nuvem: 'rgba(255,240,220,0.8)' },
+    deserto:  { topo: '#54459c', meio: '#e08a4a', chao: '#f7c878', nuvem: 'rgba(255,220,180,0.75)' },
+    penhasco: { topo: '#382c63', meio: '#c05a52', chao: '#eda06a', nuvem: 'rgba(255,200,170,0.7)' },
+    gelo:     { topo: '#5a8ac9', meio: '#a8d2ef', chao: '#eef8ff', nuvem: 'rgba(255,255,255,0.9)' },
+    interior: { topo: '#171b29', meio: '#2a3148', chao: '#3a4258', nuvem: 'rgba(90,100,130,0.35)' },
+  };
+  const p = CEUS[bioma] || CEUS.grama;
+  // o domo mostra sobretudo a metade de cima da esfera: o gradiente
+  // concentra a transição até o "horizonte" (v ≈ 0.52)
+  const gr = x.createLinearGradient(0, 0, 0, 256);
+  gr.addColorStop(0, p.topo); gr.addColorStop(0.42, p.meio);
+  gr.addColorStop(0.52, p.chao); gr.addColorStop(1, p.chao);
+  x.fillStyle = gr; x.fillRect(0, 0, 512, 256);
+  let sem = 7;
+  const rnd = () => (sem = (sem * 1103515245 + 12345) % 2147483648) / 2147483648;
+  x.fillStyle = p.nuvem;
+  // POUCAS nuvens, na faixa que o quadro da batalha mostra (logo acima do
+  // horizonte) — muitas viram um teto branco chapado
+  for (let i = 0; i < 11; i++) {
+    const px = rnd() * 512, py = 78 + rnd() * 42, base = 10 + rnd() * 16;
+    for (let k = 0; k < 4; k++) {
+      const cx = px + k * base * 0.55, cy = py + (rnd() - 0.5) * 7;
+      const rx = base * (0.7 + rnd() * 0.4), ry = base * 0.3;
+      for (const off of [0, -512, 512]) { // cópias na borda: emenda invisível
+        x.beginPath(); x.ellipse(cx + off, cy, rx, ry, 0, 0, Math.PI * 2); x.fill();
+      }
+    }
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = THREE.RepeatWrapping;
+  return t;
+}
+
 export function temaArena(cena, bioma = 'grama') {
   const g = cena.arenaG;
   descarta(g.tema); g.remove(g.tema);
@@ -1598,6 +1640,13 @@ export function temaArena(cena, bioma = 'grama') {
                   penhasco: 0x9c5242, deserto: 0xdcc084 };
   const base = new THREE.Mesh(new THREE.CircleGeometry(34, 24), lamb(CORES[bioma] || 0x578f43));
   base.rotation.x = -Math.PI / 2; base.position.y = 0.004; base.receiveShadow = true; tema.add(base);
+  // SKYDOME: esfera do avesso com o céu do bioma; ignora a névoa da cena
+  // (senão o fog padrão de 30-70 engoliria o domo inteiro)
+  const ceu = new THREE.Mesh(
+    new THREE.SphereGeometry(70, 24, 12),
+    new THREE.MeshBasicMaterial({ map: texturaCeu(bioma), side: THREE.BackSide, fog: false }));
+  ceu.position.y = -4; // equador abaixo do tablado: sem fresta no horizonte
+  tema.add(ceu);
   // mesma textura de chão do bioma no piso da arena (o UV do círculo cobre o diâmetro)
   carregaTexturaChao(bioma, (tex, cfg) => {
     const minha = tex.clone(); minha.needsUpdate = true;
@@ -1703,9 +1752,10 @@ export function passoCamera(cena, modo, mundo, batalha, dt) {
     const pp = batalha.p.pos, ee = batalha.e.pos;
     const d = Math.hypot(ee.x - pp.x, ee.z - pp.z) || 1;
     const fx = (ee.x - pp.x) / d, fz = (ee.z - pp.z) / d;
-    // bem alta e afastada, como a câmera de exploração: arena inteira em quadro
-    desejo = new THREE.Vector3(pp.x - fx * 11, pp.y + 8.5, pp.z - fz * 11);
-    olhar = new THREE.Vector3(pp.x + (ee.x - pp.x) * .48, 0.9, pp.z + (ee.z - pp.z) * .48);
+    // um fio mais BAIXA que a exploração: o horizonte entra no alto do
+    // quadro e o skydome aparece atrás do duelo (clima de arena épica)
+    desejo = new THREE.Vector3(pp.x - fx * 11, pp.y + 6.2, pp.z - fz * 11);
+    olhar = new THREE.Vector3(pp.x + (ee.x - pp.x) * .48, 1.1, pp.z + (ee.z - pp.z) * .48);
   } else {
     const pp = mundo.domador.pos;
     desejo = new THREE.Vector3(pp.x, pp.y + 17, pp.z + 12);
