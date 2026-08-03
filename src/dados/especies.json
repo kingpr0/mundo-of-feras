@@ -1,1776 +1,1832 @@
 {
-  "folhito": {
-    "nome": "Folhito",
-    "tipo": "planta",
-    "raridade": "rara",
-    "selvagem": true,
-    "vida": 68,
-    "velocidade": 4.2,
-    "ataque": 1.05,
-    "impulso": 7,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/folhito.glb",
-    "altura3d": 0.95,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "investida"
-      },
-      {
-        "nivel": 5,
-        "golpe": "folha_navalha"
-      },
-      {
-        "nivel": 6,
-        "golpe": "chicote_vinha"
-      },
-      {
-        "nivel": 8,
-        "golpe": "investida_feroz"
-      },
-      {
-        "nivel": 10,
-        "golpe": "tempestade_folhas"
-      }
-    ],
-    "defesa": 0.95
+ "folhito": {
+  "nome": "Folhito",
+  "tipo": "planta",
+  "raridade": "rara",
+  "selvagem": true,
+  "vida": 68,
+  "velocidade": 4.2,
+  "ataque": 1.05,
+  "impulso": 7,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/folhito.glb",
+  "altura3d": 0.95,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
   },
-  "folhardo": {
-    "nome": "Folhardo",
-    "tipo": "planta",
-    "raridade": "rara",
-    "vida": 86,
-    "velocidade": 4.3,
-    "ataque": 1.15,
-    "impulso": 7.5,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/folhardo.glb",
-    "altura3d": 1.45,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "investida"
-      },
-      {
-        "nivel": 5,
-        "golpe": "folha_navalha"
-      },
-      {
-        "nivel": 6,
-        "golpe": "chicote_vinha"
-      },
-      {
-        "nivel": 8,
-        "golpe": "investida_feroz"
-      },
-      {
-        "nivel": 10,
-        "golpe": "tempestade_folhas"
-      }
-    ],
-    "defesa": 1.05
-  },
-  "florasto": {
-    "nome": "Florasto",
-    "tipo": "planta",
-    "raridade": "muito_rara",
-    "vida": 111,
-    "velocidade": 4,
-    "ataque": 1.28,
-    "impulso": 8,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/florasto.glb",
-    "altura3d": 2.05,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "garra"
-      },
-      {
-        "nivel": 5,
-        "golpe": "folha_navalha"
-      },
-      {
-        "nivel": 6,
-        "golpe": "chicote_vinha"
-      },
-      {
-        "nivel": 8,
-        "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 10,
-        "golpe": "tempestade_folhas"
-      },
-      {
-        "nivel": 12,
-        "golpe": "raio_esmeralda"
-      }
-    ],
-    "defesa": 1.25
-  },
-  "brasinha": {
-    "nome": "Brasinha",
-    "tipo": "fogo",
-    "raridade": "rara",
-    "vida": 70,
-    "velocidade": 4.6,
-    "ataque": 1.1,
-    "impulso": 7.5,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "garra"
-      },
-      {
-        "nivel": 5,
-        "golpe": "bola_fogo"
-      },
-      {
-        "nivel": 8,
-        "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 10,
-        "golpe": "lanca_chamas"
-      }
-    ],
-    "modelo3d": "./assets/feras/brasinha.glb",
-    "altura3d": 0.95,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "defesa": 0.95
-  },
-  "brasurio": {
-    "nome": "Brasúrio",
-    "tipo": "fogo",
-    "raridade": "rara",
-    "vida": 88,
-    "velocidade": 4.4,
-    "ataque": 1.15,
-    "impulso": 7.5,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/brasurio.glb",
-    "altura3d": 1.45,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "garra"
-      },
-      {
-        "nivel": 5,
-        "golpe": "bola_fogo"
-      },
-      {
-        "nivel": 8,
-        "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 10,
-        "golpe": "lanca_chamas"
-      },
-      {
-        "nivel": 14,
-        "golpe": "pentachama"
-      }
-    ],
-    "defesa": 1
-  },
-  "dragobrasa": {
-    "nome": "Dragobrasa",
-    "tipo": "fogo",
-    "raridade": "muito_rara",
-    "voa": true,
-    "vida": 108,
-    "velocidade": 4,
-    "ataque": 1.28,
-    "impulso": 8,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/dragobrasa.glb",
-    "altura3d": 2.15,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "garra"
-      },
-      {
-        "nivel": 5,
-        "golpe": "bola_fogo"
-      },
-      {
-        "nivel": 8,
-        "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 10,
-        "golpe": "lanca_chamas"
-      },
-      {
-        "nivel": 14,
-        "golpe": "pentachama"
-      }
-    ],
-    "defesa": 1.15
-  },
-  "gotim": {
-    "nome": "Gotim",
-    "tipo": "agua",
-    "raridade": "comum",
-    "selvagem": true,
-    "vida": 65,
-    "velocidade": 4,
-    "ataque": 1,
-    "impulso": 7,
-    "sequencia": [
-      "baixo"
-    ],
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "garra"
-      },
-      {
-        "nivel": 5,
-        "golpe": "jato_agua"
-      },
-      {
-        "nivel": 10,
-        "golpe": "rajada_bolhas"
-      }
-    ],
-    "modelo3d": "./assets/feras/gotim.glb",
-    "altura3d": 0.95,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "defesa": 0.9
-  },
-  "gotao": {
-    "nome": "Gotão",
-    "tipo": "agua",
-    "raridade": "rara",
-    "vida": 89,
-    "velocidade": 4.2,
-    "ataque": 1.15,
-    "impulso": 7.5,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/gotao.glb",
-    "altura3d": 1.45,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "garra"
-      },
-      {
-        "nivel": 5,
-        "golpe": "jato_agua"
-      },
-      {
-        "nivel": 8,
-        "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 10,
-        "golpe": "rajada_bolhas"
-      },
-      {
-        "nivel": 14,
-        "golpe": "hidrobomba"
-      }
-    ],
-    "defesa": 1.05
-  },
-  "gotorrente": {
-    "nome": "Gotorrente",
-    "tipo": "agua",
-    "raridade": "muito_rara",
-    "vida": 104,
-    "velocidade": 4.3,
-    "ataque": 1.28,
-    "impulso": 8,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/gotorrente.glb",
-    "altura3d": 2.05,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "garra"
-      },
-      {
-        "nivel": 5,
-        "golpe": "jato_agua"
-      },
-      {
-        "nivel": 8,
-        "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 10,
-        "golpe": "rajada_bolhas"
-      },
-      {
-        "nivel": 14,
-        "golpe": "hidrobomba"
-      }
-    ],
-    "defesa": 1.2
-  },
-  "raiozim": {
-    "nome": "Raiozim",
-    "tipo": "eletrico",
-    "raridade": "rara",
-    "selvagem": true,
-    "vida": 58,
-    "velocidade": 5.4,
-    "ataque": 1,
-    "impulso": 8.2,
-    "sequencia": [
-      "frente"
-    ],
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "garra"
-      },
-      {
-        "nivel": 5,
-        "golpe": "esfera_voltaica"
-      },
-      {
-        "nivel": 8,
-        "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 12,
-        "golpe": "soco_trovao"
-      },
-      {
-        "nivel": 16,
-        "golpe": "trovao"
-      }
-    ],
-    "modelo3d": "./assets/feras/raiozim.glb",
-    "altura3d": 0.95,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "defesa": 0.85
-  },
-  "raiotron": {
-    "nome": "Raiotron",
-    "tipo": "eletrico",
-    "raridade": "rara",
-    "vida": 88,
-    "velocidade": 4.6,
-    "ataque": 1.15,
-    "impulso": 7.5,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/raiotron.glb",
-    "altura3d": 1.5,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "garra"
-      },
-      {
-        "nivel": 5,
-        "golpe": "esfera_voltaica"
-      },
-      {
-        "nivel": 8,
-        "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 10,
-        "golpe": "rajada_voltaica"
-      },
-      {
-        "nivel": 12,
-        "golpe": "soco_trovao"
-      },
-      {
-        "nivel": 16,
-        "golpe": "trovao"
-      }
-    ],
-    "defesa": 1.05
-  },
-  "espinhim": {
-    "nome": "Espinhim",
-    "tipo": "planta",
-    "raridade": "comum",
-    "selvagem": true,
-    "vida": 66,
-    "velocidade": 4,
-    "ataque": 1.1,
-    "impulso": 7,
-    "sequencia": [
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/espinhim.glb",
-    "altura3d": 0.95,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "investida"
-      },
-      {
-        "nivel": 5,
-        "golpe": "folha_navalha"
-      },
-      {
-        "nivel": 6,
-        "golpe": "chicote_vinha"
-      },
-      {
-        "nivel": 8,
-        "golpe": "investida_feroz"
-      },
-      {
-        "nivel": 10,
-        "golpe": "raio_esmeralda"
-      }
-    ],
-    "defesa": 0.95
-  },
-  "espinharal": {
-    "nome": "Espinharal",
-    "tipo": "planta",
-    "raridade": "rara",
-    "vida": 88,
-    "velocidade": 4.8,
-    "ataque": 1.15,
-    "impulso": 7.5,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/espinharal.glb",
-    "altura3d": 1.5,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "garra"
-      },
-      {
-        "nivel": 5,
-        "golpe": "folha_navalha"
-      },
-      {
-        "nivel": 6,
-        "golpe": "chicote_vinha"
-      },
-      {
-        "nivel": 8,
-        "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 10,
-        "golpe": "tempestade_folhas"
-      },
-      {
-        "nivel": 15,
-        "golpe": "raio_esmeralda"
-      }
-    ],
-    "defesa": 1.1
-  },
-  "cogumim": {
-    "nome": "Cogumim",
-    "tipo": "planta",
-    "raridade": "comum",
-    "selvagem": true,
-    "vida": 67,
-    "velocidade": 4.6,
-    "ataque": 1.05,
-    "impulso": 7,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/cogumim.glb",
-    "altura3d": 0.95,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "garra"
-      },
-      {
-        "nivel": 5,
-        "golpe": "folha_navalha"
-      },
-      {
-        "nivel": 8,
-        "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 10,
-        "golpe": "tempestade_folhas"
-      }
-    ],
-    "defesa": 0.95
-  },
-  "cogumal": {
-    "nome": "Cogumal",
-    "tipo": "planta",
-    "raridade": "rara",
-    "vida": 87,
-    "velocidade": 4.2,
-    "ataque": 1.15,
-    "impulso": 7.5,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/cogumal.glb",
-    "altura3d": 1.45,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "garra"
-      },
-      {
-        "nivel": 5,
-        "golpe": "folha_navalha"
-      },
-      {
-        "nivel": 6,
-        "golpe": "chicote_vinha"
-      },
-      {
-        "nivel": 8,
-        "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 10,
-        "golpe": "tempestade_folhas"
-      },
-      {
-        "nivel": 15,
-        "golpe": "raio_esmeralda"
-      }
-    ],
-    "defesa": 1
-  },
-  "nevim": {
-    "nome": "Nevim",
-    "tipo": "comum",
-    "raridade": "comum",
-    "selvagem": true,
-    "vida": 63,
-    "velocidade": 4.4,
-    "ataque": 1.05,
-    "impulso": 7,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/nevim.glb",
-    "altura3d": 0.95,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "garra"
-      },
-      {
-        "nivel": 5,
-        "golpe": "garras_furiosas"
-      }
-    ],
-    "defesa": 0.95
-  },
-  "nevurso": {
-    "nome": "Nevurso",
-    "tipo": "comum",
-    "raridade": "rara",
-    "vida": 88,
-    "velocidade": 4.7,
-    "ataque": 1.15,
-    "impulso": 7.5,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/nevurso.glb",
-    "altura3d": 1.55,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "garra"
-      },
-      {
-        "nivel": 5,
-        "golpe": "garras_furiosas"
-      }
-    ],
-    "defesa": 1.25
-  },
-  "gelavim": {
-    "nome": "Gelavim",
-    "tipo": "agua",
-    "raridade": "comum",
-    "selvagem": true,
-    "voa": true,
-    "vida": 71,
-    "velocidade": 4.3,
-    "ataque": 1.05,
-    "impulso": 7,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/gelavim.glb",
-    "altura3d": 0.9,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "investida"
-      },
-      {
-        "nivel": 5,
-        "golpe": "jato_agua"
-      },
-      {
-        "nivel": 8,
-        "golpe": "investida_feroz"
-      },
-      {
-        "nivel": 10,
-        "golpe": "rajada_bolhas"
-      }
-    ],
-    "defesa": 0.85
-  },
-  "gelavor": {
-    "nome": "Gelavor",
-    "tipo": "agua",
-    "raridade": "rara",
-    "voa": true,
-    "vida": 86,
-    "velocidade": 4.4,
-    "ataque": 1.15,
-    "impulso": 7.5,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/gelavor.glb",
-    "altura3d": 1.45,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "investida"
-      },
-      {
-        "nivel": 5,
-        "golpe": "jato_agua"
-      },
-      {
-        "nivel": 8,
-        "golpe": "investida_feroz"
-      },
-      {
-        "nivel": 10,
-        "golpe": "rajada_bolhas"
-      },
-      {
-        "nivel": 14,
-        "golpe": "hidrobomba"
-      }
-    ],
-    "defesa": 0.95
-  },
-  "pratim": {
-    "nome": "Pratim",
-    "tipo": "comum",
-    "raridade": "comum",
-    "selvagem": true,
-    "vida": 63,
-    "velocidade": 4.4,
-    "ataque": 1.05,
-    "impulso": 7,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/pratim.glb",
-    "altura3d": 0.9,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "investida"
-      },
-      {
-        "nivel": 5,
-        "golpe": "investida_feroz"
-      }
-    ],
-    "defesa": 0.9
-  },
-  "pratagor": {
-    "nome": "Pratagor",
-    "tipo": "comum",
-    "raridade": "rara",
-    "voa": true,
-    "vida": 85,
-    "velocidade": 4.3,
-    "ataque": 1.15,
-    "impulso": 7.5,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/pratagor.glb",
-    "altura3d": 1.5,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "investida"
-      },
-      {
-        "nivel": 5,
-        "golpe": "investida_feroz"
-      }
-    ],
-    "defesa": 1.1
-  },
-  "vulpim": {
-    "nome": "Vulpim",
-    "tipo": "fogo",
-    "raridade": "comum",
-    "selvagem": true,
-    "vida": 68,
-    "velocidade": 4.3,
-    "ataque": 1.05,
-    "impulso": 7,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/vulpim.glb",
-    "altura3d": 1,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "garra"
-      },
-      {
-        "nivel": 5,
-        "golpe": "bola_fogo"
-      },
-      {
-        "nivel": 8,
-        "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 10,
-        "golpe": "lanca_chamas"
-      }
-    ],
-    "defesa": 0.85
-  },
-  "vulpiro": {
-    "nome": "Vulpiro",
-    "tipo": "fogo",
-    "raridade": "rara",
-    "vida": 90,
-    "velocidade": 4.2,
-    "ataque": 1.15,
-    "impulso": 7.5,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/vulpiro.glb",
-    "altura3d": 1.5,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "garra"
-      },
-      {
-        "nivel": 5,
-        "golpe": "bola_fogo"
-      },
-      {
-        "nivel": 8,
-        "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 10,
-        "golpe": "lanca_chamas"
-      },
-      {
-        "nivel": 14,
-        "golpe": "pentachama"
-      }
-    ],
-    "defesa": 1
-  },
-  "rochim": {
-    "nome": "Rochim",
-    "tipo": "comum",
-    "raridade": "comum",
-    "selvagem": true,
-    "vida": 71,
-    "velocidade": 4.1,
-    "ataque": 1.05,
-    "impulso": 7,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/rochim.glb",
-    "altura3d": 1,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "garra"
-      },
-      {
-        "nivel": 5,
-        "golpe": "garras_furiosas"
-      }
-    ],
-    "defesa": 1.15
-  },
-  "rochedo": {
-    "nome": "Rochedo",
-    "tipo": "comum",
-    "raridade": "rara",
-    "vida": 85,
-    "velocidade": 4.6,
-    "ataque": 1.15,
-    "impulso": 7.5,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/rochedo.glb",
-    "altura3d": 1.55,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "garra"
-      },
-      {
-        "nivel": 5,
-        "golpe": "garras_furiosas"
-      }
-    ],
-    "defesa": 1.25
-  },
-  "dunim": {
-    "nome": "Dunim",
-    "tipo": "comum",
-    "raridade": "comum",
-    "selvagem": true,
-    "vida": 66,
-    "velocidade": 4.3,
-    "ataque": 1.05,
-    "impulso": 7,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/dunim.glb",
-    "altura3d": 0.95,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "garra"
-      },
-      {
-        "nivel": 5,
-        "golpe": "garras_furiosas"
-      }
-    ],
-    "defesa": 1
-  },
-  "furim": {
-    "nome": "Furim",
-    "tipo": "comum",
-    "raridade": "comum",
-    "selvagem": true,
-    "vida": 71,
-    "velocidade": 4.3,
-    "ataque": 1.05,
-    "impulso": 7,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/furim.glb",
-    "altura3d": 0.9,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "investida"
-      },
-      {
-        "nivel": 5,
-        "golpe": "investida_feroz"
-      }
-    ],
-    "defesa": 0.85
-  },
-  "gravetim": {
-    "nome": "Gravetim",
-    "tipo": "planta",
-    "raridade": "comum",
-    "selvagem": true,
-    "vida": 69,
-    "velocidade": 4.4,
-    "ataque": 1.05,
-    "impulso": 7,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/gravetim.glb",
-    "altura3d": 1,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "garra"
-      },
-      {
-        "nivel": 5,
-        "golpe": "folha_navalha"
-      },
-      {
-        "nivel": 6,
-        "golpe": "chicote_vinha"
-      },
-      {
-        "nivel": 8,
-        "golpe": "garras_furiosas"
-      },
-      {
-        "nivel": 10,
-        "golpe": "tempestade_folhas"
-      },
-      {
-        "nivel": 15,
-        "golpe": "raio_esmeralda"
-      }
-    ],
-    "defesa": 1.05
-  },
-  "pedrusco": {
-    "nome": "Pedrusco",
-    "tipo": "comum",
-    "raridade": "comum",
-    "selvagem": true,
-    "vida": 67,
-    "velocidade": 4.1,
-    "ataque": 1.05,
-    "impulso": 7,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/pedrusco.glb",
-    "altura3d": 1.25,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "garra"
-      },
-      {
-        "nivel": 5,
-        "golpe": "garras_furiosas"
-      }
-    ],
-    "defesa": 1.2
-  },
-  "cascorao": {
-    "nome": "Cascorão",
-    "tipo": "comum",
-    "raridade": "rara",
-    "vida": 87,
-    "velocidade": 4.2,
-    "ataque": 1.15,
-    "impulso": 7.5,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/cascorao.glb",
-    "altura3d": 1.45,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "garra"
-      },
-      {
-        "nivel": 5,
-        "golpe": "garras_furiosas"
-      }
-    ],
-    "defesa": 1.25
-  },
-  "voltouro": {
-    "nome": "Voltouro",
-    "tipo": "eletrico",
-    "raridade": "rara",
-    "vida": 88,
-    "velocidade": 4.7,
-    "ataque": 1.15,
-    "impulso": 7.5,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/voltouro.glb",
-    "altura3d": 1.5,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "investida"
-      },
-      {
-        "nivel": 5,
-        "golpe": "esfera_voltaica"
-      },
-      {
-        "nivel": 8,
-        "golpe": "investida_feroz"
-      },
-      {
-        "nivel": 10,
-        "golpe": "rajada_voltaica"
-      },
-      {
-        "nivel": 12,
-        "golpe": "soco_trovao"
-      },
-      {
-        "nivel": 16,
-        "golpe": "trovao"
-      }
-    ],
-    "defesa": 1.15
-  },
-  "brasouro": {
-    "nome": "Brasouro",
-    "tipo": "fogo",
-    "raridade": "rara",
-    "vida": 87,
-    "velocidade": 4.7,
-    "ataque": 1.15,
-    "impulso": 7.5,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/brasouro.glb",
-    "altura3d": 1.45,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "investida"
-      },
-      {
-        "nivel": 5,
-        "golpe": "bola_fogo"
-      },
-      {
-        "nivel": 8,
-        "golpe": "investida_feroz"
-      },
-      {
-        "nivel": 10,
-        "golpe": "lanca_chamas"
-      },
-      {
-        "nivel": 14,
-        "golpe": "pentachama"
-      }
-    ],
-    "defesa": 1.2
-  },
-  "draguim": {
-    "nome": "Draguim",
-    "tipo": "fogo",
-    "raridade": "muito_rara",
-    "selvagem": true,
-    "vida": 80,
-    "velocidade": 4.4,
-    "ataque": 1.2,
-    "impulso": 7.4,
-    "sequencia": [
-      "baixo",
-      "frente"
-    ],
-    "modelo3d": "./assets/feras/draguim.glb",
-    "altura3d": 1.1,
-    "giro3d": 0,
-    "clipes": {
-      "parado": "parado",
-      "andar": "andar",
-      "correr": "correr",
-      "ataque": "ataque",
-      "garra": "garra",
-      "gancho": "gancho",
-      "kame": "kame",
-      "forte": "forte",
-      "dano": "dano",
-      "ko": "ko",
-      "arremesso": "arremesso",
-      "soco": "soco",
-      "combo1": "combo1",
-      "combo2": "combo2",
-      "combo3": "combo3",
-      "mortal": "mortal"
-    },
-    "aprendizado": [
-      {
-        "nivel": 1,
-        "golpe": "investida"
-      },
-      {
-        "nivel": 5,
-        "golpe": "bola_fogo"
-      },
-      {
-        "nivel": 8,
-        "golpe": "investida_feroz"
-      },
-      {
-        "nivel": 9,
-        "golpe": "lanca_chamas"
-      }
-    ],
-    "voa": true,
-    "defesa": 1
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "investida"
+   },
+   {
+    "nivel": 7,
+    "golpe": "folha_navalha"
+   },
+   {
+    "nivel": 9,
+    "golpe": "chicote_vinha"
+   },
+   {
+    "nivel": 12,
+    "golpe": "investida_feroz"
+   },
+   {
+    "nivel": 10,
+    "golpe": "tempestade_folhas"
+   }
+  ],
+  "defesa": 0.95,
+  "evolui": {
+   "para": "folhardo",
+   "nivel": 20
   }
+ },
+ "folhardo": {
+  "nome": "Folhardo",
+  "tipo": "planta",
+  "raridade": "rara",
+  "vida": 86,
+  "velocidade": 4.3,
+  "ataque": 1.15,
+  "impulso": 7.5,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/folhardo.glb",
+  "altura3d": 1.45,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "investida"
+   },
+   {
+    "nivel": 5,
+    "golpe": "folha_navalha"
+   },
+   {
+    "nivel": 6,
+    "golpe": "chicote_vinha"
+   },
+   {
+    "nivel": 8,
+    "golpe": "investida_feroz"
+   },
+   {
+    "nivel": 10,
+    "golpe": "tempestade_folhas"
+   }
+  ],
+  "defesa": 1.05,
+  "evolui": {
+   "para": "florasto",
+   "nivel": 40
+  }
+ },
+ "florasto": {
+  "nome": "Florasto",
+  "tipo": "planta",
+  "raridade": "rara",
+  "vida": 111,
+  "velocidade": 4,
+  "ataque": 1.28,
+  "impulso": 8,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/florasto.glb",
+  "altura3d": 2.05,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "garra"
+   },
+   {
+    "nivel": 5,
+    "golpe": "folha_navalha"
+   },
+   {
+    "nivel": 6,
+    "golpe": "chicote_vinha"
+   },
+   {
+    "nivel": 8,
+    "golpe": "garras_furiosas"
+   },
+   {
+    "nivel": 10,
+    "golpe": "tempestade_folhas"
+   },
+   {
+    "nivel": 12,
+    "golpe": "raio_esmeralda"
+   }
+  ],
+  "defesa": 1.25
+ },
+ "brasinha": {
+  "nome": "Brasinha",
+  "tipo": "fogo",
+  "raridade": "rara",
+  "vida": 70,
+  "velocidade": 4.6,
+  "ataque": 1.1,
+  "impulso": 7.5,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "garra"
+   },
+   {
+    "nivel": 7,
+    "golpe": "bola_fogo"
+   },
+   {
+    "nivel": 9,
+    "golpe": "garras_furiosas"
+   },
+   {
+    "nivel": 10,
+    "golpe": "lanca_chamas"
+   }
+  ],
+  "modelo3d": "./assets/feras/brasinha.glb",
+  "altura3d": 0.95,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "defesa": 0.95,
+  "evolui": {
+   "para": "brasurio",
+   "nivel": 20
+  }
+ },
+ "brasurio": {
+  "nome": "Brasúrio",
+  "tipo": "fogo",
+  "raridade": "rara",
+  "vida": 88,
+  "velocidade": 4.4,
+  "ataque": 1.15,
+  "impulso": 7.5,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/brasurio.glb",
+  "altura3d": 1.45,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "garra"
+   },
+   {
+    "nivel": 5,
+    "golpe": "bola_fogo"
+   },
+   {
+    "nivel": 8,
+    "golpe": "garras_furiosas"
+   },
+   {
+    "nivel": 10,
+    "golpe": "lanca_chamas"
+   },
+   {
+    "nivel": 14,
+    "golpe": "pentachama"
+   }
+  ],
+  "defesa": 1,
+  "evolui": {
+   "para": "dragobrasa",
+   "nivel": 40
+  }
+ },
+ "dragobrasa": {
+  "nome": "Dragobrasa",
+  "tipo": "fogo",
+  "raridade": "rara",
+  "voa": true,
+  "vida": 108,
+  "velocidade": 4,
+  "ataque": 1.28,
+  "impulso": 8,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/dragobrasa.glb",
+  "altura3d": 2.15,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "garra"
+   },
+   {
+    "nivel": 5,
+    "golpe": "bola_fogo"
+   },
+   {
+    "nivel": 8,
+    "golpe": "garras_furiosas"
+   },
+   {
+    "nivel": 10,
+    "golpe": "lanca_chamas"
+   },
+   {
+    "nivel": 14,
+    "golpe": "pentachama"
+   }
+  ],
+  "defesa": 1.15
+ },
+ "gotim": {
+  "nome": "Gotim",
+  "tipo": "agua",
+  "raridade": "rara",
+  "selvagem": true,
+  "vida": 65,
+  "velocidade": 4,
+  "ataque": 1,
+  "impulso": 7,
+  "sequencia": [
+   "baixo"
+  ],
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "garra"
+   },
+   {
+    "nivel": 7,
+    "golpe": "jato_agua"
+   },
+   {
+    "nivel": 10,
+    "golpe": "rajada_bolhas"
+   }
+  ],
+  "modelo3d": "./assets/feras/gotim.glb",
+  "altura3d": 0.95,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "defesa": 0.9,
+  "evolui": {
+   "para": "gotao",
+   "nivel": 20
+  }
+ },
+ "gotao": {
+  "nome": "Gotão",
+  "tipo": "agua",
+  "raridade": "rara",
+  "vida": 89,
+  "velocidade": 4.2,
+  "ataque": 1.15,
+  "impulso": 7.5,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/gotao.glb",
+  "altura3d": 1.45,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "garra"
+   },
+   {
+    "nivel": 5,
+    "golpe": "jato_agua"
+   },
+   {
+    "nivel": 8,
+    "golpe": "garras_furiosas"
+   },
+   {
+    "nivel": 10,
+    "golpe": "rajada_bolhas"
+   },
+   {
+    "nivel": 14,
+    "golpe": "hidrobomba"
+   }
+  ],
+  "defesa": 1.05,
+  "evolui": {
+   "para": "gotorrente",
+   "nivel": 40
+  }
+ },
+ "gotorrente": {
+  "nome": "Gotorrente",
+  "tipo": "agua",
+  "raridade": "rara",
+  "vida": 104,
+  "velocidade": 4.3,
+  "ataque": 1.28,
+  "impulso": 8,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/gotorrente.glb",
+  "altura3d": 2.05,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "garra"
+   },
+   {
+    "nivel": 5,
+    "golpe": "jato_agua"
+   },
+   {
+    "nivel": 8,
+    "golpe": "garras_furiosas"
+   },
+   {
+    "nivel": 10,
+    "golpe": "rajada_bolhas"
+   },
+   {
+    "nivel": 14,
+    "golpe": "hidrobomba"
+   }
+  ],
+  "defesa": 1.2
+ },
+ "raiozim": {
+  "nome": "Raiozim",
+  "tipo": "eletrico",
+  "raridade": "rara",
+  "selvagem": true,
+  "vida": 58,
+  "velocidade": 5.4,
+  "ataque": 1,
+  "impulso": 8.2,
+  "sequencia": [
+   "frente"
+  ],
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "garra"
+   },
+   {
+    "nivel": 5,
+    "golpe": "esfera_voltaica"
+   },
+   {
+    "nivel": 8,
+    "golpe": "garras_furiosas"
+   },
+   {
+    "nivel": 12,
+    "golpe": "soco_trovao"
+   },
+   {
+    "nivel": 16,
+    "golpe": "trovao"
+   }
+  ],
+  "modelo3d": "./assets/feras/raiozim.glb",
+  "altura3d": 0.95,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "defesa": 0.85,
+  "evolui": {
+   "para": "raiotron",
+   "nivel": 25
+  }
+ },
+ "raiotron": {
+  "nome": "Raiotron",
+  "tipo": "eletrico",
+  "raridade": "rara",
+  "vida": 88,
+  "velocidade": 4.6,
+  "ataque": 1.15,
+  "impulso": 7.5,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/raiotron.glb",
+  "altura3d": 1.5,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "garra"
+   },
+   {
+    "nivel": 5,
+    "golpe": "esfera_voltaica"
+   },
+   {
+    "nivel": 8,
+    "golpe": "garras_furiosas"
+   },
+   {
+    "nivel": 10,
+    "golpe": "rajada_voltaica"
+   },
+   {
+    "nivel": 12,
+    "golpe": "soco_trovao"
+   },
+   {
+    "nivel": 16,
+    "golpe": "trovao"
+   }
+  ],
+  "defesa": 1.05
+ },
+ "espinhim": {
+  "nome": "Espinhim",
+  "tipo": "planta",
+  "raridade": "rara",
+  "selvagem": true,
+  "vida": 66,
+  "velocidade": 4,
+  "ataque": 1.1,
+  "impulso": 7,
+  "sequencia": [
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/espinhim.glb",
+  "altura3d": 0.95,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "investida"
+   },
+   {
+    "nivel": 5,
+    "golpe": "folha_navalha"
+   },
+   {
+    "nivel": 6,
+    "golpe": "chicote_vinha"
+   },
+   {
+    "nivel": 8,
+    "golpe": "investida_feroz"
+   },
+   {
+    "nivel": 10,
+    "golpe": "raio_esmeralda"
+   }
+  ],
+  "defesa": 0.95,
+  "evolui": {
+   "para": "espinharal",
+   "nivel": 25
+  }
+ },
+ "espinharal": {
+  "nome": "Espinharal",
+  "tipo": "planta",
+  "raridade": "rara",
+  "vida": 88,
+  "velocidade": 4.8,
+  "ataque": 1.15,
+  "impulso": 7.5,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/espinharal.glb",
+  "altura3d": 1.5,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "garra"
+   },
+   {
+    "nivel": 5,
+    "golpe": "folha_navalha"
+   },
+   {
+    "nivel": 6,
+    "golpe": "chicote_vinha"
+   },
+   {
+    "nivel": 8,
+    "golpe": "garras_furiosas"
+   },
+   {
+    "nivel": 10,
+    "golpe": "tempestade_folhas"
+   },
+   {
+    "nivel": 15,
+    "golpe": "raio_esmeralda"
+   }
+  ],
+  "defesa": 1.1
+ },
+ "cogumim": {
+  "nome": "Cogumim",
+  "tipo": "planta",
+  "raridade": "rara",
+  "selvagem": true,
+  "vida": 67,
+  "velocidade": 4.6,
+  "ataque": 1.05,
+  "impulso": 7,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/cogumim.glb",
+  "altura3d": 0.95,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "garra"
+   },
+   {
+    "nivel": 5,
+    "golpe": "folha_navalha"
+   },
+   {
+    "nivel": 8,
+    "golpe": "garras_furiosas"
+   },
+   {
+    "nivel": 10,
+    "golpe": "tempestade_folhas"
+   }
+  ],
+  "defesa": 0.95,
+  "evolui": {
+   "para": "cogumal",
+   "nivel": 25
+  }
+ },
+ "cogumal": {
+  "nome": "Cogumal",
+  "tipo": "planta",
+  "raridade": "rara",
+  "vida": 87,
+  "velocidade": 4.2,
+  "ataque": 1.15,
+  "impulso": 7.5,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/cogumal.glb",
+  "altura3d": 1.45,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "garra"
+   },
+   {
+    "nivel": 5,
+    "golpe": "folha_navalha"
+   },
+   {
+    "nivel": 6,
+    "golpe": "chicote_vinha"
+   },
+   {
+    "nivel": 8,
+    "golpe": "garras_furiosas"
+   },
+   {
+    "nivel": 10,
+    "golpe": "tempestade_folhas"
+   },
+   {
+    "nivel": 15,
+    "golpe": "raio_esmeralda"
+   }
+  ],
+  "defesa": 1
+ },
+ "nevim": {
+  "nome": "Nevim",
+  "tipo": "comum",
+  "raridade": "rara",
+  "selvagem": true,
+  "vida": 63,
+  "velocidade": 4.4,
+  "ataque": 1.05,
+  "impulso": 7,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/nevim.glb",
+  "altura3d": 0.95,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "garra"
+   },
+   {
+    "nivel": 5,
+    "golpe": "garras_furiosas"
+   }
+  ],
+  "defesa": 0.95,
+  "evolui": {
+   "para": "nevurso",
+   "nivel": 25
+  }
+ },
+ "nevurso": {
+  "nome": "Nevurso",
+  "tipo": "comum",
+  "raridade": "rara",
+  "vida": 88,
+  "velocidade": 4.7,
+  "ataque": 1.15,
+  "impulso": 7.5,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/nevurso.glb",
+  "altura3d": 1.55,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "garra"
+   },
+   {
+    "nivel": 5,
+    "golpe": "garras_furiosas"
+   }
+  ],
+  "defesa": 1.25
+ },
+ "gelavim": {
+  "nome": "Gelavim",
+  "tipo": "agua",
+  "raridade": "rara",
+  "selvagem": true,
+  "voa": true,
+  "vida": 71,
+  "velocidade": 4.3,
+  "ataque": 1.05,
+  "impulso": 7,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/gelavim.glb",
+  "altura3d": 0.9,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "investida"
+   },
+   {
+    "nivel": 5,
+    "golpe": "jato_agua"
+   },
+   {
+    "nivel": 8,
+    "golpe": "investida_feroz"
+   },
+   {
+    "nivel": 10,
+    "golpe": "rajada_bolhas"
+   }
+  ],
+  "defesa": 0.85,
+  "evolui": {
+   "para": "gelavor",
+   "nivel": 25
+  }
+ },
+ "gelavor": {
+  "nome": "Gelavor",
+  "tipo": "agua",
+  "raridade": "rara",
+  "voa": true,
+  "vida": 86,
+  "velocidade": 4.4,
+  "ataque": 1.15,
+  "impulso": 7.5,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/gelavor.glb",
+  "altura3d": 1.45,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "investida"
+   },
+   {
+    "nivel": 5,
+    "golpe": "jato_agua"
+   },
+   {
+    "nivel": 8,
+    "golpe": "investida_feroz"
+   },
+   {
+    "nivel": 10,
+    "golpe": "rajada_bolhas"
+   },
+   {
+    "nivel": 14,
+    "golpe": "hidrobomba"
+   }
+  ],
+  "defesa": 0.95
+ },
+ "pratim": {
+  "nome": "Pratim",
+  "tipo": "comum",
+  "raridade": "rara",
+  "selvagem": true,
+  "vida": 63,
+  "velocidade": 4.4,
+  "ataque": 1.05,
+  "impulso": 7,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/pratim.glb",
+  "altura3d": 0.9,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "investida"
+   },
+   {
+    "nivel": 5,
+    "golpe": "investida_feroz"
+   }
+  ],
+  "defesa": 0.9,
+  "evolui": {
+   "para": "pratagor",
+   "nivel": 25
+  }
+ },
+ "pratagor": {
+  "nome": "Pratagor",
+  "tipo": "comum",
+  "raridade": "rara",
+  "voa": true,
+  "vida": 85,
+  "velocidade": 4.3,
+  "ataque": 1.15,
+  "impulso": 7.5,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/pratagor.glb",
+  "altura3d": 1.5,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "investida"
+   },
+   {
+    "nivel": 5,
+    "golpe": "investida_feroz"
+   }
+  ],
+  "defesa": 1.1
+ },
+ "vulpim": {
+  "nome": "Vulpim",
+  "tipo": "fogo",
+  "raridade": "rara",
+  "selvagem": true,
+  "vida": 68,
+  "velocidade": 4.3,
+  "ataque": 1.05,
+  "impulso": 7,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/vulpim.glb",
+  "altura3d": 1,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "garra"
+   },
+   {
+    "nivel": 5,
+    "golpe": "bola_fogo"
+   },
+   {
+    "nivel": 8,
+    "golpe": "garras_furiosas"
+   },
+   {
+    "nivel": 10,
+    "golpe": "lanca_chamas"
+   }
+  ],
+  "defesa": 0.85,
+  "evolui": {
+   "para": "vulpiro",
+   "nivel": 25
+  }
+ },
+ "vulpiro": {
+  "nome": "Vulpiro",
+  "tipo": "fogo",
+  "raridade": "rara",
+  "vida": 90,
+  "velocidade": 4.2,
+  "ataque": 1.15,
+  "impulso": 7.5,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/vulpiro.glb",
+  "altura3d": 1.5,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "garra"
+   },
+   {
+    "nivel": 5,
+    "golpe": "bola_fogo"
+   },
+   {
+    "nivel": 8,
+    "golpe": "garras_furiosas"
+   },
+   {
+    "nivel": 10,
+    "golpe": "lanca_chamas"
+   },
+   {
+    "nivel": 14,
+    "golpe": "pentachama"
+   }
+  ],
+  "defesa": 1
+ },
+ "rochim": {
+  "nome": "Rochim",
+  "tipo": "comum",
+  "raridade": "rara",
+  "selvagem": true,
+  "vida": 71,
+  "velocidade": 4.1,
+  "ataque": 1.05,
+  "impulso": 7,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/rochim.glb",
+  "altura3d": 1,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "garra"
+   },
+   {
+    "nivel": 5,
+    "golpe": "garras_furiosas"
+   }
+  ],
+  "defesa": 1.15,
+  "evolui": {
+   "para": "rochedo",
+   "nivel": 25
+  }
+ },
+ "rochedo": {
+  "nome": "Rochedo",
+  "tipo": "comum",
+  "raridade": "rara",
+  "vida": 85,
+  "velocidade": 4.6,
+  "ataque": 1.15,
+  "impulso": 7.5,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/rochedo.glb",
+  "altura3d": 1.55,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "garra"
+   },
+   {
+    "nivel": 5,
+    "golpe": "garras_furiosas"
+   }
+  ],
+  "defesa": 1.25
+ },
+ "dunim": {
+  "nome": "Dunim",
+  "tipo": "comum",
+  "raridade": "comum",
+  "selvagem": true,
+  "vida": 66,
+  "velocidade": 4.3,
+  "ataque": 1.05,
+  "impulso": 7,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/dunim.glb",
+  "altura3d": 0.95,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "garra"
+   },
+   {
+    "nivel": 5,
+    "golpe": "garras_furiosas"
+   }
+  ],
+  "defesa": 1
+ },
+ "furim": {
+  "nome": "Furim",
+  "tipo": "comum",
+  "raridade": "comum",
+  "selvagem": true,
+  "vida": 71,
+  "velocidade": 4.3,
+  "ataque": 1.05,
+  "impulso": 7,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/furim.glb",
+  "altura3d": 0.9,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "investida"
+   },
+   {
+    "nivel": 5,
+    "golpe": "investida_feroz"
+   }
+  ],
+  "defesa": 0.85
+ },
+ "gravetim": {
+  "nome": "Gravetim",
+  "tipo": "planta",
+  "raridade": "comum",
+  "selvagem": true,
+  "vida": 69,
+  "velocidade": 4.4,
+  "ataque": 1.05,
+  "impulso": 7,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/gravetim.glb",
+  "altura3d": 1,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "garra"
+   },
+   {
+    "nivel": 5,
+    "golpe": "folha_navalha"
+   },
+   {
+    "nivel": 6,
+    "golpe": "chicote_vinha"
+   },
+   {
+    "nivel": 8,
+    "golpe": "garras_furiosas"
+   },
+   {
+    "nivel": 10,
+    "golpe": "tempestade_folhas"
+   },
+   {
+    "nivel": 15,
+    "golpe": "raio_esmeralda"
+   }
+  ],
+  "defesa": 1.05
+ },
+ "pedrusco": {
+  "nome": "Pedrusco",
+  "tipo": "comum",
+  "raridade": "comum",
+  "selvagem": true,
+  "vida": 67,
+  "velocidade": 4.1,
+  "ataque": 1.05,
+  "impulso": 7,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/pedrusco.glb",
+  "altura3d": 1.25,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "garra"
+   },
+   {
+    "nivel": 5,
+    "golpe": "garras_furiosas"
+   }
+  ],
+  "defesa": 1.2
+ },
+ "cascorao": {
+  "nome": "Cascorão",
+  "tipo": "comum",
+  "raridade": "comum",
+  "vida": 87,
+  "velocidade": 4.2,
+  "ataque": 1.15,
+  "impulso": 7.5,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/cascorao.glb",
+  "altura3d": 1.45,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "garra"
+   },
+   {
+    "nivel": 5,
+    "golpe": "garras_furiosas"
+   }
+  ],
+  "defesa": 1.25
+ },
+ "voltouro": {
+  "nome": "Voltouro",
+  "tipo": "eletrico",
+  "raridade": "comum",
+  "vida": 88,
+  "velocidade": 4.7,
+  "ataque": 1.15,
+  "impulso": 7.5,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/voltouro.glb",
+  "altura3d": 1.5,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "investida"
+   },
+   {
+    "nivel": 5,
+    "golpe": "esfera_voltaica"
+   },
+   {
+    "nivel": 8,
+    "golpe": "investida_feroz"
+   },
+   {
+    "nivel": 10,
+    "golpe": "rajada_voltaica"
+   },
+   {
+    "nivel": 12,
+    "golpe": "soco_trovao"
+   },
+   {
+    "nivel": 16,
+    "golpe": "trovao"
+   }
+  ],
+  "defesa": 1.15
+ },
+ "brasouro": {
+  "nome": "Brasouro",
+  "tipo": "fogo",
+  "raridade": "comum",
+  "vida": 87,
+  "velocidade": 4.7,
+  "ataque": 1.15,
+  "impulso": 7.5,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/brasouro.glb",
+  "altura3d": 1.45,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "investida"
+   },
+   {
+    "nivel": 5,
+    "golpe": "bola_fogo"
+   },
+   {
+    "nivel": 8,
+    "golpe": "investida_feroz"
+   },
+   {
+    "nivel": 10,
+    "golpe": "lanca_chamas"
+   },
+   {
+    "nivel": 14,
+    "golpe": "pentachama"
+   }
+  ],
+  "defesa": 1.2
+ },
+ "draguim": {
+  "nome": "Draguim",
+  "tipo": "fogo",
+  "raridade": "comum",
+  "selvagem": true,
+  "vida": 80,
+  "velocidade": 4.4,
+  "ataque": 1.2,
+  "impulso": 7.4,
+  "sequencia": [
+   "baixo",
+   "frente"
+  ],
+  "modelo3d": "./assets/feras/draguim.glb",
+  "altura3d": 1.1,
+  "giro3d": 0,
+  "clipes": {
+   "parado": "parado",
+   "andar": "andar",
+   "correr": "correr",
+   "ataque": "ataque",
+   "garra": "garra",
+   "gancho": "gancho",
+   "kame": "kame",
+   "forte": "forte",
+   "dano": "dano",
+   "ko": "ko",
+   "arremesso": "arremesso",
+   "soco": "soco",
+   "combo1": "combo1",
+   "combo2": "combo2",
+   "combo3": "combo3",
+   "mortal": "mortal"
+  },
+  "aprendizado": [
+   {
+    "nivel": 1,
+    "golpe": "investida"
+   },
+   {
+    "nivel": 5,
+    "golpe": "bola_fogo"
+   },
+   {
+    "nivel": 8,
+    "golpe": "investida_feroz"
+   },
+   {
+    "nivel": 9,
+    "golpe": "lanca_chamas"
+   }
+  ],
+  "voa": true,
+  "defesa": 1
+ }
 }

@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { criarMundo, passoMundo, daImunidade, entradaDoMapa, interacaoPerto } from './sim/mundo.js';
 import { criarBatalha, passoBatalha, podeCapturar, fugirBatalha, trocaFera, continuaComOutraFera, proximaFeraTreinador, custoEnergia } from './sim/batalha.js';
 import { ganhaXp, xpParaSubir, xpPorVitoria, nivelSelvagem, vidaMaxima, NIVEL_INICIAL } from './sim/progressao.js';
-import { criarFera, aprendeGolpe, lembraGolpe, montaSlots, aprendizadosDoNivel, curaTotal, bonusNivel, paraBatalha } from './sim/equipe.js';
+import { criarFera, aprendeGolpe, lembraGolpe, montaSlots, aprendizadosDoNivel, curaTotal, bonusNivel, paraBatalha, evoluiFera } from './sim/equipe.js';
 import { criarCena, poof, jato, passoParticulas, passoAmbiente, passoCamera, mostraArena, temaArena, montaMapa, passoOclusores } from './render/cena.js';
 import { criarEfeitos } from './render/efeitos.js';
 import * as MD from './render/modelos.js';
@@ -315,15 +315,31 @@ function premiaXp() {
       }
     }
     if (batalha) { batalha.p.slots = montaSlots(fera, golpesCat); hud.golpesPainel(linhasGolpes()); }
+    // nomes congelados JÁ: se a fera evoluir logo abaixo, os avisos
+    // anteriores devem falar do nome antigo (ordem natural da história)
+    const nomeAntes = nomeDe(fera), nivelNovo = fera.nivel;
     let atraso = 1500;
-    setTimeout(() => { sfx.vitoria(); hud.toast(`⬆ ${nomeDe(fera)} subiu para o nível ${fera.nivel}!`, 2100); }, atraso);
+    setTimeout(() => { sfx.vitoria(); hud.toast(`⬆ ${nomeAntes} subiu para o nível ${nivelNovo}!`, 2100); }, atraso);
     for (const av of avisos) {
       atraso += 2200;
       const nomeG = golpesCat[av.id].nome;
       const msg = av.tipo === 'substituiu'
-        ? `${nomeDe(fera)} esqueceu ${golpesCat[av.trocado].nome} e aprendeu ${nomeG}!`
-        : `${nomeDe(fera)} aprendeu ${nomeG}!`;
+        ? `${nomeAntes} esqueceu ${golpesCat[av.trocado].nome} e aprendeu ${nomeG}!`
+        : `${nomeAntes} aprendeu ${nomeG}!`;
       setTimeout(() => { sfx.capturado(); hud.toast(`✨ ${msg}`, 2100); }, atraso);
+    }
+    // EVOLUÇÃO: cruzou o nível da cadeia? A fera se transforma (pode
+    // encadear se um salto de XP cruzar dois limiares de uma vez)
+    let ev;
+    while ((ev = evoluiFera(fera, especies, golpesCat))) {
+      const nomeNovo = especies[ev.para].nome;
+      const nomeVelho = especies[ev.de].nome;
+      atraso += 2400;
+      setTimeout(() => {
+        sfx.vitoria();
+        hud.toast(`🌟 ${nomeVelho} evoluiu para ${nomeNovo.toUpperCase()}!`, 3200);
+        atualizaPainel();
+      }, atraso);
     }
   }
   atualizaPainel();

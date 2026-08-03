@@ -1,343 +1,343 @@
 {
-  "investida": {
-    "nome": "Investida",
-    "tipo": "comum",
-    "fisico": true,
-    "dano": 7,
-    "alcance": 1.7,
-    "empurrao": 3.2,
-    "prep": 0.1,
-    "ativo": 0.3,
-    "recup": 0.22,
-    "forte": false,
-    "usos": null,
-    "avanco": 10
+ "investida": {
+  "nome": "Investida",
+  "tipo": "comum",
+  "fisico": true,
+  "dano": 7,
+  "alcance": 1.7,
+  "empurrao": 3.2,
+  "prep": 0.1,
+  "ativo": 0.3,
+  "recup": 0.22,
+  "forte": false,
+  "usos": null,
+  "avanco": 10
+ },
+ "investida_feroz": {
+  "nome": "Investida Feroz",
+  "tipo": "comum",
+  "fisico": true,
+  "base": "investida",
+  "dano": 15,
+  "alcance": 2.1,
+  "empurrao": 7,
+  "prep": 0.32,
+  "ativo": 0.18,
+  "recup": 0.46,
+  "forte": true,
+  "usos": null,
+  "avanco": 12
+ },
+ "bola_fogo": {
+  "nome": "Bola de Fogo",
+  "tipo": "fogo",
+  "dano": 14,
+  "alcance": 2.7,
+  "empurrao": 6,
+  "prep": 0.28,
+  "ativo": 0.2,
+  "recup": 0.4,
+  "forte": true,
+  "usos": 10,
+  "projetil": {
+   "vel": 11,
+   "raio": 0.85
   },
-  "investida_feroz": {
-    "nome": "Investida Feroz",
-    "tipo": "comum",
-    "fisico": true,
-    "base": "investida",
-    "dano": 15,
-    "alcance": 2.1,
-    "empurrao": 7,
-    "prep": 0.32,
-    "ativo": 0.18,
-    "recup": 0.46,
-    "forte": true,
-    "usos": null,
-    "avanco": 12
+  "clipe": "arremesso"
+ },
+ "lanca_chamas": {
+  "nome": "Lança-Chamas",
+  "tipo": "fogo",
+  "base": "bola_fogo",
+  "dano": 10.5,
+  "alcance": 2.9,
+  "empurrao": 3.5,
+  "prep": 0.3,
+  "ativo": 0.5,
+  "recup": 0.45,
+  "forte": true,
+  "usos": null,
+  "rajada": {
+   "tiros": 4,
+   "intervalo": 0.11,
+   "vel": 12,
+   "raio": 0.7
   },
-  "bola_fogo": {
-    "nome": "Bola de Fogo",
-    "tipo": "fogo",
-    "dano": 14,
-    "alcance": 2.7,
-    "empurrao": 6,
-    "prep": 0.28,
-    "ativo": 0.2,
-    "recup": 0.4,
-    "forte": true,
-    "usos": 10,
-    "projetil": {
-      "vel": 11,
-      "raio": 0.85
-    },
-    "clipe": "arremesso"
+  "clipe": "arremesso"
+ },
+ "esfera_voltaica": {
+  "nome": "Esfera Voltaica",
+  "tipo": "eletrico",
+  "dano": 13,
+  "alcance": 2.6,
+  "empurrao": 5,
+  "prep": 0.24,
+  "ativo": 0.16,
+  "recup": 0.38,
+  "forte": true,
+  "usos": 10,
+  "projetil": {
+   "vel": 13,
+   "raio": 0.8
   },
-  "lanca_chamas": {
-    "nome": "Lança-Chamas",
-    "tipo": "fogo",
-    "base": "bola_fogo",
-    "dano": 8,
-    "alcance": 2.9,
-    "empurrao": 3.5,
-    "prep": 0.3,
-    "ativo": 0.5,
-    "recup": 0.45,
-    "forte": true,
-    "usos": null,
-    "rajada": {
-      "tiros": 4,
-      "intervalo": 0.11,
-      "vel": 12,
-      "raio": 0.7
-    },
-    "clipe": "arremesso"
+  "clipe": "arremesso"
+ },
+ "rajada_voltaica": {
+  "nome": "Rajada Voltaica",
+  "tipo": "eletrico",
+  "base": "esfera_voltaica",
+  "dano": 7,
+  "alcance": 3,
+  "empurrao": 3,
+  "prep": 0.24,
+  "ativo": 0.4,
+  "recup": 0.4,
+  "forte": true,
+  "usos": null,
+  "rajada": {
+   "tiros": 3,
+   "intervalo": 0.12,
+   "vel": 14,
+   "raio": 0.65
   },
-  "esfera_voltaica": {
-    "nome": "Esfera Voltaica",
-    "tipo": "eletrico",
-    "dano": 13,
-    "alcance": 2.6,
-    "empurrao": 5,
-    "prep": 0.24,
-    "ativo": 0.16,
-    "recup": 0.38,
-    "forte": true,
-    "usos": 10,
-    "projetil": {
-      "vel": 13,
-      "raio": 0.8
-    },
-    "clipe": "arremesso"
+  "clipe": "arremesso"
+ },
+ "folha_navalha": {
+  "nome": "Folha Navalha",
+  "tipo": "planta",
+  "visual": "folhas",
+  "dano": 13,
+  "alcance": 2.6,
+  "empurrao": 5.5,
+  "prep": 0.26,
+  "ativo": 0.18,
+  "recup": 0.38,
+  "forte": true,
+  "usos": 10,
+  "projetil": {
+   "vel": 12,
+   "raio": 0.8
   },
-  "rajada_voltaica": {
-    "nome": "Rajada Voltaica",
-    "tipo": "eletrico",
-    "base": "esfera_voltaica",
-    "dano": 7,
-    "alcance": 3,
-    "empurrao": 3,
-    "prep": 0.24,
-    "ativo": 0.4,
-    "recup": 0.4,
-    "forte": true,
-    "usos": null,
-    "rajada": {
-      "tiros": 3,
-      "intervalo": 0.12,
-      "vel": 14,
-      "raio": 0.65
-    },
-    "clipe": "arremesso"
+  "clipe": "arremesso"
+ },
+ "tempestade_folhas": {
+  "nome": "Tempestade de Folhas",
+  "tipo": "planta",
+  "base": "folha_navalha",
+  "visual": "folhas",
+  "dano": 9.75,
+  "alcance": 2.8,
+  "empurrao": 3,
+  "prep": 0.26,
+  "ativo": 0.44,
+  "recup": 0.42,
+  "forte": true,
+  "usos": null,
+  "rajada": {
+   "tiros": 4,
+   "intervalo": 0.12,
+   "vel": 12,
+   "raio": 0.7
   },
-  "folha_navalha": {
-    "nome": "Folha Navalha",
-    "tipo": "planta",
-    "visual": "folhas",
-    "dano": 13,
-    "alcance": 2.6,
-    "empurrao": 5.5,
-    "prep": 0.26,
-    "ativo": 0.18,
-    "recup": 0.38,
-    "forte": true,
-    "usos": 10,
-    "projetil": {
-      "vel": 12,
-      "raio": 0.8
-    },
-    "clipe": "arremesso"
+  "clipe": "arremesso"
+ },
+ "raio_esmeralda": {
+  "nome": "Raio Esmeralda",
+  "tipo": "planta",
+  "base": "chicote_vinha",
+  "dano": 16,
+  "alcance": 8,
+  "empurrao": 5,
+  "prep": 1.1,
+  "ativo": 1.5,
+  "recup": 0.5,
+  "forte": true,
+  "usos": null,
+  "feixe": {
+   "alcance": 8
   },
-  "tempestade_folhas": {
-    "nome": "Tempestade de Folhas",
-    "tipo": "planta",
-    "base": "folha_navalha",
-    "visual": "folhas",
-    "dano": 7,
-    "alcance": 2.8,
-    "empurrao": 3,
-    "prep": 0.26,
-    "ativo": 0.44,
-    "recup": 0.42,
-    "forte": true,
-    "usos": null,
-    "rajada": {
-      "tiros": 4,
-      "intervalo": 0.12,
-      "vel": 12,
-      "raio": 0.7
-    },
-    "clipe": "arremesso"
+  "clipe": "kame"
+ },
+ "jato_agua": {
+  "nome": "Jato d'Água",
+  "tipo": "agua",
+  "visual": "bolha",
+  "dano": 13,
+  "alcance": 2.6,
+  "empurrao": 6,
+  "prep": 0.26,
+  "ativo": 0.18,
+  "recup": 0.4,
+  "forte": true,
+  "usos": 10,
+  "projetil": {
+   "vel": 8,
+   "raio": 0.85
   },
-  "raio_esmeralda": {
-    "nome": "Raio Esmeralda",
-    "tipo": "planta",
-    "base": "chicote_vinha",
-    "dano": 16,
-    "alcance": 8,
-    "empurrao": 5,
-    "prep": 1.1,
-    "ativo": 1.5,
-    "recup": 0.5,
-    "forte": true,
-    "usos": null,
-    "feixe": {
-      "alcance": 8
-    },
-    "clipe": "kame"
+  "clipe": "arremesso"
+ },
+ "rajada_bolhas": {
+  "nome": "Rajada de Bolhas",
+  "tipo": "agua",
+  "base": "jato_agua",
+  "visual": "bolha",
+  "dano": 13,
+  "alcance": 2.6,
+  "empurrao": 2.8,
+  "prep": 0.26,
+  "ativo": 0.5,
+  "recup": 0.42,
+  "forte": true,
+  "usos": null,
+  "rajada": {
+   "tiros": 3,
+   "intervalo": 0.16,
+   "vel": 6.5,
+   "raio": 0.8
   },
-  "jato_agua": {
-    "nome": "Jato d'Água",
-    "tipo": "agua",
-    "visual": "bolha",
-    "dano": 13,
-    "alcance": 2.6,
-    "empurrao": 6,
-    "prep": 0.26,
-    "ativo": 0.18,
-    "recup": 0.4,
-    "forte": true,
-    "usos": 10,
-    "projetil": {
-      "vel": 8,
-      "raio": 0.85
-    },
-    "clipe": "arremesso"
+  "clipe": "arremesso"
+ },
+ "trovao": {
+  "nome": "Trovão",
+  "tipo": "eletrico",
+  "base": "soco_trovao",
+  "dano": 18,
+  "alcance": 8,
+  "empurrao": 6,
+  "prep": 0.55,
+  "ativo": 0.25,
+  "recup": 0.5,
+  "forte": true,
+  "usos": null,
+  "feixe": {
+   "alcance": 8
   },
-  "rajada_bolhas": {
-    "nome": "Rajada de Bolhas",
-    "tipo": "agua",
-    "base": "jato_agua",
-    "visual": "bolha",
-    "dano": 7,
-    "alcance": 2.6,
-    "empurrao": 2.8,
-    "prep": 0.26,
-    "ativo": 0.5,
-    "recup": 0.42,
-    "forte": true,
-    "usos": null,
-    "rajada": {
-      "tiros": 3,
-      "intervalo": 0.16,
-      "vel": 6.5,
-      "raio": 0.8
-    },
-    "clipe": "arremesso"
+  "clipe": "kame"
+ },
+ "garra": {
+  "nome": "Arranhão",
+  "tipo": "comum",
+  "fisico": true,
+  "clipe": "combo1",
+  "dano": 6,
+  "alcance": 1.7,
+  "empurrao": 2.2,
+  "prep": 0.16,
+  "ativo": 0.18,
+  "recup": 0.36,
+  "forte": false,
+  "usos": null,
+  "proximo": "combo_2"
+ },
+ "garras_furiosas": {
+  "nome": "Garras Furiosas",
+  "tipo": "comum",
+  "fisico": true,
+  "base": "garra",
+  "clipe": "forte",
+  "dano": 14,
+  "alcance": 1.9,
+  "empurrao": 5.5,
+  "prep": 0.24,
+  "ativo": 0.16,
+  "recup": 0.36,
+  "forte": true,
+  "usos": null
+ },
+ "soco_trovao": {
+  "nome": "Soco-Trovão",
+  "tipo": "eletrico",
+  "fisico": true,
+  "clipe": "soco",
+  "dano": 12,
+  "alcance": 1.8,
+  "empurrao": 5.5,
+  "prep": 0.2,
+  "ativo": 0.14,
+  "recup": 0.3,
+  "forte": true,
+  "usos": 10
+ },
+ "pentachama": {
+  "nome": "Pentachama",
+  "tipo": "fogo",
+  "dano": 9,
+  "alcance": 2.6,
+  "empurrao": 4,
+  "prep": 0.34,
+  "ativo": 0.2,
+  "recup": 0.5,
+  "forte": true,
+  "usos": 8,
+  "projetil": {
+   "vel": 10,
+   "raio": 0.7
   },
-  "trovao": {
-    "nome": "Trovão",
-    "tipo": "eletrico",
-    "base": "soco_trovao",
-    "dano": 18,
-    "alcance": 8,
-    "empurrao": 6,
-    "prep": 0.55,
-    "ativo": 0.25,
-    "recup": 0.5,
-    "forte": true,
-    "usos": null,
-    "feixe": {
-      "alcance": 8
-    },
-    "clipe": "kame"
+  "formacao": {
+   "lados": 5,
+   "raio": 0.85
   },
-  "garra": {
-    "nome": "Arranhão",
-    "tipo": "comum",
-    "fisico": true,
-    "clipe": "combo1",
-    "dano": 6,
-    "alcance": 1.7,
-    "empurrao": 2.2,
-    "prep": 0.16,
-    "ativo": 0.18,
-    "recup": 0.36,
-    "forte": false,
-    "usos": null,
-    "proximo": "combo_2"
+  "clipe": "kame"
+ },
+ "hidrobomba": {
+  "nome": "Hidrobomba",
+  "tipo": "agua",
+  "visual": "bolha",
+  "dano": 17,
+  "alcance": 2.6,
+  "empurrao": 8,
+  "prep": 0.5,
+  "ativo": 0.2,
+  "recup": 0.6,
+  "forte": true,
+  "usos": 6,
+  "projetil": {
+   "vel": 7,
+   "raio": 1.05
   },
-  "garras_furiosas": {
-    "nome": "Garras Furiosas",
-    "tipo": "comum",
-    "fisico": true,
-    "base": "garra",
-    "clipe": "forte",
-    "dano": 14,
-    "alcance": 1.9,
-    "empurrao": 5.5,
-    "prep": 0.24,
-    "ativo": 0.16,
-    "recup": 0.36,
-    "forte": true,
-    "usos": null
-  },
-  "soco_trovao": {
-    "nome": "Soco-Trovão",
-    "tipo": "eletrico",
-    "fisico": true,
-    "clipe": "soco",
-    "dano": 12,
-    "alcance": 1.8,
-    "empurrao": 5.5,
-    "prep": 0.2,
-    "ativo": 0.14,
-    "recup": 0.3,
-    "forte": true,
-    "usos": 10
-  },
-  "pentachama": {
-    "nome": "Pentachama",
-    "tipo": "fogo",
-    "dano": 9,
-    "alcance": 2.6,
-    "empurrao": 4,
-    "prep": 0.34,
-    "ativo": 0.2,
-    "recup": 0.5,
-    "forte": true,
-    "usos": 8,
-    "projetil": {
-      "vel": 10,
-      "raio": 0.7
-    },
-    "formacao": {
-      "lados": 5,
-      "raio": 0.85
-    },
-    "clipe": "kame"
-  },
-  "hidrobomba": {
-    "nome": "Hidrobomba",
-    "tipo": "agua",
-    "visual": "bolha",
-    "dano": 17,
-    "alcance": 2.6,
-    "empurrao": 8,
-    "prep": 0.5,
-    "ativo": 0.2,
-    "recup": 0.6,
-    "forte": true,
-    "usos": 6,
-    "projetil": {
-      "vel": 7,
-      "raio": 1.05
-    },
-    "clipe": "kame"
-  },
-  "chicote_vinha": {
-    "nome": "Chicote de Vinha",
-    "tipo": "planta",
-    "visual": "folhas",
-    "fisico": true,
-    "dano": 10,
-    "alcance": 2.4,
-    "empurrao": 4.5,
-    "prep": 0.16,
-    "ativo": 0.16,
-    "recup": 0.3,
-    "forte": false,
-    "usos": 12
-  },
-  "combo_2": {
-    "nome": "Combo x2",
-    "tipo": "comum",
-    "fisico": true,
-    "clipe": "combo2",
-    "dano": 8,
-    "alcance": 1.7,
-    "empurrao": 3.5,
-    "prep": 0.14,
-    "ativo": 0.18,
-    "recup": 0.38,
-    "forte": false,
-    "usos": null,
-    "proximo": "combo_3"
-  },
-  "combo_3": {
-    "nome": "Combo Final",
-    "tipo": "comum",
-    "fisico": true,
-    "clipe": "combo3",
-    "dano": 12,
-    "alcance": 1.8,
-    "empurrao": 7,
-    "prep": 0.18,
-    "ativo": 0.2,
-    "recup": 0.42,
-    "forte": true,
-    "usos": null
-  }
+  "clipe": "kame"
+ },
+ "chicote_vinha": {
+  "nome": "Chicote de Vinha",
+  "tipo": "planta",
+  "visual": "folhas",
+  "fisico": true,
+  "dano": 10,
+  "alcance": 2.4,
+  "empurrao": 4.5,
+  "prep": 0.16,
+  "ativo": 0.16,
+  "recup": 0.3,
+  "forte": false,
+  "usos": 12
+ },
+ "combo_2": {
+  "nome": "Combo x2",
+  "tipo": "comum",
+  "fisico": true,
+  "clipe": "combo2",
+  "dano": 8,
+  "alcance": 1.7,
+  "empurrao": 3.5,
+  "prep": 0.14,
+  "ativo": 0.18,
+  "recup": 0.38,
+  "forte": false,
+  "usos": null,
+  "proximo": "combo_3"
+ },
+ "combo_3": {
+  "nome": "Combo Final",
+  "tipo": "comum",
+  "fisico": true,
+  "clipe": "combo3",
+  "dano": 12,
+  "alcance": 1.8,
+  "empurrao": 7,
+  "prep": 0.18,
+  "ativo": 0.2,
+  "recup": 0.42,
+  "forte": true,
+  "usos": null
+ }
 }

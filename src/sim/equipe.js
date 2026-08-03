@@ -64,6 +64,28 @@ export function aprendizadosDoNivel(esp, nivel) {
   return (esp.aprendizado || []).filter((a) => a.nivel === nivel).map((a) => a.golpe);
 }
 
+// EVOLUÇÃO (regra do Domador): cadeias de 3 estágios evoluem nos níveis
+// 20 e 40; cadeias de 2, no 25 (muito-raras futuras: 30). Os dados vivem em
+// especies.json ("evolui": { para, nivel }) — aqui só se aplica a regra.
+export function verificaEvolucao(especies, fera) {
+  const ev = especies[fera.especie].evolui;
+  return ev && fera.nivel >= ev.nivel ? ev.para : null;
+}
+// evolui a fera (uma etapa); devolve { de, para } ou null. O HP mantém a
+// PROPORÇÃO (fera machucada evolui machucada) e a espécie nova ensina o
+// que já ensinaria até este nível.
+export function evoluiFera(fera, especies, catalogo) {
+  const para = verificaEvolucao(especies, fera);
+  if (!para) return null;
+  const de = fera.especie;
+  const propHp = fera.hpAtual / vidaMaxima(especies[de].vida, fera.nivel);
+  fera.especie = para;
+  fera.hpAtual = Math.max(1, Math.round(vidaMaxima(especies[para].vida, fera.nivel) * propHp));
+  for (const a of especies[para].aprendizado || [])
+    if (a.nivel <= fera.nivel) aprendeGolpe(fera, catalogo, a.golpe);
+  return { de, para };
+}
+
 // centro de curas: vida e usos de volta ao máximo (do nível atual)
 export function curaTotal(fera, especies, catalogo) {
   fera.hpAtual = vidaMaxima(especies[fera.especie].vida, fera.nivel);
