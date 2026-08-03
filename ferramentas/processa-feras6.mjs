@@ -17,9 +17,15 @@ const ANIMADAS = {
   brasurio: 'Ember', dragobrasa: 'Emberwing_Dragon', cascorao: 'Emerald_Horned_Beetle',
   nevim: 'Frosty_Cub', nevurso: 'Icebound_Guardian', gravetim: 'Little_Wooden_Treant',
   brasinha: 'Peachy_Hatchling', espinharal: 'Petalbound_Dragon', cogumim: 'Smiling_Mushroom',
-  raiozim: 'Sunny_Fluff_Bunny', florasto: 'Verdant_Sentinel', cogumal: 'Whimsy_Shroom',
+  raiozim: 'Sunny_Fluff_Bunny', florasto: 'Emerald_Brute', cogumal: 'Whimsy_Shroom',
   raiotron: 'Zigzag_Thunderclaw',
+  // identificados pela TEXTURA (o Meshy rebatiza no rig): robô de argila
+  // cúbico = rochim, brutamontes esmeralda = florasto, ouriço-flor = espinhim
+  rochim: 'Cubic_Clay_Bot', espinhim: 'Flora_the_Hedgehog',
 };
+// clipes por FERA que vencem o MAPA_NOMES: o dragobrasa anda devagar e
+// imponente (pedido do Domador — a Slow Orc Walk vira o andar dele)
+const EXTRA_FERA = { dragobrasa: [[/Slow_Orc_Walk/i, 'andar']] };
 const AVULSAS = {
   voltouro: 'Meshy_AI_model_Animation_Walking_withSkin.glb',
   furim: 'Meshy_AI_model_Animation_Walking_withSkin (1).glb',
@@ -29,8 +35,8 @@ const AVULSAS = {
   brasouro: 'Meshy_AI_model_Animation_Walking_withSkin (5).glb',
 };
 const GERADAS = {
-  folhardo: 'grama 2', espinhim: 'planta flor 1', gelavim: 'ave gelo 1',
-  gelavor: 'ave gelo 2', pratagor: 'dragão prateado 2', rochim: 'pedra 1',
+  folhardo: 'grama 2', gelavim: 'ave gelo 1',
+  gelavor: 'ave gelo 2', pratagor: 'dragão prateado 2',
   pedrusco: 'pedregulho',
 };
 const BRACO_FECHADO = { raiotron: 0.42 };
@@ -298,8 +304,18 @@ for (const [id, pasta] of Object.entries(ANIMADAS)) {
     if (rica) {
       // TODOS os clipes do Meshy entram, casados por nome de arquivo
       const arqs = readdirSync(rica).filter((f) => f.endsWith('.glb'));
-      for (const arq of arqs) {
-        const clipe = clipeDoArquivo(arq);
+      // regras da fera primeiro (ex.: andar lento do dragobrasa), depois o mapa geral
+      const clipeDe = (arq) => {
+        for (const [re, c] of EXTRA_FERA[id] || []) if (re.test(arq)) return c;
+        return clipeDoArquivo(arq);
+      };
+      // duas passadas: 1ª só regras da fera (para vencerem a ordem alfabética)
+      const arqsOrd = [
+        ...arqs.filter((a) => (EXTRA_FERA[id] || []).some(([re]) => re.test(a))),
+        ...arqs.filter((a) => !(EXTRA_FERA[id] || []).some(([re]) => re.test(a))),
+      ];
+      for (const arq of arqsOrd) {
+        const clipe = clipeDe(arq);
         if (!clipe || ja.has(clipe)) continue;
         const glb = leGlb(`${rica}/${arq}`);
         if (!base) { base = glb; base.json.animations[0].name = clipe; }
