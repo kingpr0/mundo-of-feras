@@ -15,6 +15,19 @@ const TREINADORES = [
   [7, 'Meshy_AI_Celestial_Witch_biped'],
   [8, 'Meshy_AI_Aviator_Adventurer_biped'],
   [9, 'Meshy_AI_Junior_Trailblazer_biped'],
+  [10, 'Meshy_AI_Pink_Haired_Nurse_Fig_biped'], // a Enfermeira do Centro
+];
+// leva 2 dos novos: modelos ESTÁTICOS (sem rig) — entram como t11-t18 com
+// idle nenhum; tocaClip ignora clipes ausentes e o boneco fica de pose
+const ESTATICOS = [
+  [11, 'Meshy_AI_Arctic_Explorer_0803014110_texture.glb'],
+  [12, 'Meshy_AI_Blue_Explorer_Playmob_0803014122_texture.glb'],
+  [13, 'Meshy_AI_Blue_Haired_Scientist_0803014046_texture.glb'],
+  [14, 'Meshy_AI_Crimson_Wind_Ninja_0803014039_texture.glb'],
+  [15, 'Meshy_AI_Little_Gardener_0803014116_texture.glb'],
+  [16, 'Meshy_AI_Little_Sailor_Adventu_0803015009_texture.glb'],
+  [17, 'Meshy_AI_Trail_Scout_0803014129_texture.glb'],
+  [18, 'Meshy_AI_White_Gi_Warrior_0803014102_texture.glb'],
 ];
 
 mkdirSync(`${RAIZ}/assets/treinadores`, { recursive: true });
@@ -54,6 +67,14 @@ for (const [n, pasta] of TREINADORES) {
   const saida = `${RAIZ}/assets/treinadores/t${n}.glb`;
   escreveGlb(saida, base.json, base.bin);
   console.log(`t${n}.glb  ${(statSync(saida).size / 1048576).toFixed(2)} MB  anims: ${base.json.animations.map((a) => a.name).join(',')}`);
+}
+
+for (const [n, arq] of ESTATICOS) {
+  const glb = leGlb(`${RAIZ}/Treinadores/${arq}`);
+  await enxuga(glb);
+  const saida = `${RAIZ}/assets/treinadores/t${n}.glb`;
+  escreveGlb(saida, glb.json, glb.bin);
+  console.log(`t${n}.glb  ${(statSync(saida).size / 1048576).toFixed(2)} MB  estático (sem rig)`);
 }
 
 // treinador 3: sem animações — só idle genérico (rig UniRig) + enxugada

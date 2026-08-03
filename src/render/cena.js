@@ -1434,7 +1434,9 @@ function montaFundoNorte(g, mapa) {
 
 // os moradores usam os MESMOS modelos glTF dos treinadores (os NPCs
 // procedurais antigos aposentaram) — cada papel tem um modelo fixo
-const MODELO_NPC = { maga: 3, aldeao: 4, mercador: 5, aldea: 6, enfermeira: 7, senhor: 8 };
+// a enfermeira usa o modelo NOVO dela (t10) — nada de bruxa no balcão;
+// cientista vira o mercador e o resto segue com os aventureiros
+const MODELO_NPC = { maga: 3, aldeao: 4, mercador: 13, aldea: 6, enfermeira: 10, senhor: 2 };
 // põe um humano glTF (treinador N) no mapa, com idle vivo; se o arquivo
 // falhar, o NPC procedural clássico entra no lugar
 function poePersonagem(g, modeloN, x, z, y, rot, tipoFallback) {

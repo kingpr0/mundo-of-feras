@@ -213,7 +213,11 @@
         "z": 4.5
       },
       "selvagens": [
-        "pedrusco"
+        "folhito",
+        "cogumim",
+        "raiozim",
+        "gravetim",
+        "espinhim"
       ],
       "saidas": [
         {
@@ -463,11 +467,13 @@
         "z": 0
       },
       "selvagens": [
-        "gelavim",
         "folhito",
-        "furim",
-        "raiozim",
-        "cogumim"
+        "folhardo",
+        "florasto",
+        "cogumim",
+        "cogumal",
+        "espinhim",
+        "gravetim"
       ],
       "saidas": [
         {
@@ -483,6 +489,27 @@
           "em": -10,
           "alto": "norte",
           "h": 0.6
+        }
+      ],
+      "treinadores": [
+        {
+          "nome": "Jardineira Lila",
+          "tipo": "aldea",
+          "modelo": 15,
+          "x": 8,
+          "z": -6,
+          "rot": 2.2,
+          "fala": "Minhas plantinhas adoram ver um bom duelo. Vamos regar essa amizade?",
+          "equipe": [
+            {
+              "especie": "folhito",
+              "nivel": 7
+            },
+            {
+              "especie": "cogumim",
+              "nivel": 8
+            }
+          ]
         }
       ]
     },
@@ -576,10 +603,12 @@
         "z": -19
       },
       "selvagens": [
-        "pedrusco",
-        "furim",
-        "espinhim",
-        "dunim"
+        "dunim",
+        "vulpim",
+        "vulpiro",
+        "brasouro",
+        "cascorao",
+        "brasinha"
       ],
       "saidas": [
         {
@@ -595,6 +624,27 @@
           "em": -6,
           "alto": "norte",
           "h": 0.6
+        }
+      ],
+      "treinadores": [
+        {
+          "nome": "Explorador Davi",
+          "tipo": "aldeao",
+          "modelo": 12,
+          "x": 4,
+          "z": -10,
+          "rot": 3,
+          "fala": "Atravessei três dunas para achar um oponente. Você serve!",
+          "equipe": [
+            {
+              "especie": "dunim",
+              "nivel": 10
+            },
+            {
+              "especie": "brasouro",
+              "nivel": 11
+            }
+          ]
         }
       ]
     },
@@ -665,10 +715,12 @@
         }
       ],
       "selvagens": [
-        "pedrusco",
-        "gelavim",
         "cogumim",
-        "furim"
+        "espinhim",
+        "furim",
+        "gravetim",
+        "raiozim",
+        "voltouro"
       ],
       "saidas": [
         {
@@ -757,8 +809,11 @@
         "z": 14
       },
       "selvagens": [
-        "gelavim",
-        "gotim"
+        "gotim",
+        "gotao",
+        "raiozim",
+        "furim",
+        "cogumal"
       ],
       "saidas": [
         {
@@ -780,6 +835,27 @@
           "em": -6,
           "alto": "oeste",
           "h": 0.6
+        }
+      ],
+      "treinadores": [
+        {
+          "nome": "Cientista Bia",
+          "tipo": "aldea",
+          "modelo": 13,
+          "x": -6,
+          "z": 8,
+          "rot": 0.6,
+          "fala": "Estou catalogando as feras do lago. Quer contribuir com... DADOS DE BATALHA?",
+          "equipe": [
+            {
+              "especie": "gotim",
+              "nivel": 9
+            },
+            {
+              "especie": "raiozim",
+              "nivel": 9
+            }
+          ]
         }
       ]
     },
@@ -860,7 +936,7 @@
               "nivel": 9
             }
           ],
-          "modelo": 6
+          "modelo": 17
         }
       ],
       "grama": {
@@ -874,11 +950,12 @@
         "z": 18
       },
       "selvagens": [
-        "pedrusco",
-        "gelavim",
-        "folhito",
+        "raiozim",
+        "raiotron",
         "furim",
-        "gravetim"
+        "voltouro",
+        "folhito",
+        "dunim"
       ],
       "saidas": [
         {
@@ -1041,10 +1118,12 @@
         }
       ],
       "selvagens": [
-        "pedrusco",
-        "gelavim",
+        "dunim",
+        "furim",
+        "voltouro",
+        "espinharal",
         "vulpim",
-        "furim"
+        "raiotron"
       ],
       "saidas": [
         {
@@ -1114,12 +1193,12 @@
         "z": 13
       },
       "selvagens": [
-        "gelavim",
-        "vulpim",
-        "folhito",
-        "draguim",
+        "rochim",
+        "pedrusco",
         "dunim",
-        "rochim"
+        "brasouro",
+        "vulpim",
+        "draguim"
       ],
       "saidas": [
         {
@@ -1133,6 +1212,27 @@
           "de": 2,
           "ate": 6,
           "destino": "encosta"
+        }
+      ],
+      "treinadores": [
+        {
+          "nome": "Mestre Kenzo",
+          "tipo": "senhor",
+          "modelo": 18,
+          "x": -3,
+          "z": 5,
+          "rot": 1.6,
+          "fala": "O kimono branco não suja quem luta com honra. Mostre a sua!",
+          "equipe": [
+            {
+              "especie": "rochim",
+              "nivel": 10
+            },
+            {
+              "especie": "vulpim",
+              "nivel": 11
+            }
+          ]
         }
       ]
     },
@@ -1188,10 +1288,12 @@
         "z": 8
       },
       "selvagens": [
-        "gelavim",
-        "gotim",
-        "raiozim",
-        "rochim"
+        "rochim",
+        "pedrusco",
+        "gravetim",
+        "vulpim",
+        "brasinha",
+        "brasurio"
       ],
       "saidas": [
         {
@@ -1325,14 +1427,12 @@
         "z": 0
       },
       "selvagens": [
-        "vulpim",
-        "pedrusco",
-        "raiozim",
         "rochim",
-        "draguim",
-        "nevim",
-        "pratim",
-        "gelavim"
+        "rochedo",
+        "pedrusco",
+        "vulpiro",
+        "cascorao",
+        "brasurio"
       ],
       "saidas": [
         {
@@ -1419,7 +1519,9 @@
       "selvagens": [
         "pedrusco",
         "rochim",
-        "dunim"
+        "rochedo",
+        "cascorao",
+        "draguim"
       ],
       "saidas": []
     },
@@ -1541,7 +1643,7 @@
               "nivel": 12
             }
           ],
-          "modelo": 9
+          "modelo": 14
         }
       ],
       "grama": {
@@ -1556,9 +1658,11 @@
       },
       "selvagens": [
         "nevim",
-        "raiozim",
-        "pedrusco",
-        "gelavim"
+        "nevurso",
+        "gelavim",
+        "gelavor",
+        "gotao",
+        "pratim"
       ],
       "saidas": [
         {
@@ -1683,7 +1787,9 @@
         "z": 7
       },
       "selvagens": [
-        "pedrusco"
+        "pratim",
+        "pedrusco",
+        "voltouro"
       ],
       "saidas": [
         {
@@ -1827,7 +1933,8 @@
       },
       "selvagens": [
         "gotim",
-        "gelavim"
+        "gotao",
+        "raiozim"
       ],
       "saidas": [
         {
@@ -1850,6 +1957,27 @@
           "alto": "sul",
           "h": 0.9,
           "rampa": 0
+        }
+      ],
+      "treinadores": [
+        {
+          "nome": "Marujo Tito",
+          "tipo": "aldeao",
+          "modelo": 16,
+          "x": 6,
+          "z": -2,
+          "rot": 2,
+          "fala": "O mar ensina paciência... e meus duelos ensinam humildade!",
+          "equipe": [
+            {
+              "especie": "gotim",
+              "nivel": 12
+            },
+            {
+              "especie": "gotao",
+              "nivel": 14
+            }
+          ]
         }
       ]
     },
@@ -1950,7 +2078,10 @@
       },
       "selvagens": [
         "gotim",
-        "gelavim"
+        "gotao",
+        "gotorrente",
+        "cascorao",
+        "raiozim"
       ],
       "saidas": [
         {
@@ -2006,6 +2137,7 @@
         "z": 5.6
       },
       "selvagens": [
+        "pratim",
         "pedrusco"
       ],
       "saidas": []
@@ -2050,6 +2182,7 @@
         "z": 4.6
       },
       "selvagens": [
+        "pratim",
         "pedrusco"
       ],
       "saidas": []
@@ -2076,6 +2209,7 @@
         "z": 3.6
       },
       "selvagens": [
+        "pratim",
         "pedrusco"
       ],
       "saidas": []
@@ -2293,15 +2427,18 @@
       ],
       "selvagens": [
         "gelavim",
+        "gelavor",
         "pratim",
-        "rochim",
-        "vulpim"
+        "pratagor",
+        "nevim",
+        "nevurso",
+        "dragobrasa"
       ],
       "treinadores": [
         {
           "nome": "Escaladora Ida",
           "tipo": "aldea",
-          "modelo": 5,
+          "modelo": 11,
           "x": -5,
           "z": -14,
           "rot": 1.2,

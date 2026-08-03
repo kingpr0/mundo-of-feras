@@ -39,7 +39,7 @@
     "golpe": "investida"
    },
    {
-    "nivel": 7,
+    "nivel": 6,
     "golpe": "folha_navalha"
    },
    {
@@ -201,7 +201,7 @@
     "golpe": "garra"
    },
    {
-    "nivel": 7,
+    "nivel": 6,
     "golpe": "bola_fogo"
    },
    {
@@ -377,7 +377,7 @@
     "golpe": "garra"
    },
    {
-    "nivel": 7,
+    "nivel": 6,
     "golpe": "jato_agua"
    },
    {
