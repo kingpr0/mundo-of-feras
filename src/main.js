@@ -6,6 +6,7 @@ import { criarMundo, passoMundo, daImunidade, entradaDoMapa, interacaoPerto } fr
 import { criarBatalha, passoBatalha, podeCapturar, fugirBatalha, trocaFera, continuaComOutraFera, proximaFeraTreinador, custoEnergia } from './sim/batalha.js';
 import { ganhaXp, xpParaSubir, xpPorVitoria, nivelSelvagem, vidaMaxima, NIVEL_INICIAL } from './sim/progressao.js';
 import { criarFera, aprendeGolpe, lembraGolpe, montaSlots, aprendizadosDoNivel, curaTotal, bonusNivel, paraBatalha, evoluiFera } from './sim/equipe.js';
+import { empacotaSave, validaSave } from './sim/save.js';
 import { criarCena, poof, jato, passoParticulas, passoAmbiente, passoCamera, mostraArena, temaArena, montaMapa, passoOclusores } from './render/cena.js';
 import { criarEfeitos } from './render/efeitos.js';
 import * as MD from './render/modelos.js';
@@ -61,6 +62,15 @@ let falaIntro = 0;
 let jaEscolheu = false; // o primeiro Ritual tem fala própria da Guardiã
 const chavesSelvagens = Object.keys(especies).filter((k) => especies[k].selvagem);
 let chaveMapa = dadosMapas.inicial;
+// SAVE LOCAL: a jornada continua de onde parou. O pacote é validado pela
+// sim (save.js); aqui só se fala com o localStorage do navegador.
+const CHAVE_SAVE = 'feras-save-v1';
+let saveCarregado = null;
+try {
+  saveCarregado = validaSave(JSON.parse(localStorage.getItem(CHAVE_SAVE)),
+    especies, dadosMapas.mapas, dadosMapas.inicial);
+} catch { saveCarregado = null; }
+if (saveCarregado) chaveMapa = saveCarregado.chaveMapa;
 // treinadores derrotados valem para a sessão inteira (não voltam ao trocar de mapa)
 const vencidosGlobais = new Set();
 function novoMundo(chave) {
@@ -83,6 +93,30 @@ let equipe = [];
 const CRISTAIS_MAX = 15;
 const itens = { cristal: CRISTAIS_MAX };
 let ativa = 0;
+// restaura a jornada salva (equipe, itens, ritual e posição no mapa)
+if (saveCarregado) {
+  equipe = saveCarregado.equipe;
+  ativa = saveCarregado.ativa;
+  itens.cristal = saveCarregado.itens.cristal;
+  jaEscolheu = saveCarregado.jaEscolheu;
+  for (const v of saveCarregado.vencidos) vencidosGlobais.add(v);
+  if (saveCarregado.pos) {
+    mundo.domador.pos.x = saveCarregado.pos.x;
+    mundo.domador.pos.z = saveCarregado.pos.z;
+  }
+}
+function salvaJogo() {
+  if (!equipe.length && !jaEscolheu) return; // ainda não há jornada
+  try {
+    localStorage.setItem(CHAVE_SAVE, JSON.stringify(empacotaSave({
+      equipe, ativa, itens, jaEscolheu, chaveMapa,
+      pos: mundo.domador.pos, vencidos: [...vencidosGlobais],
+    })));
+  } catch { /* navegador sem armazenamento (anônimo): joga sem salvar */ }
+}
+addEventListener('beforeunload', salvaJogo);
+setInterval(salvaJogo, 15000); // rede de segurança além dos eventos-chave
+let confirmaReset = 0; // duplo toque do "Recomeçar jornada"
 const nomeDe = (f) => f.apelido || especies[f.especie].nome;
 function atualizaPainel() {
   if (!equipe.length) { // elo apagado: o Caminho da Cinza
@@ -132,11 +166,19 @@ addEventListener('keydown', (e) => {
   if (e.code === 'Enter' && modo === 'titulo') {
     hud.escondeTitulo(); cv.focus();
     musica('explorar');
-    // a abertura: textos primeiro, controle depois
-    modo = 'intro';
-    falaIntro = 0;
-    hud.dica('Z avança o texto');
-    hud.toast(`${INTRO_FALAS[0]}  ▸`, 600000);
+    if (jaEscolheu || equipe.length) {
+      // jornada salva: sem reprise da abertura — direto para o mundo
+      modo = 'explorar';
+      hud.dica(DICA_EXPLORAR);
+      hud.toast('— A jornada continua —', 2200);
+      renderMenu();
+    } else {
+      // a abertura: textos primeiro, controle depois
+      modo = 'intro';
+      falaIntro = 0;
+      hud.dica('Z avança o texto');
+      hud.toast(`${INTRO_FALAS[0]}  ▸`, 600000);
+    }
   }
 });
 addEventListener('keyup', (e) => keys[e.code] = false);
@@ -399,6 +441,17 @@ function itensDoMenu() {
     { txt: 'Itens', acao: () => abreMenu('itens') },
     { txt: 'Carteira', acao: () => hud.toast('Carteira: 0 moedas (economia em breve)') },
     { txt: 'Insígnias', acao: () => hud.toast('Insígnias: nenhuma ainda') },
+    { txt: 'Recomeçar jornada', acao: () => {
+      // apagar o save é para sempre: exige DOIS toques em 3 segundos
+      if (tempo < confirmaReset) {
+        removeEventListener('beforeunload', salvaJogo);
+        try { localStorage.removeItem(CHAVE_SAVE); } catch {}
+        location.reload();
+      } else {
+        confirmaReset = tempo + 3;
+        hud.toast('⚠ Isso APAGA a jornada salva. Aperte de novo para confirmar.', 2800);
+      }
+    } },
     { txt: `Som: ${somLigado() ? 'ligado' : 'mudo'}`, acao: () => {
       alternaSom();
       hud.toast(somLigado() ? '🔊 Som ligado' : '🔇 Som desligado', 1400);
@@ -670,13 +723,16 @@ function iniciaRitual(renascer) {
   abreMenu('inicial');
 }
 function escolheInicial(k) {
-  equipe = [criarFera(especies, golpesCat, k, NIVEL_INICIAL, true)];
+  // regra do Domador: toda fera NASCE só com o golpe físico — os
+  // especiais chegam pelo nível (iniciais: elemental nv7, especial nv10)
+  equipe = [criarFera(especies, golpesCat, k, NIVEL_INICIAL)];
   ativa = 0;
   jaEscolheu = true;
   sfx.capturado();
   hud.flash();
   poof(cena, { ...mundo.domador.pos, y: 1 }, 0xffd23f, 16, 4);
   atualizaPainel();
+  salvaJogo();
   fechaMenu();
   hud.toast(`✨ O elo está aceso! ${especies[k].nome} agora caminha com você.`, 3400);
 }
@@ -947,6 +1003,7 @@ function encerraBatalha() {
       '🚶 Sem elo, as feras o ignoram. Volte a pé à Fogueira Eterna da Vila Clareira.', 4500), 1800);
   }
   atualizaPainel();
+  salvaJogo(); // toda batalha real muda a jornada: XP, HP, capturas, cristais
 }
 // passagem entre mapas: recria a sim no destino e remonta o cenário
 function trocaMapa(destino, entrada) {
@@ -963,6 +1020,7 @@ function trocaMapa(destino, entrada) {
   hud.localAtual(mundo.mapa.nome);
   if (mundo.mapa.regiao) hud.mapaRegiao(dadosMapas, destino);
   hud.toast(`— ${mundo.mapa.nome} —`, 1800);
+  salvaJogo();
 }
 
 /* ---------- sincroniza modelos com a simulação ---------- */
@@ -1216,6 +1274,7 @@ function loop(agora) {
         for (const f of equipe) curaTotal(f, especies, golpesCat);
         itens.cristal = CRISTAIS_MAX;
         atualizaPainel();
+        salvaJogo();
         hud.toast(`❤ Enfermeira: feras restauradas e ${CRISTAIS_MAX} Cristais de Captura na mochila!`, 3000);
       }
       else if (evt && evt.tipo === 'porta') {
@@ -1276,6 +1335,12 @@ cv.focus(); setTimeout(() => cv.focus(), 300);
 window.DEV = {
   teleporta(x, z) { mundo.domador.pos.x = x; mundo.domador.pos.z = z; },
   vaiPara(destino) { trocaMapa(destino); },
+  apagaSave() {
+    removeEventListener('beforeunload', salvaJogo);
+    localStorage.removeItem(CHAVE_SAVE);
+    location.reload();
+  },
+  salva: () => { salvaJogo(); return localStorage.getItem(CHAVE_SAVE); },
   estado: () => ({ modo, mapa: chaveMapa, pos: { ...mundo.domador.pos },
                    equipe: equipe.length, menu: menu.tipo, menuAtivo: menu.ativo,
                    treino: treino ? { ...treino } : null, batalha: !!batalha }),
