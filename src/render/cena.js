@@ -1538,6 +1538,14 @@ export function montaMapa(cena, mapa) {
   cena.scene.fog = mapa.nevoa
     ? new THREE.Fog(mapa.nevoa.cor, mapa.nevoa.perto, mapa.nevoa.longe)
     : null;
+  // DENTRO de construções o mundo lá fora não existe: tudo em volta da
+  // sala fica escuro (fundo noturno + névoa engolindo a distância)
+  if (mapa.tipo === 'interior') {
+    cena.scene.background = new THREE.Color(0x0d0f1a);
+    cena.scene.fog = new THREE.Fog(0x0d0f1a, 12, 34);
+  } else {
+    cena.scene.background = new THREE.Color(0x9fd0ff);
+  }
   g.userData.anims = cena.anims;
   if (mapa.tipo === 'interior') {
     montaInterior(g, mapa);
@@ -1837,21 +1845,41 @@ export function renderiza(cena, semCor) {
     return;
   }
   if (!_pb) {
-    const mat = new THREE.ShaderMaterial({
-      uniforms: { tela: { value: null } },
-      vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
-      fragmentShader: `uniform sampler2D tela; varying vec2 vUv;
-        void main(){ vec4 c = texture2D(tela, vUv);
-          float g = dot(c.rgb, vec3(0.299, 0.587, 0.114));
-          gl_FragColor = vec4(vec3(g), 1.0); }`,
-      depthTest: false, depthWrite: false,
-    });
-    _pb = { rt: new THREE.WebGLRenderTarget(2, 2), mat,
+    // WebGL2: o quad cinza também ESCREVE a profundidade do mundo (vinda
+    // da depthTexture do RT) — o herói então afunda na grama e some atrás
+    // das árvores sem repassar a cena. Em WebGL1 (raro), fica sem oclusão.
+    const temGL2 = r.capabilities.isWebGL2;
+    const rt = new THREE.WebGLRenderTarget(2, 2);
+    if (temGL2) rt.depthTexture = new THREE.DepthTexture(2, 2);
+    const mat = temGL2
+      ? new THREE.RawShaderMaterial({
+          glslVersion: THREE.GLSL3,
+          uniforms: { tela: { value: null }, prof: { value: null } },
+          vertexShader: `in vec3 position; in vec2 uv; out vec2 vUv;
+            void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
+          fragmentShader: `precision highp float; in vec2 vUv;
+            uniform sampler2D tela; uniform sampler2D prof; out vec4 cor;
+            void main(){
+              vec4 c = texture(tela, vUv);
+              float g = dot(c.rgb, vec3(0.299, 0.587, 0.114));
+              cor = vec4(vec3(g), 1.0);
+              gl_FragDepth = texture(prof, vUv).x; }`,
+          // depthTest LIGADO com "sempre passa": sem o teste ativo o GL
+          // descarta a escrita de profundidade (pegadinha clássica)
+          depthTest: true, depthFunc: THREE.AlwaysDepth, depthWrite: true,
+        })
+      : new THREE.ShaderMaterial({
+          uniforms: { tela: { value: null } },
+          vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+          fragmentShader: `uniform sampler2D tela; varying vec2 vUv;
+            void main(){ vec4 c = texture2D(tela, vUv);
+              float g = dot(c.rgb, vec3(0.299, 0.587, 0.114));
+              gl_FragColor = vec4(vec3(g), 1.0); }`,
+          depthTest: false, depthWrite: false,
+        });
+    _pb = { rt, mat, temGL2,
             cenaQuad: new THREE.Scene(),
-            camQuad: new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1),
-            // material fantasma: pinta SÓ a profundidade do mundo, para o
-            // herói ficar atrás/dentro das coisas (grama alta, árvores)
-            soProfundidade: new THREE.MeshBasicMaterial({ colorWrite: false }) };
+            camQuad: new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1) };
     const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), mat);
     quad.frustumCulled = false; // o shader ignora a câmera: nunca cortar
     _pb.cenaQuad.add(quad);
@@ -1863,20 +1891,16 @@ export function renderiza(cena, semCor) {
   r.setRenderTarget(_pb.rt);
   r.render(cena.scene, cena.camera);
   r.setRenderTarget(null);
-  // 2) a textura em CINZA na tela
+  // 2) a textura em CINZA na tela — e, no WebGL2, a PROFUNDIDADE do mundo
+  // junto: o herói vai respeitar o que está na frente dele
   _pb.mat.uniforms.tela.value = _pb.rt.texture;
+  if (_pb.temGL2) _pb.mat.uniforms.prof.value = _pb.rt.depthTexture;
   r.render(_pb.cenaQuad, _pb.camQuad);
-  // 3) profundidade do MUNDO na tela (sem cor): o herói respeita o que
-  // está na frente dele — some dentro da grama alta, atrás das árvores
+  // 3) o herói colorido, ocluído certinho (dentro da grama, atrás da árvore)
   const fundo = cena.scene.background;
   cena.scene.background = null;
   r.autoClear = false;
-  r.clearDepth();
-  cena.camera.layers.set(0);
-  cena.scene.overrideMaterial = _pb.soProfundidade;
-  r.render(cena.scene, cena.camera);
-  cena.scene.overrideMaterial = null;
-  // 4) o herói colorido, agora com oclusão correta
+  if (!_pb.temGL2) r.clearDepth(); // sem depth do mundo: herói por cima
   cena.camera.layers.set(CAMADA_HEROI);
   r.render(cena.scene, cena.camera);
   r.autoClear = true;

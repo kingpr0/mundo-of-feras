@@ -1314,6 +1314,17 @@ function loop(agora) {
         } else if (evt.destino !== 'retorno') {
           retornoPorta.push({ mapa: chaveMapa, pos: evt.retorno });
           trocaMapa(evt.destino);
+          // CENTRO DE CURA: entrar já cura — piscada e pronto, sem conversa
+          if (evt.destino === 'interior_centro' && equipe.length) {
+            setTimeout(() => {
+              hud.flash(); sfx.capturado();
+              for (const f of equipe) curaTotal(f, especies, golpesCat);
+              itens.cristal = CRISTAIS_MAX;
+              atualizaPainel();
+              salvaJogo();
+              hud.toast(`❤ As feras descansaram e ${CRISTAIS_MAX} Cristais voltaram à mochila!`, 2800);
+            }, 600);
+          }
         }
       }
       else if (evt && evt.tipo === 'saida') {
