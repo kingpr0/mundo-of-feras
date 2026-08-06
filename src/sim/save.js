@@ -4,7 +4,7 @@
 export const VERSAO_SAVE = 1;
 
 // estado vivo -> pacote serializável (só o que importa, nada de objetos 3D)
-export function empacotaSave({ equipe, ativa, itens, jaEscolheu, chaveMapa, pos, vencidos }) {
+export function empacotaSave({ equipe, ativa, itens, jaEscolheu, chaveMapa, pos, vencidos, vistas }) {
   return {
     v: VERSAO_SAVE,
     equipe,
@@ -14,6 +14,7 @@ export function empacotaSave({ equipe, ativa, itens, jaEscolheu, chaveMapa, pos,
     chaveMapa,
     pos: { x: Math.round(pos.x * 10) / 10, z: Math.round(pos.z * 10) / 10 },
     vencidos,
+    vistas, // espécies já AVISTADAS (a Feradex só revela essas)
   };
 }
 
@@ -43,5 +44,6 @@ export function validaSave(s, especies, mapas, mapaInicial) {
     pos: s.pos && isFinite(s.pos.x) && isFinite(s.pos.z)
       ? { x: s.pos.x, z: s.pos.z } : null,
     vencidos: Array.isArray(s.vencidos) ? s.vencidos : [],
+    vistas: (Array.isArray(s.vistas) ? s.vistas : []).filter((k) => especies[k]),
   };
 }

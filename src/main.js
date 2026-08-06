@@ -99,6 +99,9 @@ let equipe = [];
 const CRISTAIS_MAX = 15;
 const itens = { cristal: CRISTAIS_MAX };
 let ativa = 0;
+// FERADEX: espécies já avistadas — só elas aparecem reveladas na tabela
+const vistas = new Set();
+const marcaVista = (k) => { if (k && especies[k]) vistas.add(k); };
 // restaura a jornada salva (equipe, itens, ritual e posição no mapa)
 if (saveCarregado) {
   equipe = saveCarregado.equipe;
@@ -106,6 +109,8 @@ if (saveCarregado) {
   itens.cristal = saveCarregado.itens.cristal;
   jaEscolheu = saveCarregado.jaEscolheu;
   for (const v of saveCarregado.vencidos) vencidosGlobais.add(v);
+  for (const v of saveCarregado.vistas || []) vistas.add(v);
+  for (const f of equipe) marcaVista(f.especie); // quem é seu, você já viu
   if (saveCarregado.pos) {
     mundo.domador.pos.x = saveCarregado.pos.x;
     mundo.domador.pos.z = saveCarregado.pos.z;
@@ -116,7 +121,7 @@ function salvaJogo() {
   try {
     localStorage.setItem(CHAVE_SAVE, JSON.stringify(empacotaSave({
       equipe, ativa, itens, jaEscolheu, chaveMapa,
-      pos: mundo.domador.pos, vencidos: [...vencidosGlobais],
+      pos: mundo.domador.pos, vencidos: [...vencidosGlobais], vistas: [...vistas],
     })));
   } catch { /* navegador sem armazenamento (anônimo): joga sem salvar */ }
 }
@@ -386,6 +391,7 @@ function premiaXp() {
     // encadear se um salto de XP cruzar dois limiares de uma vez)
     let ev;
     while ((ev = evoluiFera(fera, especies, golpesCat))) {
+      marcaVista(ev.para); // a forma nova se revela na Feradex
       const nomeNovo = especies[ev.para].nome;
       const nomeVelho = especies[ev.de].nome;
       atraso += 2400;
@@ -408,11 +414,12 @@ function tituloMenu() {
     const f = equipe[menu.fera];
     return `${nomeDe(f).toUpperCase()} · Lv.${f.nivel}`;
   }
-  if (t === 'compendioFera') return especies[menu.especie].nome.toUpperCase();
+  if (t === 'compendioFera')
+    return vistas.has(menu.especie) ? especies[menu.especie].nome.toUpperCase() : '???';
   if (t === 'exploracao' && !menu.ativo) return 'MENU · aperte Q';
   return { exploracao: 'MENU', batalha: 'BATALHA', equipeExp: 'EQUIPE',
            equipeBat: 'TROCAR FERA', statusLista: 'STATUS', catalogo: 'CATÁLOGO DE GOLPES',
-           compendio: 'COMPÊNDIO DE FERAS', itens: 'ITENS',
+           compendio: 'FERADEX', itens: 'ITENS',
            treinoP: 'TREINO · SUA FERA', treinoE: 'TREINO · OPONENTE',
            posRound: 'A PRÓXIMA VEM AÍ — TROCAR?' }[t]
     || (t === 'treinoG' ? `TREINO · PODERES ${treino ? treino.golpes.length : 0}/3 (o físico do Z é o da fera)` : 'MENU');
@@ -449,7 +456,7 @@ function itensDoMenu() {
   if (t === 'exploracao') return [
     { txt: 'Equipe', acao: () => abreMenu('equipeExp') },
     { txt: 'Status', acao: () => abreMenu('statusLista') },
-    { txt: 'Compêndio', acao: () => abreMenu('compendio') },
+    { txt: 'Feradex', acao: () => abreMenu('compendio') },
     { txt: 'Catálogo', acao: () => abreMenu('catalogo') },
     { txt: 'Itens', acao: () => abreMenu('itens') },
     { txt: 'Carteira', acao: () => hud.toast('Carteira: 0 moedas (economia em breve)') },
@@ -569,21 +576,31 @@ function fichaFera(f) {
 }
 function fichaEspecie(k) {
   const e2 = especies[k];
+  const numero = Object.keys(especies).indexOf(k) + 1;
+  // FERADEX: espécie nunca avistada = mistério — silhueta, xxx e nada mais
+  if (!vistas.has(k)) {
+    return {
+      nome: `#${String(numero).padStart(2, '0')} xxx`, sub: 'Feradex',
+      tipo: '?', raridade: '?', corTipo: '#555a66',
+      linhas: ['<b>Fera ainda não avistada.</b>',
+               'Encontre-a pelo mundo para revelar seus segredos.'],
+      golpes: [],
+    };
+  }
   const locais = Object.values(dadosMapas.mapas)
     .filter((mp) => (mp.selvagens || []).includes(k)).map((mp) => mp.nome);
-  const numero = Object.keys(especies).indexOf(k) + 1;
   const alt = e2.altura3d || 1.1;
   const tamanho = alt < 1.15 ? `Pequeno (${alt.toFixed(1)}m)`
     : alt < 1.75 ? `Médio (${alt.toFixed(1)}m)` : `Grande (${alt.toFixed(1)}m)`;
   const stat = (v) => Math.round((v || 1) * 100);
   return {
-    nome: `#${String(numero).padStart(2, '0')} ${e2.nome}`, sub: 'Compêndio de Feras',
+    nome: `#${String(numero).padStart(2, '0')} ${e2.nome}`, sub: 'Feradex',
     tipo: e2.tipo, raridade: raridadeTxt(e2.raridade), corTipo: corCss(e2.tipo),
     linhas: [
       `<b>Tamanho</b> ${tamanho}${e2.voa ? ' · voadora' : ''}`,
       `<b>Vida</b> ${e2.vida} · <b>Força</b> ${stat(e2.ataque)} · <b>Defesa</b> ${stat(e2.defesa)}`,
       `<b>Velocidade</b> ${e2.velocidade}`,
-      `<b>Habitat:</b> ${locais.length ? locais.join(', ') : 'ainda não avistada'}`,
+      `<b>Habitat:</b> ${locais.length ? locais.join(', ') : 'desconhecido'}`,
     ],
     golpes: (e2.aprendizado || []).map((a) => `Lv.${a.nivel}: ${golpesCat[a.golpe].nome}`),
   };
@@ -592,11 +609,22 @@ function fichaEspecie(k) {
    ("compacto") toda fera é projetada do MESMO tamanho — o porte real
    é coisa de batalha (o "holofote" que escurece o resto é CSS puro) */
 let holoAltoExtra = 0; // no compêndio a fera sobe: ficha embaixo, fera em cima
-function mostraHoloEspecie(chave, compacto = false) {
+// silhueta da Feradex: barro escuro girando — a forma aparece, a cor não
+// (malha com esqueleto precisa da variante com skinning, senão vira estátua)
+const MAT_SILHUETA = new THREE.MeshLambertMaterial({ color: 0x394050 });
+const MAT_SILHUETA_SKIN = new THREE.MeshLambertMaterial({ color: 0x394050 });
+MAT_SILHUETA_SKIN.skinning = true;
+function mostraHoloEspecie(chave, compacto = false, silhueta = false) {
   escondeHolo();
   holoM = modelosIni[chave];
   // o domador dá lugar à projeção — o holograma fica no centro da tela
   MD.mostra(domador, false);
+  if (silhueta) holoM.g.traverse((o) => {
+    if (o.isMesh) {
+      o.userData._matReal = o.material;
+      o.material = o.isSkinnedMesh ? MAT_SILHUETA_SKIN : MAT_SILHUETA;
+    }
+  });
   holoAltoExtra = compacto ? 1.7 : 0;
   const base = { x: mundo.domador.pos.x, y: mundo.domador.pos.y + 0.1 + holoAltoExtra, z: mundo.domador.pos.z };
   MD.setPos(holoM, base);
@@ -616,7 +644,12 @@ function escondeHolo() {
   hud.ficha(null);
   hud.compendio(null);
   if (!holoM) return;
-  holoM.g.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+  holoM.g.traverse((o) => {
+    if (o.isMesh) {
+      o.castShadow = true;
+      if (o.userData._matReal) { o.material = o.userData._matReal; delete o.userData._matReal; }
+    }
+  });
   MD.setOpacidade(holoM, 1);
   MD.flashCor(holoM, 0);
   MD.setEscala(holoM, 1);
@@ -639,12 +672,12 @@ const COLS_COMPENDIO = 4;
 function mostraCompendio() {
   const ks = Object.keys(especies);
   const k = ks[menu.sel];
-  mostraHoloEspecie(k, true);
+  mostraHoloEspecie(k, true, !vistas.has(k));
   hud.menu(false);
   hud.ficha(null);
   hud.compendio({
     ficha: fichaEspecie(k),
-    nomes: ks.map((kk) => especies[kk].nome),
+    nomes: ks.map((kk) => vistas.has(kk) ? especies[kk].nome : 'xxx'),
     sel: menu.sel,
   });
 }
@@ -662,7 +695,7 @@ function abreMenu(tipo) {
     mostraHoloEspecie(equipe[menu.fera].especie);
     hud.ficha(fichaFera(equipe[menu.fera]));
   } else if (tipo === 'compendioFera') {
-    mostraHoloEspecie(menu.especie);
+    mostraHoloEspecie(menu.especie, false, !vistas.has(menu.especie));
     hud.ficha(fichaEspecie(menu.especie));
   } else if (tipo === 'inicial') {
     menu.sel = 0;
@@ -748,6 +781,7 @@ function escolheInicial(k) {
   // regra do Domador: toda fera NASCE só com o golpe físico — os
   // especiais chegam pelo nível (iniciais: elemental nv7, especial nv10)
   equipe = [criarFera(especies, golpesCat, k, NIVEL_INICIAL)];
+  INICIAIS.forEach(marcaVista); // o Ritual revela as três na Feradex
   ativa = 0;
   jaEscolheu = true;
   sfx.capturado();
@@ -840,6 +874,7 @@ function confirmaEscolha() {
   else fugir();
 }
 function iniciaBatalha() {
+  marcaVista(mundo.selvagem.especie); // viu de perto: entra na Feradex
   const fera = equipe[ativa];
   const inimigo = criarFera(especies, golpesCat, mundo.selvagem.especie, mundo.selvagem.nivel || NIVEL_INICIAL);
   batalha = criarBatalha(especies,
@@ -955,6 +990,7 @@ function encerraBatalha() {
     desafio.idx++;
     const prox = desafio.equipe[desafio.idx];
     const inim = criarFera(especies, golpesCat, prox.especie, prox.nivel);
+    marcaVista(prox.especie);
     proximaFeraTreinador(batalha, paraBatalha(inim, especies, golpesCat), especies, RINGUE.fera);
     trocaModeloInimigo(prox.especie);
     hud.nomeInimigo(especies[prox.especie].nome.toUpperCase(), prox.nivel);
