@@ -19,11 +19,17 @@ export function criarCena(canvas) {
 
   const sol = new THREE.DirectionalLight(0xffd9a0, 1.25);
   sol.position.set(14, 13, 7); sol.castShadow = true;
+  // as luzes valem para TODAS as camadas (o herói vive na camada 1 no
+  // modo sem-cor) e a sombra dele continua existindo
+  sol.layers.enableAll();
+  sol.shadow.camera.layers.enable(CAMADA_HEROI);
   sol.shadow.mapSize.set(2048, 2048);
   sol.shadow.camera.left = -30; sol.shadow.camera.right = 30;
   sol.shadow.camera.top = 30; sol.shadow.camera.bottom = -30;
   scene.add(sol);
-  scene.add(new THREE.HemisphereLight(0xbcd9ff, 0x3a5a34, 0.55));
+  const hemi = new THREE.HemisphereLight(0xbcd9ff, 0x3a5a34, 0.55);
+  hemi.layers.enableAll();
+  scene.add(hemi);
 
   // mundo e arena são grupos alternáveis: a batalha acontece num ringue
   // separado, estilizado pelo bioma (floresta, por enquanto). O cenário do
@@ -1814,6 +1820,62 @@ export function passoParticulas(cena, dt) {
 }
 
 /* câmera: exploração (LoL) ou batalha (lock-on) */
+/* ---------- MODO SEM-COR (Caminho da Cinza): sem fera, o mundo é preto
+   e branco — só o DOMADOR mantém a cor. Duas passadas: o mundo vai para
+   uma textura e vira cinza num quad; o herói (camada 1) desenha por cima
+   colorido. O efeito "vidro" dos oclusores já cuida de quando algo o tapa. */
+const CAMADA_HEROI = 1;
+export function marcaHeroi(obj) {
+  obj.traverse((o) => o.layers.set(CAMADA_HEROI));
+}
+let _pb = null;
+export function renderiza(cena, semCor) {
+  const r = cena.renderer;
+  if (!semCor) {
+    cena.camera.layers.enableAll();
+    r.render(cena.scene, cena.camera);
+    return;
+  }
+  if (!_pb) {
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { tela: { value: null } },
+      vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+      fragmentShader: `uniform sampler2D tela; varying vec2 vUv;
+        void main(){ vec4 c = texture2D(tela, vUv);
+          float g = dot(c.rgb, vec3(0.299, 0.587, 0.114));
+          gl_FragColor = vec4(vec3(g), 1.0); }`,
+      depthTest: false, depthWrite: false,
+    });
+    _pb = { rt: new THREE.WebGLRenderTarget(2, 2), mat,
+            cenaQuad: new THREE.Scene(),
+            camQuad: new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1) };
+    const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), mat);
+    quad.frustumCulled = false; // o shader ignora a câmera: nunca cortar
+    _pb.cenaQuad.add(quad);
+  }
+  const tam = r.getDrawingBufferSize(new THREE.Vector2());
+  if (_pb.rt.width !== tam.x || _pb.rt.height !== tam.y) _pb.rt.setSize(tam.x, tam.y);
+  // 1) o mundo (sem o herói) numa textura
+  cena.camera.layers.set(0);
+  r.setRenderTarget(_pb.rt);
+  r.render(cena.scene, cena.camera);
+  r.setRenderTarget(null);
+  // 2) a textura em CINZA na tela
+  _pb.mat.uniforms.tela.value = _pb.rt.texture;
+  r.render(_pb.cenaQuad, _pb.camQuad);
+  // 3) o herói colorido por cima — SEM o fundo da cena, senão o céu
+  // azul repinta a tela inteira e cobre o mundo cinza
+  const fundo = cena.scene.background;
+  cena.scene.background = null;
+  r.autoClear = false;
+  r.clearDepth();
+  cena.camera.layers.set(CAMADA_HEROI);
+  r.render(cena.scene, cena.camera);
+  r.autoClear = true;
+  cena.scene.background = fundo;
+  cena.camera.layers.enableAll();
+}
+
 export function passoCamera(cena, modo, mundo, batalha, dt) {
   let desejo, olhar;
   if (modo === 'batalha' && batalha) {

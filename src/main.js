@@ -7,7 +7,7 @@ import { criarBatalha, passoBatalha, podeCapturar, fugirBatalha, trocaFera, cont
 import { ganhaXp, xpParaSubir, xpPorVitoria, nivelSelvagem, vidaMaxima, NIVEL_INICIAL } from './sim/progressao.js';
 import { criarFera, aprendeGolpe, lembraGolpe, montaSlots, aprendizadosDoNivel, curaTotal, bonusNivel, paraBatalha, evoluiFera } from './sim/equipe.js';
 import { empacotaSave, validaSave } from './sim/save.js';
-import { criarCena, poof, jato, passoParticulas, passoAmbiente, passoCamera, mostraArena, temaArena, montaMapa, passoOclusores } from './render/cena.js';
+import { criarCena, poof, jato, passoParticulas, passoAmbiente, passoCamera, mostraArena, temaArena, montaMapa, passoOclusores, renderiza, marcaHeroi } from './render/cena.js';
 import { criarEfeitos } from './render/efeitos.js';
 import * as MD from './render/modelos.js';
 import { criarHUD } from './render/hud.js';
@@ -29,6 +29,8 @@ const hud = criarHUD();
 // o boneco procedural clássico assume
 const domador = await MD.criarPersonagem(cena.scene, './assets/treinadores/t1.glb', 1.72)
   .catch(() => MD.criarDomador(cena.scene));
+// o herói vive na CAMADA 1: no mundo sem-cor ele é o único colorido
+marcaHeroi(domador.g);
 const modelosJog = {}, modelosIni = {};
 for (const k of Object.keys(especies)) {
   modelosJog[k] = await MD.criarFera(cena.scene, k, especies[k]); MD.mostra(modelosJog[k], false);
@@ -405,7 +407,8 @@ function tituloMenu() {
   return { exploracao: 'MENU', batalha: 'BATALHA', equipeExp: 'EQUIPE',
            equipeBat: 'TROCAR FERA', statusLista: 'STATUS', catalogo: 'CATÁLOGO DE GOLPES',
            compendio: 'COMPÊNDIO DE FERAS', itens: 'ITENS',
-           treinoP: 'TREINO · SUA FERA', treinoE: 'TREINO · OPONENTE' }[t]
+           treinoP: 'TREINO · SUA FERA', treinoE: 'TREINO · OPONENTE',
+           posRound: 'A PRÓXIMA VEM AÍ — TROCAR?' }[t]
     || (t === 'treinoG' ? `TREINO · PODERES ${treino ? treino.golpes.length : 0}/3 (o físico do Z é o da fera)` : 'MENU');
 }
 function itensDoMenu() {
@@ -477,6 +480,11 @@ function itensDoMenu() {
     txt: `${nomeDe(f)} Lv.${f.nivel}${i === ativa ? ' ◆' : ''}${f.hpAtual <= 0 ? ' ✖' : ''}`,
     acao: () => selecionaFera(i),
   }));
+  // entre as feras de um treinador: seguir com a atual ou trocar
+  if (t === 'posRound') return [
+    { txt: `Seguir com ${equipe[ativa] ? nomeDe(equipe[ativa]) : 'a fera'}`, acao: () => fechaMenu() },
+    { txt: 'Trocar de fera', acao: () => abreMenu('equipeBat') },
+  ];
   if (t === 'statusLista') return [
     ...equipe.map((f, i) => ({
       txt: `${nomeDe(f)} Lv.${f.nivel}${f.hpAtual <= 0 ? ' ✖' : ''}`,
@@ -942,20 +950,30 @@ function encerraBatalha() {
     hud.nomeInimigo(especies[prox.especie].nome.toUpperCase(), prox.nivel);
     hud.atualizaHP(batalha);
     hud.toast(`${desafio.nome}: "Vai, ${especies[prox.especie].nome}!"`, 2000);
+    // regra do Domador: entre as feras do oponente, você escolhe se segue
+    // com a sua ou troca (o menu pausa a batalha enquanto decide)
+    if (equipe.filter((f) => f.hpAtual > 0).length > 1) abreMenu('posRound');
     return;
   }
   const resultado = batalha.resultado;
   const fera = equipe[ativa];
   if (fera && resultado !== 'derrota') fera.hpAtual = Math.max(1, batalha.p.hp);
 
-  // PERMADEATH (regra: só se TODAS caírem). Fera que desmaia fica fora de
-  // combate (HP 0) até ser curada; se a equipe inteira cair, perde-se tudo.
+  // PERMADEATH (regra do Domador): fera que desmaia é PERDIDA — para
+  // sempre. Vale contra selvagens e treinadores locais; GINÁSIOS são
+  // isentos (a fera só desmaia) e a arena de treino nem chega aqui.
   if (resultado === 'derrota') {
     const caida = equipe[ativa];
-    caida.hpAtual = 0;
+    const salvaguarda = !!mundo.mapa.ginasio;
+    if (salvaguarda) {
+      caida.hpAtual = 0;
+      hud.toast(`${nomeDe(caida)} desmaiou! No Ginásio nada se perde — mas a luta aperta!`, 2600);
+    } else {
+      equipe.splice(ativa, 1);
+      hud.toast(`💔 ${nomeDe(caida)} caiu... e o elo se desfez para sempre.`, 3000);
+    }
     const proxIdx = equipe.findIndex((f) => f.hpAtual > 0);
     if (proxIdx >= 0) {
-      hud.toast(`${nomeDe(caida)} desmaiou! Não deixe as outras caírem!`, 2400);
       ativa = proxIdx;
       const prox = equipe[proxIdx];
       continuaComOutraFera(batalha, paraBatalha(prox, especies, golpesCat), especies);
@@ -964,8 +982,9 @@ function encerraBatalha() {
       atualizaPainel();
       return; // a batalha segue!
     }
-    hud.toast('💀 Todas as suas feras desmaiaram... e o seu elo se apagou.', 3400);
-    equipe = [];
+    if (!equipe.length)
+      hud.toast('💀 Todas as suas feras se foram... e o mundo perdeu a cor.', 3600);
+    ativa = 0;
   }
 
   hud.flash();
@@ -1186,6 +1205,9 @@ function aplicaFlash(M, f) {
 }
 
 /* ---------- loop ---------- */
+// mundo SEM COR enquanto não houver elo (início da jornada e Caminho da
+// Cinza); batalhas nunca são cinzas (a arena de treino luta sem equipe)
+const semCor = () => equipe.length === 0 && modo !== 'batalha' && modo !== 'encontro';
 const camEncontro = { p: { pos: RINGUE.dom }, e: { pos: RINGUE.fera } };
 let ultimo = performance.now();
 function loop(agora) {
@@ -1194,7 +1216,7 @@ function loop(agora) {
   if (dt > 0.05) dt = 0.05;
   tempo += dt; edges();
 
-  if (hitstop > 0) { hitstop -= dt; cena.renderer.render(cena.scene, cena.camera); return; }
+  if (hitstop > 0) { hitstop -= dt; renderiza(cena, semCor()); return; }
 
   passoParticulas(cena, dt);
   fx.passo(dt);
@@ -1341,7 +1363,7 @@ function loop(agora) {
     passoOclusores(cena, [RINGUE.fera], cena.oclusoresArena);
   else if (modo === 'batalha' && batalha)
     passoOclusores(cena, [batalha.p.pos, batalha.e.pos], cena.oclusoresArena);
-  cena.renderer.render(cena.scene, cena.camera);
+  renderiza(cena, semCor());
 }
 cv.focus(); setTimeout(() => cv.focus(), 300);
 
@@ -1359,6 +1381,7 @@ window.DEV = {
                    equipe: equipe.length, menu: menu.tipo, menuAtivo: menu.ativo,
                    treino: treino ? { ...treino } : null, batalha: !!batalha }),
   enche: () => { if (batalha) batalha.p.energia = 100; },
+  sofre: () => { if (batalha) batalha.p.hp = 1; }, // teste de permadeath
   luta: () => batalha && {
     golpe: batalha.p.golpe ? batalha.p.golpe.nome : null,
     estado: batalha.p.estado, t: +batalha.p.t.toFixed(2),

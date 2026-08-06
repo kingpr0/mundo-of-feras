@@ -3448,7 +3448,8 @@
           ]
         }
       ],
-      "saidas": []
+      "saidas": [],
+      "ginasio": true
     }
   }
 }
