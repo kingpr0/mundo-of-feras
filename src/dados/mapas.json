@@ -2730,6 +2730,15 @@
             "z": 12.1
           }
         }
+      ],
+      "baus": [
+        [
+          "bau-bloco",
+          -5,
+          -4,
+          "cristal",
+          3
+        ]
       ]
     },
     "acesso1": {
@@ -3096,6 +3105,22 @@
           "ate": 2,
           "destino": "cidade_primaluz"
         }
+      ],
+      "baus": [
+        [
+          "bau-encantado",
+          -12,
+          -10,
+          "cristal",
+          2
+        ],
+        [
+          "bau-bloco",
+          24,
+          9,
+          "cristal",
+          3
+        ]
       ]
     },
     "cidade_primaluz": {
@@ -3374,6 +3399,22 @@
           "ate": 2,
           "destino": "acesso1"
         }
+      ],
+      "baus": [
+        [
+          "bau-encantado",
+          19,
+          -10,
+          "cristal",
+          3
+        ],
+        [
+          "bau-bloco",
+          -34,
+          20,
+          "cristal",
+          2
+        ]
       ]
     },
     "interior_ginasio1": {

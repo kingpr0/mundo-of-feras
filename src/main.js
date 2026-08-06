@@ -79,10 +79,16 @@ try {
 if (saveCarregado) chaveMapa = saveCarregado.chaveMapa;
 // treinadores derrotados valem para a sessão inteira (não voltam ao trocar de mapa)
 const vencidosGlobais = new Set();
+// baús já abertos, para sempre (chaves "mapa:idx" — vão para o save)
+const bausAbertos = new Set();
 function novoMundo(chave) {
   const mapa = dadosMapas.mapas[chave];
   const m = criarMundo(mapa, mapa.selvagens || chavesSelvagens);
   m.vencidos = vencidosGlobais;
+  // visão VIVA dos baús abertos deste mapa (sim e render consultam na hora)
+  const vista = { has: (i) => bausAbertos.has(`${chave}:${i}`) };
+  m.bausAbertos = vista;
+  cena.bausAbertosMapa = vista;
   return m;
 }
 let mundo = novoMundo(chaveMapa);
@@ -116,6 +122,7 @@ if (saveCarregado) {
   for (const v of saveCarregado.vistas || []) vistas.add(v);
   box = saveCarregado.box || [];
   for (const f of [...equipe, ...box]) marcaVista(f.especie); // quem é seu, você já viu
+  for (const b of saveCarregado.baus || []) bausAbertos.add(b);
   if (saveCarregado.pos) {
     mundo.domador.pos.x = saveCarregado.pos.x;
     mundo.domador.pos.z = saveCarregado.pos.z;
@@ -127,6 +134,7 @@ function salvaJogo() {
     localStorage.setItem(CHAVE_SAVE, JSON.stringify(empacotaSave({
       equipe, ativa, itens, jaEscolheu, chaveMapa,
       pos: mundo.domador.pos, vencidos: [...vencidosGlobais], vistas: [...vistas], box,
+      baus: [...bausAbertos],
     })));
   } catch { /* navegador sem armazenamento (anônimo): joga sem salvar */ }
 }
@@ -1356,6 +1364,21 @@ function loop(agora) {
           sfx.encontro();
           hud.fala(ROSTO_PAPEL[t.tipo] || '🥊', t.nome, t.fala || 'Vamos duelar!', 2400);
           setTimeout(() => { if (modo === 'explorar' && desafio) iniciaEncontro(); }, 2000);
+        }
+      }
+      else if (evt && evt.tipo === 'bau') {
+        const chaveBau = `${chaveMapa}:${evt.idx}`;
+        if (!bausAbertos.has(chaveBau)) {
+          bausAbertos.add(chaveBau);
+          const [, bx, bz, item, qtd = 1] = evt.bau;
+          if (item === 'cristal')
+            itens.cristal = Math.min(CRISTAIS_MAX, itens.cristal + qtd);
+          sfx.capturado(); hud.flash();
+          poof(cena, { x: bx, y: 1, z: bz }, 0xffd23f, 14, 4);
+          hud.toast(`🎁 Baú aberto! +${qtd} EsFera${qtd > 1 ? 's' : ''} de Captura`, 2600);
+          // o baú some do cenário (a visão viva também o esconde no reload)
+          cena.mundoG.traverse((o) => { if (o.userData.bau === evt.idx) o.visible = false; });
+          atualizaPainel(); salvaJogo();
         }
       }
       else if (evt && evt.tipo === 'arenaTreino') {

@@ -1625,6 +1625,22 @@ export function montaMapa(cena, mapa) {
   if (mapa.balsa) montaBalsa(g, mapa.balsa, cena.anims);
   if (mapa.caverna) bocaCaverna(g, mapa.caverna);
   montaCenario(g, mapa);
+  // BAÚS: [modelo, x, z, item, qtd] — os já abertos (cena.bausAbertosMapa,
+  // visão VIVA do main) não aparecem; a checagem roda quando o glb chega
+  (mapa.baus || []).forEach((b, i) => {
+    carregaCenario(b[0]).then(({ cena: modelo, caixa }) => {
+      if (!g.parent) return;
+      if (cena.bausAbertosMapa && cena.bausAbertosMapa.has(i)) return;
+      const inst = modelo.clone();
+      const esc = 1.0 / Math.max(0.01, caixa.max.y - caixa.min.y);
+      inst.scale.setScalar(esc);
+      inst.position.set(b[1],
+        alturaTerreno(mapa, { x: b[1], z: b[2] }) - caixa.min.y * esc, b[2]);
+      inst.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+      inst.userData.bau = i;
+      g.add(inst);
+    }).catch(() => {});
+  });
   montaBorda(g, mapa);
   // lista de oclusores para o efeito "vidro" quando algo tapa o personagem
   cena.oclusores = [];

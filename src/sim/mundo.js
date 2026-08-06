@@ -187,6 +187,12 @@ export function interacaoPerto(m) {
   if (bal && perto(bal.x, bal.z, 2.6)) return 'pegar a balsa';
   for (const n of m.mapa.npcs || [])
     if (n[4] && perto(n[0], n[1], 1.7)) return 'conversar';
+  // baús fechados chamam de longe (os abertos o main risca da lista)
+  for (let bi = 0; bi < (m.mapa.baus || []).length; bi++) {
+    const b2 = m.mapa.baus[bi];
+    if (!(m.bausAbertos && m.bausAbertos.has(bi)) && perto(b2[1], b2[2], 1.7))
+      return 'abrir o baú';
+  }
   for (const dc of m.mapa.decor || []) {
     if (dc[0] === 'placa' && dc[3] && perto(dc[1], dc[2], 1.7)) return 'ler a placa';
     if (dc[0] === 'fogueira' && perto(dc[1], dc[2], 2.4)) return 'a Fogueira Eterna';
@@ -316,6 +322,12 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
     if (bal && perto(bal.x, bal.z, 2.6)) return { tipo: 'balsa', destino: bal.destino };
     for (const n of m.mapa.npcs || [])
       if (n[4] && perto(n[0], n[1], 1.7)) return { tipo: 'fala', texto: n[4], papel: n[2] };
+    // abrir baú: [modelo, x, z, item, qtd] — o main controla os já abertos
+    for (let bi = 0; bi < (m.mapa.baus || []).length; bi++) {
+      const b2 = m.mapa.baus[bi];
+      if (!(m.bausAbertos && m.bausAbertos.has(bi)) && perto(b2[1], b2[2], 1.7))
+        return { tipo: 'bau', idx: bi, bau: b2 };
+    }
     for (const dc of m.mapa.decor || []) {
       if (dc[0] === 'placa' && dc[3] && perto(dc[1], dc[2], 1.7))
         return { tipo: 'fala', texto: dc[3], placa: true };

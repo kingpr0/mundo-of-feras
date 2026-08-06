@@ -824,6 +824,26 @@ export function criarCristal(scene) {
   const aro = new THREE.Mesh(new THREE.TorusGeometry(0.27, 0.035, 8, 24), aroMat);
   aro.rotation.x = Math.PI / 2;
   M.materiais.push(aroMat); M.g.add(aro);
+  // a EsFera de VERDADE (modelo do Domador): quando o arquivo chega, troca
+  // a esfera provisória — centralizada no pivô para girar/voar redondinha
+  new GLTFLoader().load('./assets/cenario/esfera-captura.glb', (g) => {
+    g.scene.traverse((o) => {
+      if (!o.isMesh) return;
+      if (!o.geometry.attributes.normal) o.geometry.computeVertexNormals();
+      const troca = (mt) => {
+        if (mt.map) mt.map.encoding = THREE.LinearEncoding;
+        return new THREE.MeshLambertMaterial({ color: 0xffffff, map: mt.map || null });
+      };
+      o.material = Array.isArray(o.material) ? o.material.map(troca) : troca(o.material);
+      o.castShadow = true;
+    });
+    const caixa = new THREE.Box3().setFromObject(g.scene);
+    const esc = 0.62 / Math.max(0.01, caixa.max.y - caixa.min.y);
+    g.scene.scale.setScalar(esc);
+    g.scene.position.sub(caixa.getCenter(new THREE.Vector3()).multiplyScalar(esc));
+    while (M.g.children.length) M.g.remove(M.g.children[0]);
+    M.g.add(g.scene);
+  }, undefined, () => {});
   return M;
 }
 
