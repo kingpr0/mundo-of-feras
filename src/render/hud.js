@@ -210,7 +210,43 @@ export function criarHUD() {
         $('optFugir').className = 'opt' + (sel === 1 ? ' sel' : '');
       }
     },
-    equipe(n) { $('nCap').textContent = n; },
+    // SQUAD no painel: a cabecinha de cada fera (ativa em destaque,
+    // desmaiada apagada); sem retrato (ex.: Draguin) vira a inicial
+    equipe(lista) {
+      const box = $('squad');
+      if (!box) return;
+      box.innerHTML = '';
+      for (const f of lista || []) {
+        const d = document.createElement('div');
+        d.className = 'sqCabeca' + (f.ativa ? ' sqAtiva' : '') + (f.viva ? '' : ' sqFora');
+        d.title = f.nome;
+        const img = new Image();
+        img.src = `./assets/retratos/${f.especie}.png`;
+        img.onerror = () => { img.remove(); d.textContent = (f.nome || '?')[0]; };
+        d.appendChild(img);
+        box.appendChild(d);
+      }
+    },
+    // CONVERSA: retrato (emoji ou imagem) + nome + texto DIGITANDO ao lado
+    fala(rosto, nome, texto, dur) {
+      const box = $('fala');
+      $('falaNome').textContent = nome || '';
+      const rostoEl = $('falaRosto');
+      if (rosto && rosto.startsWith('./')) rostoEl.innerHTML = `<img src="${rosto}">`;
+      else rostoEl.textContent = rosto || '💬';
+      box.style.display = 'flex';
+      const alvo = $('falaTexto');
+      alvo.textContent = '';
+      clearInterval(this._falaTique); clearTimeout(this._falaFim);
+      let i = 0;
+      this._falaTique = setInterval(() => {
+        i += 2; // 2 letras por tique: rápido mas ainda "carregando"
+        alvo.textContent = texto.slice(0, i);
+        if (i >= texto.length) clearInterval(this._falaTique);
+      }, 24);
+      this._falaFim = setTimeout(() => { box.style.display = 'none'; },
+        dur || Math.max(2800, 1200 + texto.length * 52));
+    },
     escondeTitulo() { $('titulo').style.display = 'none'; },
     dano(pos, valor, forte, eficaz) {
       const d = document.createElement('div');

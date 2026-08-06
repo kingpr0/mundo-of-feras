@@ -315,7 +315,7 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
     const bal = m.mapa.balsa;
     if (bal && perto(bal.x, bal.z, 2.6)) return { tipo: 'balsa', destino: bal.destino };
     for (const n of m.mapa.npcs || [])
-      if (n[4] && perto(n[0], n[1], 1.7)) return { tipo: 'fala', texto: n[4] };
+      if (n[4] && perto(n[0], n[1], 1.7)) return { tipo: 'fala', texto: n[4], papel: n[2] };
     for (const dc of m.mapa.decor || []) {
       if (dc[0] === 'placa' && dc[3] && perto(dc[1], dc[2], 1.7))
         return { tipo: 'fala', texto: dc[3], placa: true };

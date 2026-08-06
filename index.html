@@ -44,16 +44,38 @@
   .glinha { color:#e8e3ff; font-size:11px; margin:3px 0; }
   .gtecla { color:#ffd23f; font-weight:bold; }
   .gusos { float:right; color:#9ad4e8; }
-  #toast { position:fixed; bottom:64px; left:50%; transform:translateX(-50%);
-    color:#fff6df; padding:10px 20px; font-size:14px; display:none; max-width:80%;
-    text-align:center; }
+  #toast { position:fixed; bottom:72px; left:50%; transform:translateX(-50%);
+    color:#fff6df; padding:12px 22px; font-size:17px; display:none; max-width:78%;
+    text-align:center; background:rgba(22,16,32,.88); border:2px solid #4a4066;
+    border-radius:14px; }
+  /* squad: as cabecinhas das feras no painel */
+  #squad { margin-top:6px; min-height:38px; }
+  .sqCabeca { width:36px; height:36px; border-radius:50%; display:inline-flex;
+    align-items:center; justify-content:center; margin:2px 4px 0 0;
+    border:2px solid #8a7cc0; background:#241d38; color:#ffd23f; font-weight:bold;
+    overflow:hidden; vertical-align:middle; }
+  .sqCabeca img { width:100%; height:100%; object-fit:cover; }
+  .sqAtiva { border-color:#ffd23f; box-shadow:0 0 8px rgba(255,210,63,.7); }
+  .sqFora { filter:grayscale(1); opacity:.45; }
+  /* caixa de CONVERSA: retrato + nome + texto digitando */
+  #fala { position:fixed; bottom:60px; left:50%; transform:translateX(-50%);
+    display:none; align-items:center; gap:14px; max-width:72%; min-width:340px;
+    background:rgba(22,16,32,.92); border:2px solid #ffcf5e; border-radius:16px;
+    padding:12px 18px; }
+  #falaRosto { width:56px; height:56px; border-radius:50%; flex:0 0 56px;
+    background:#241d38; border:2px solid #8a7cc0; display:flex; align-items:center;
+    justify-content:center; font-size:30px; overflow:hidden; }
+  #falaRosto img { width:100%; height:100%; object-fit:cover; }
+  #falaNome { color:#ffd23f; font-size:14px; font-weight:bold; letter-spacing:1px;
+    margin-bottom:3px; }
+  #falaTexto { color:#fff6df; font-size:16px; line-height:1.35; min-height:22px; }
   #cap { position:fixed; top:52px; left:50%; transform:translateX(-50%); color:#59e0d0;
     font-size:15px; font-weight:bold; text-shadow:2px 2px 0 #072a26; display:none;
     animation:pisca .5s infinite; }
   #dica { position:fixed; bottom:8px; left:50%; transform:translateX(-50%);
-    color:rgba(232,227,255,.55); font-size:11px; }
-  #interagir { position:fixed; bottom:34px; left:50%; transform:translateX(-50%);
-    display:none; color:#26202e; font-size:13px; font-weight:bold;
+    color:rgba(232,227,255,.7); font-size:13px; }
+  #interagir { position:fixed; bottom:36px; left:50%; transform:translateX(-50%);
+    display:none; color:#26202e; font-size:15px; font-weight:bold;
     background:linear-gradient(180deg,#ffe28a,#ffc93d); border-radius:10px;
     padding:5px 14px; box-shadow:0 3px 8px rgba(0,0,0,.4); }
   #escolha { position:fixed; bottom:80px; right:48px; padding:16px 24px; display:none;
@@ -125,11 +147,12 @@
 <canvas id="cv" tabindex="0"></canvas>
 <div id="hud">
   <div class="vinheta"></div>
+  <div id="fala"><div id="falaRosto"></div><div><div id="falaNome"></div><div id="falaTexto"></div></div></div>
   <div id="painel" class="cartao">
     <div class="ptit">DOMADOR</div>
     <div class="plin">♦ <span id="pAtiva">Brasinha</span></div>
     <div class="plin">HP <span id="pVida">—</span></div>
-    <div class="plin">Feras: <span id="nCap">1</span></div>
+    <div id="squad"></div>
     <div class="plin">Local: <span id="pMapa">—</span></div>
   </div>
   <div id="miniWrap">

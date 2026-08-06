@@ -44,7 +44,10 @@ const RINGUE = { dom: { x: -5, y: 0, z: 0 }, fera: { x: 3.5, y: 0, z: 0 } };
 // o tablado da arena tem topo em y ≈ 0.12 — os lutadores sobem junto
 const ARENA_Y = 0.12;
 const sobreTablado = (pos) => ({ x: pos.x, y: pos.y + ARENA_Y, z: pos.z });
-const DICA_EXPLORAR = 'Setas: andar (2 toques = correr) · M abre o menu';
+const DICA_EXPLORAR = 'Setas: andar (2 toques = correr) · Q abre o menu';
+// retratos-emoji dos moradores nas conversas (até termos rostos desenhados)
+const ROSTO_PAPEL = { senhor: '🧓', enfermeira: '👩‍⚕️', maga: '🧙', aldeao: '🧑‍🌾',
+                      aldea: '👩‍🌾', mercador: '🧑‍💼' };
 const CORES_TIPO = { fogo: 0xff8a3d, eletrico: 0xffe94d, agua: 0x4da3ff, planta: 0x5fd35a,
                      gelo: 0xa8e2f5, pedra: 0xb59a6a, terra: 0xd8a45b, dragao: 0xb06ae8, comum: 0xcbd0d8 };
 const SIMBOLO = { baixo: '↓', frente: '→' };
@@ -128,14 +131,17 @@ function atualizaPainel() {
   if (!equipe.length) { // elo apagado: o Caminho da Cinza
     hud.nomeJogador('sem elo', 0);
     hud.painelVida(0, 0);
-    hud.equipe(0);
+    hud.equipe([]);
     if (modo === 'explorar') renderMenu();
     return;
   }
   const f = equipe[ativa];
   hud.nomeJogador(nomeDe(f), f.nivel);
   hud.painelVida(f.hpAtual, vidaMaxima(especies[f.especie].vida, f.nivel));
-  hud.equipe(equipe.length);
+  // as cabecinhas do squad: ativa em destaque, desmaiada apagada
+  hud.equipe(equipe.map((fe, i) => ({
+    especie: fe.especie, nome: nomeDe(fe), ativa: i === ativa, viva: fe.hpAtual > 0,
+  })));
   if (modo === 'explorar') renderMenu();
 }
 atualizaPainel();
@@ -200,7 +206,7 @@ function edges() {
   const ESQ = keys.ArrowLeft, DIR = keys.ArrowRight;
   esqE = ESQ && !pEsq; dirE = DIR && !pDir;
   pEsq = ESQ; pDir = DIR;
-  const M = keys.KeyM, ESC = keys.Escape;
+  const M = keys.KeyQ || keys.KeyM, ESC = keys.Escape; // Q é o menu (M ainda vale)
   mE = M && !pM; escE = ESC && !pEsc;
   pM = M; pEsc = ESC;
 }
@@ -403,7 +409,7 @@ function tituloMenu() {
     return `${nomeDe(f).toUpperCase()} · Lv.${f.nivel}`;
   }
   if (t === 'compendioFera') return especies[menu.especie].nome.toUpperCase();
-  if (t === 'exploracao' && !menu.ativo) return 'MENU · aperte M';
+  if (t === 'exploracao' && !menu.ativo) return 'MENU · aperte Q';
   return { exploracao: 'MENU', batalha: 'BATALHA', equipeExp: 'EQUIPE',
            equipeBat: 'TROCAR FERA', statusLista: 'STATUS', catalogo: 'CATÁLOGO DE GOLPES',
            compendio: 'COMPÊNDIO DE FERAS', itens: 'ITENS',
@@ -1277,7 +1283,7 @@ function loop(agora) {
           const t = evt.treinador;
           desafio = { nome: t.nome, equipe: t.equipe, idx: 0 };
           sfx.encontro();
-          hud.toast(`${t.nome}: "${t.fala || 'Vamos duelar!'}"`, 2400);
+          hud.fala(ROSTO_PAPEL[t.tipo] || '🥊', t.nome, t.fala || 'Vamos duelar!', 2400);
           setTimeout(() => { if (modo === 'explorar' && desafio) iniciaEncontro(); }, 2000);
         }
       }
@@ -1297,7 +1303,8 @@ function loop(agora) {
       }
       else if (evt && evt.tipo === 'fala') {
         sfx.swing();
-        hud.toast(evt.placa ? `🪧 ${evt.texto}` : `💬 ${evt.texto}`, 3800);
+        if (evt.placa) hud.fala('🪧', 'PLACA', evt.texto);
+        else hud.fala(ROSTO_PAPEL[evt.papel] || '💬', 'MORADOR', evt.texto);
       }
       else if (evt === 'cura') {
         sfx.capturado(); hud.flash();
