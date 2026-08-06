@@ -1004,7 +1004,7 @@ function encerraBatalha() {
     // o CAMINHO DA CINZA: sem teleporte — o herói volta A PÉ até a
     // Fogueira Eterna da Vila Clareira; sem elo, feras selvagens o ignoram
     setTimeout(() => hud.toast(
-      '🚶 Sem elo, as feras o ignoram. Volte a pé à Fogueira Eterna da Vila Clareira.', 4500), 1800);
+      '🚶 Sem elo, as feras o ignoram. Volte a pé até uma Chama e reacenda o vínculo.', 4500), 1800);
   }
   atualizaPainel();
   salvaJogo(); // toda batalha real muda a jornada: XP, HP, capturas, cristais
@@ -1212,7 +1212,7 @@ function loop(agora) {
         modo = 'explorar';
         renderMenu();
         hud.dica(DICA_EXPLORAR);
-        hud.toast('Siga até a Fogueira Eterna — a pílula dourada avisa quando estiver perto.', 3200);
+        hud.toast('Suba a colina até a CHAMA PRIMORDIAL — o Ancião Bramo aponta o caminho.', 3200);
       }
     }
   } else if (modo === 'explorar') {
@@ -1290,7 +1290,17 @@ function loop(agora) {
           trocaMapa(evt.destino);
         }
       }
-      else if (evt && evt.tipo === 'saida') trocaMapa(evt.saida.destino);
+      else if (evt && evt.tipo === 'saida') {
+        // portais podem exigir MISSÃO cumprida (ex.: ter a fera inicial)
+        if (evt.saida.requer === 'fera' && !equipe.length) {
+          const b = evt.saida.borda; // empurra de volta pela borda do portal
+          if (b === 'leste') mundo.domador.pos.x -= 1.5;
+          else if (b === 'oeste') mundo.domador.pos.x += 1.5;
+          else if (b === 'sul') mundo.domador.pos.z -= 1.5;
+          else mundo.domador.pos.z += 1.5;
+          hud.toast('🔥 O Ancião avisou: sem uma fera ao seu lado, o mundo lá fora o devoraria. Suba até a Chama!', 3200);
+        } else trocaMapa(evt.saida.destino);
+      }
       // dica de interação: mostra "Z — ..." quando há algo por perto
       hud.interacao(menu.ativo ? null : interacaoPerto(mundo));
     }

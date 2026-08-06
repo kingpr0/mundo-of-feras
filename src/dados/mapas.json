@@ -1,5 +1,5 @@
 {
-  "inicial": "clareira",
+  "inicial": "vila_primordial",
   "mapas": {
     "clareira": {
       "nome": "Vila Clareira",
@@ -2467,6 +2467,470 @@
           "de": -2,
           "ate": 2,
           "destino": "fiorde"
+        }
+      ]
+    },
+    "vila_primordial": {
+      "nome": "Vila Primordial",
+      "regiao": {
+        "x": 0,
+        "y": 10
+      },
+      "limite": {
+        "x": 24,
+        "z": 22
+      },
+      "chao": "vila",
+      "spawn": {
+        "x": -19,
+        "z": 16
+      },
+      "morros": [
+        {
+          "x": 9,
+          "z": -3,
+          "r": 9.5,
+          "h": 2.4
+        }
+      ],
+      "decor": [
+        [
+          "fogueira",
+          9,
+          -3
+        ],
+        [
+          "placa",
+          -16.5,
+          17.5,
+          "VILA PRIMORDIAL — onde toda jornada começa. Suba até a Chama e escolha sua companheira."
+        ]
+      ],
+      "cenario": [
+        [
+          "casinha-aconchego",
+          -14,
+          -14,
+          3.4,
+          0.3,
+          2.4
+        ],
+        [
+          "cabana-tronco",
+          13,
+          -15,
+          3.6,
+          -0.2,
+          2.6
+        ],
+        [
+          "centro-cura",
+          -17,
+          1,
+          3.6,
+          1.57,
+          2.6
+        ],
+        [
+          "santuario-floresta",
+          17,
+          8,
+          3.4,
+          -1.57,
+          2.4
+        ],
+        [
+          "monolito-prisma",
+          4.5,
+          -7.5,
+          2.6,
+          0.4,
+          0.9
+        ],
+        [
+          "monolito-prisma",
+          13.5,
+          1.5,
+          2.2,
+          -0.8,
+          0.8
+        ],
+        [
+          "pedra-estilizada",
+          5,
+          1.5,
+          1.1,
+          1.1,
+          0.8
+        ],
+        [
+          "pedra-medieval",
+          12.5,
+          -8,
+          1.2,
+          2.2,
+          0.8
+        ],
+        [
+          "arvore-nuvem",
+          -8,
+          -8,
+          4.2,
+          0.5,
+          1.1
+        ],
+        [
+          "arvore-verdejante",
+          -3,
+          12,
+          4.6,
+          1.9,
+          1.1
+        ],
+        [
+          "arvore-petala",
+          8,
+          13,
+          4,
+          2.6,
+          1.1
+        ],
+        [
+          "arvore-nuvem-2",
+          18,
+          -6,
+          4.4,
+          0.9,
+          1.1
+        ],
+        [
+          "arvore-bolha",
+          -20,
+          -6,
+          3.8,
+          0,
+          1
+        ],
+        [
+          "arvore-outono",
+          -9,
+          4,
+          4.2,
+          2.2,
+          1.1
+        ],
+        [
+          "arbusto-redondo",
+          -12,
+          10,
+          1.4,
+          0.6,
+          0
+        ],
+        [
+          "arbusto-oval",
+          2,
+          5,
+          1.3,
+          1.4,
+          0
+        ],
+        [
+          "arbusto-redondo",
+          15,
+          14,
+          1.4,
+          2.8,
+          0
+        ]
+      ],
+      "pedras": [
+        [
+          -5,
+          -15,
+          0.8
+        ],
+        [
+          20,
+          2,
+          0.7
+        ],
+        [
+          -21,
+          8,
+          0.6
+        ]
+      ],
+      "npcs": [
+        [
+          -15,
+          13,
+          "senhor",
+          0.9,
+          "Ancião Bramo: — Sente o calor no ar? A CHAMA PRIMORDIAL arde no alto da colina desde antes das muralhas. Suba até ela, jovem... uma fera espera por você."
+        ],
+        [
+          -14.2,
+          2.8,
+          "enfermeira",
+          1.57,
+          "Aqui no Centro suas feras descansam. Volte sempre que a batalha apertar!"
+        ],
+        [
+          15.2,
+          9.6,
+          "aldeao",
+          -1.2,
+          "Dizem que domadores de verdade vencem GINÁSIOS e domam quantas feras puderem. Eu? Eu cuido do meu jardim."
+        ]
+      ],
+      "cura": {
+        "x": -14.6,
+        "z": 1.2
+      },
+      "saidas": [
+        {
+          "borda": "leste",
+          "de": -2,
+          "ate": 2,
+          "destino": "acesso1",
+          "requer": "fera"
+        }
+      ]
+    },
+    "acesso1": {
+      "nome": "Acesso 1",
+      "regiao": {
+        "x": 1,
+        "y": 10
+      },
+      "limite": {
+        "x": 30,
+        "z": 13
+      },
+      "chao": "grama",
+      "spawn": {
+        "x": -27,
+        "z": 0
+      },
+      "arvores": [
+        [
+          -20,
+          -9,
+          0
+        ],
+        [
+          -20,
+          -5,
+          1
+        ],
+        [
+          -20,
+          -1,
+          0
+        ],
+        [
+          -14,
+          3,
+          1
+        ],
+        [
+          -14,
+          7,
+          0
+        ],
+        [
+          -14,
+          10,
+          1
+        ],
+        [
+          -6,
+          -10,
+          0
+        ],
+        [
+          -6,
+          -6,
+          1
+        ],
+        [
+          -6,
+          -2,
+          0
+        ],
+        [
+          -6,
+          2,
+          1
+        ],
+        [
+          2,
+          4,
+          0
+        ],
+        [
+          2,
+          8,
+          1
+        ],
+        [
+          2,
+          11,
+          0
+        ],
+        [
+          10,
+          -9,
+          1
+        ],
+        [
+          10,
+          -5,
+          0
+        ],
+        [
+          10,
+          -1,
+          1
+        ],
+        [
+          18,
+          2,
+          0
+        ],
+        [
+          18,
+          6,
+          1
+        ],
+        [
+          18,
+          9,
+          0
+        ],
+        [
+          25,
+          -8,
+          1
+        ],
+        [
+          25,
+          -4,
+          0
+        ]
+      ],
+      "gramas": [
+        {
+          "x0": -18,
+          "z0": -3,
+          "x1": -8,
+          "z1": 6
+        },
+        {
+          "x0": -4,
+          "z0": -8,
+          "x1": 8,
+          "z1": 1
+        },
+        {
+          "x0": 12,
+          "z0": -3,
+          "x1": 23,
+          "z1": 6
+        }
+      ],
+      "cenario": [
+        [
+          "arvore-nuvem",
+          -24,
+          -8,
+          4.4,
+          0.4,
+          1.1
+        ],
+        [
+          "arvore-verdejante",
+          6,
+          9,
+          4.4,
+          1.2,
+          1.1
+        ],
+        [
+          "arvore-petala",
+          27,
+          7,
+          4.2,
+          2,
+          1.1
+        ],
+        [
+          "arbusto-redondo",
+          -10,
+          10,
+          1.4,
+          0.8,
+          0
+        ],
+        [
+          "arbusto-oval",
+          14,
+          8,
+          1.3,
+          1.9,
+          0
+        ],
+        [
+          "pedra-lisa",
+          -2,
+          10,
+          1,
+          0.6,
+          0.8
+        ],
+        [
+          "pedra-estilizada",
+          22,
+          -9,
+          1.1,
+          1.5,
+          0.8
+        ]
+      ],
+      "pedras": [
+        [
+          -25,
+          8,
+          0.7
+        ],
+        [
+          8,
+          -10,
+          0.8
+        ]
+      ],
+      "selvagens": [
+        "raiozim",
+        "espinhim",
+        "cogumim",
+        "gravetim",
+        "furim"
+      ],
+      "decor": [
+        [
+          "placa",
+          -25.5,
+          -2,
+          "ACESSO 1 — a grama alta esconde feras selvagens. Atravesse com coragem (ou com EsFeras)."
+        ]
+      ],
+      "saidas": [
+        {
+          "borda": "oeste",
+          "de": -2,
+          "ate": 2,
+          "destino": "vila_primordial"
         }
       ]
     }

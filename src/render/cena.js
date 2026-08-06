@@ -2,6 +2,7 @@
 // arena de batalha, partículas e as duas câmeras (exploração e lock-on).
 import * as THREE from 'three';
 import { alturaTerreno, alturaSolo, alturaDegraus } from '../sim/mundo.js';
+import { GLTFLoader } from '../vendor/GLTFLoader.js';
 import { criarNPC, criarPersonagem, tocaClip } from './modelos.js';
 import { texturaChamaAnimada } from './efeitos.js';
 
@@ -524,6 +525,63 @@ function montaDegraus(g, mapa) {
     g.add(m);
   }
 }
+
+/* ---------- CENÁRIO glTF (assets/cenario): árvores, arbustos, pedras,
+   construções e adereços do Domador. Dados no mapa:
+   "cenario": [[slug, x, z, altura, rot?, raio?]] — altura em unidades de
+   mundo (o modelo é normalizado pela caixa), raio > 0 vira colisão na sim */
+const _cacheCenario = {};
+function carregaCenario(slug) {
+  if (!_cacheCenario[slug]) {
+    _cacheCenario[slug] = new Promise((res, rej) => {
+      new GLTFLoader().load(`./assets/cenario/${slug}.glb`, (g) => {
+        // mesma receita das feras (modelos.js): PBR -> Lambert com textura
+        // LINEAR e normais garantidas — sem isso o modelo sai branco/escuro
+        g.scene.traverse((o) => {
+          if (!o.isMesh) return;
+          if (!o.geometry.attributes.normal) o.geometry.computeVertexNormals();
+          const troca = (mt) => {
+            if (mt.map) mt.map.encoding = THREE.LinearEncoding;
+            return new THREE.MeshLambertMaterial({
+              color: mt.map ? 0xffffff : (mt.color ? mt.color.clone() : 0xffffff),
+              map: mt.map || null,
+            });
+          };
+          o.material = Array.isArray(o.material) ? o.material.map(troca) : troca(o.material);
+        });
+        // um único ajuste por MODELO: mede a caixa e guarda junto
+        const caixa = new THREE.Box3().setFromObject(g.scene);
+        res({ cena: g.scene, caixa });
+      }, undefined, rej);
+    });
+  }
+  return _cacheCenario[slug];
+}
+function montaCenario(g, mapa) {
+  for (const [slug, x, z, altura = 2, rot = 0] of mapa.cenario || []) {
+    carregaCenario(slug).then(({ cena: modelo, caixa }) => {
+      if (!g.parent) return; // já trocou de mapa
+      const inst = modelo.clone(); // clone raso: geometria/textura compartilhadas
+      const alt = Math.max(0.01, caixa.max.y - caixa.min.y);
+      const esc = altura / alt;
+      inst.scale.setScalar(esc);
+      // assenta o PÉ da caixa no chão do ponto (modelos Meshy variam a origem)
+      const y = alturaTerreno(mapa, { x, z }) - caixa.min.y * esc;
+      inst.position.set(x, y, z);
+      inst.rotation.y = rot;
+      inst.traverse((o) => {
+        if (o.isMesh) {
+          o.castShadow = true; o.receiveShadow = true;
+          if (altura > 2.2) o.userData.oclusor = true; // altos tapam o herói
+        }
+      });
+      g.add(inst);
+      // oclusores chegam DEPOIS da varredura do montaMapa: registra na mão
+      if (altura > 2.2) inst.traverse((o) => { if (o.isMesh) _cenaAtiva && _cenaAtiva.oclusores.push(o); });
+    }).catch(() => {});
+  }
+}
+let _cenaAtiva = null; // para o cenário assíncrono achar a lista de oclusores
 
 /* muralha natural: floresta densa fechando as bordas do mapa, com clareiras
    apenas nas passagens; onde há água, o próprio lago faz o papel */
@@ -1221,6 +1279,8 @@ function montaDetalhes(g, mapa) {
     if (mapa.caverna && perto(x, z, mapa.caverna.x, mapa.caverna.z, 3.2)) return false;
     for (const t of mapa.treinadores || []) if (perto(x, z, t.x, t.z, 1.8)) return false;
     for (const n of mapa.npcs || []) if (perto(x, z, n[0], n[1], 1.7)) return false;
+    for (const c of mapa.cenario || [])
+      if (perto(x, z, c[1], c[2], Math.max(1.6, (c[5] || 0) + 1))) return false;
     return true;
   };
   const chao = mapa.chao || 'grama';
@@ -1546,9 +1606,11 @@ export function montaMapa(cena, mapa) {
   if (mapa.fundoNorte) montaFundoNorte(g, mapa);
   if (mapa.balsa) montaBalsa(g, mapa.balsa, cena.anims);
   if (mapa.caverna) bocaCaverna(g, mapa.caverna);
+  montaCenario(g, mapa);
   montaBorda(g, mapa);
   // lista de oclusores para o efeito "vidro" quando algo tapa o personagem
   cena.oclusores = [];
+  _cenaAtiva = cena;
   g.traverse((o) => { if (o.isMesh && o.userData.oclusor) cena.oclusores.push(o); });
 }
 

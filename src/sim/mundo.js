@@ -221,6 +221,13 @@ function colideCastelo(c, pos) {
 
 function colide(mapa, pos) {
   if (mapa.castelo && colideCastelo(mapa.castelo, pos)) return true;
+  // modelos de cenário glTF: [slug, x, z, altura, rot, raio] — raio > 0 bloqueia
+  for (const c of mapa.cenario || []) {
+    const r = c[5] || 0;
+    if (!r) continue;
+    const dx = pos.x - c[1], dz = pos.z - c[2];
+    if (dx * dx + dz * dz < r * r) return true;
+  }
   for (const a of mapa.arvores || []) {
     const dx = pos.x - a[0], dz = pos.z - a[1];
     if (dx * dx + dz * dz < RAIO_ARVORE * RAIO_ARVORE) return true;
