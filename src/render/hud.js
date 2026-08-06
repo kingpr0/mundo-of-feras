@@ -43,6 +43,7 @@ export function criarHUD() {
       }
     },
     painelVida(hp, max) { $('pVida').textContent = `${hp}/${max}`; },
+    esferas(n) { $('pEsferas').textContent = n; },
     // painel e minimapa só fazem sentido na exploração
     exploracaoVisivel(v) {
       $('painel').style.display = v ? 'block' : 'none';
@@ -222,7 +223,14 @@ export function criarHUD() {
         d.title = f.nome;
         const img = new Image();
         img.src = `./assets/retratos/${f.especie}.png`;
-        img.onerror = () => { img.remove(); d.textContent = (f.nome || '?')[0]; };
+        // rede fraca/deploy no meio: tenta de novo UMA vez antes de cair
+        // para a letra (evita B/G presos no painel para sempre)
+        img.onerror = () => {
+          if (!img.dataset.retry) {
+            img.dataset.retry = '1';
+            setTimeout(() => { img.src = `./assets/retratos/${f.especie}.png?r=${Date.now()}`; }, 1500);
+          } else { img.remove(); d.textContent = (f.nome || '?')[0]; }
+        };
         d.appendChild(img);
         box.appendChild(d);
       }

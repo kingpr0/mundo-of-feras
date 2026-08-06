@@ -686,17 +686,6 @@ export function passoOclusores(cena, alvos, lista) {
   }
 }
 
-// aplica a textura de folhas quando ela chega; a cor vira um TINGIMENTO
-// claro (o Lambert multiplica mapa × cor, então tons claros ≈ a cor antiga)
-function garanteFolhas(mats, tons) {
-  carregaTexturaChao('folhas', (tex) => {
-    mats.forEach((mat, i) => {
-      const t = tex.clone(); t.needsUpdate = true;
-      t.repeat.set(2, 1.4);
-      mat.map = t; mat.color.set(tons[i % tons.length]); mat.needsUpdate = true;
-    });
-  });
-}
 // árvores em verde LISO com materiais PRÓPRIOS por malha: o efeito "vidro"
 // do oclusor mexe na opacidade do material — compartilhar material faria a
 // floresta inteira sumir junto; a textura de folhas ficou só nos arbustos
@@ -727,27 +716,30 @@ function arvore(scene, x, z, pinheiro) {
    com leve variação) — quem entra some da cintura para baixo, estilo
    Pokémon/ClaudeCraft */
 function montaGrama(scene, G, mapa) {
-  // sem plataforma artificial: o PRÓPRIO terreno sobe sob a grama (a malha
-  // do chão inclui alturaGrama) — os arbustos plantam direto na cota local
-  const mats = [0x3d8a35, 0x46983c, 0x51a746]
-    .map((c) => new THREE.MeshLambertMaterial({ color: c }));
-  garanteFolhas(mats, [0x9dd489, 0xa8de92, 0xb4e89e]);
-  const geoArb = new THREE.SphereGeometry(0.78, 10, 7);
-  const passo = 1.05;
-  let i = 0;
-  for (let px = G.x0 - 0.3; px <= G.x1 + 0.3; px += passo) {
-    for (let pz = G.z0 - 0.3; pz <= G.z1 + 0.3; pz += passo, i++) {
-      const m = new THREE.Mesh(geoArb, mats[(i * 7) % mats.length]);
-      const esc = 0.9 + ((i * 13) % 10) / 45;
-      m.scale.set(esc, 0.62 * esc, esc);
-      const x2 = px + (((i * 31) % 7) - 3) * 0.06;
-      const z2 = pz + (((i * 17) % 7) - 3) * 0.06;
-      const solo = mapa ? alturaTerreno(mapa, { x: x2, z: z2 }) : 0;
-      m.position.set(x2, solo + 0.34, z2);
-      m.castShadow = true;
-      scene.add(m);
+  // o mar de moitas usa o MODELO do Domador (Verdant Mound): montinhos
+  // folhudos lado a lado — quem entra some da cintura para baixo. Clones
+  // compartilham geometria/textura; só a transformação muda
+  carregaCenario('arbusto-verdejante').then(({ cena: modelo, caixa }) => {
+    if (!scene.parent) return; // o mapa já foi trocado
+    const altBase = Math.max(0.01, caixa.max.y - caixa.min.y);
+    const passo = 1.35;
+    let i = 0;
+    for (let px = G.x0 - 0.2; px <= G.x1 + 0.2; px += passo) {
+      for (let pz = G.z0 - 0.2; pz <= G.z1 + 0.2; pz += passo, i++) {
+        const inst = modelo.clone();
+        const alvo = 1.05 + ((i * 13) % 10) / 24; // alturas 1.05..1.45
+        const esc = alvo / altBase;
+        inst.scale.setScalar(esc);
+        const x2 = px + (((i * 31) % 7) - 3) * 0.08;
+        const z2 = pz + (((i * 17) % 7) - 3) * 0.08;
+        const solo = mapa ? alturaTerreno(mapa, { x: x2, z: z2 }) : 0;
+        inst.position.set(x2, solo - caixa.min.y * esc, z2);
+        inst.rotation.y = (i * 2.39996) % 6.283; // giro áureo: nada repete
+        inst.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+        scene.add(inst);
+      }
     }
-  }
+  }).catch(() => {});
 }
 
 // tile transparente de cristas de onda (senoides com período inteiro:

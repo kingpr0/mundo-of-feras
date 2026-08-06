@@ -1029,14 +1029,36 @@ export function animaLuta(M, f) {
     pose.rotation.y = catPose === 'fisico' ? f.t * 16 : 0;
     return;
   }
-  if (ud0._poseAtiva) {
+  const vaiRolar = f.estado === 'dash' && M.poses && M.poses.rolar;
+  if (ud0._poseAtiva && !vaiRolar) {
     ud0._poseAtiva.visible = false;
     for (const c of ud0._corpoPose || []) c.visible = true;
     ud0._poseAtiva = null;
     ud0._corpoPose = null;
   }
   // BOLA-ESQUIVA estilo Sonic: na cambalhota lateral o corpo VIRA uma
-  // esfera girando do tamanho da fera; ao sair do dash, volta ao normal
+  // esfera girando do tamanho da fera; ao sair do dash, volta ao normal.
+  // Fera com pose "rolar" (ex.: o casco do Folhito) usa o MODELO dela
+  // rolando em vez da esfera genérica listrada
+  if (f.estado === 'dash' && M.poses && M.poses.rolar) {
+    const ud = M.g.userData;
+    const rolar = M.poses.rolar;
+    if (ud._poseAtiva !== rolar) {
+      if (ud._poseAtiva) ud._poseAtiva.visible = false;
+      if (!ud._corpoPose) {
+        ud._corpoPose = M.g.children.filter((c) =>
+          !Object.values(M.poses).includes(c) && c !== M.bolaEsq && c.visible);
+      }
+      for (const c of ud._corpoPose) c.visible = false;
+      rolar.visible = true;
+      ud._poseAtiva = rolar;
+    }
+    const rel = f.dashRel || { x: 1, z: 0 };
+    const ang = f.t * 22;
+    if (Math.abs(rel.x) >= Math.abs(rel.z)) rolar.rotation.set(0, 0, rel.x > 0 ? -ang : ang);
+    else rolar.rotation.set(rel.z > 0 ? ang : -ang, 0, 0);
+    return;
+  }
   if (f.estado === 'dash') {
     const ud = M.g.userData;
     if (!M.bolaEsq) {

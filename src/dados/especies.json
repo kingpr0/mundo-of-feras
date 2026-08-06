@@ -36,7 +36,7 @@
   "aprendizado": [
    {
     "nivel": 1,
-    "golpe": "investida"
+    "golpe": "garra"
    },
    {
     "nivel": 6,
@@ -47,12 +47,12 @@
     "golpe": "chicote_vinha"
    },
    {
-    "nivel": 12,
-    "golpe": "investida_feroz"
-   },
-   {
     "nivel": 10,
     "golpe": "tempestade_folhas"
+   },
+   {
+    "nivel": 9,
+    "golpe": "garras_furiosas"
    }
   ],
   "defesa": 0.95,
@@ -64,8 +64,9 @@
   "agilidade": 50,
   "forca": 50,
   "poses": {
-   "fisico": "folhito-rolar",
-   "poder": "folhito-poder"
+   "fisico": "folhito-soco",
+   "poder": "folhito-poder",
+   "rolar": "folhito-rolar"
   }
  },
  "folhardo": {

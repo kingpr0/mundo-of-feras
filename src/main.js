@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { criarMundo, passoMundo, daImunidade, entradaDoMapa, interacaoPerto } from './sim/mundo.js';
 import { criarBatalha, passoBatalha, podeCapturar, fugirBatalha, trocaFera, continuaComOutraFera, proximaFeraTreinador, custoEnergia } from './sim/batalha.js';
 import { ganhaXp, xpParaSubir, xpPorVitoria, nivelSelvagem, vidaMaxima, NIVEL_INICIAL } from './sim/progressao.js';
-import { criarFera, aprendeGolpe, lembraGolpe, montaSlots, aprendizadosDoNivel, curaTotal, bonusNivel, paraBatalha, evoluiFera } from './sim/equipe.js';
+import { criarFera, aprendeGolpe, lembraGolpe, montaSlots, aprendizadosDoNivel, curaTotal, bonusNivel, paraBatalha, evoluiFera, verificaEvolucao } from './sim/equipe.js';
 import { empacotaSave, validaSave } from './sim/save.js';
 import { criarCena, poof, jato, passoParticulas, passoAmbiente, passoCamera, mostraArena, temaArena, montaMapa, passoOclusores, renderiza, marcaHeroi } from './render/cena.js';
 import { criarEfeitos } from './render/efeitos.js';
@@ -160,6 +160,7 @@ function atualizaPainel() {
   hud.equipe(equipe.map((fe, i) => ({
     especie: fe.especie, nome: nomeDe(fe), ativa: i === ativa, viva: fe.hpAtual > 0,
   })));
+  hud.esferas(itens.cristal);
   if (modo === 'explorar') renderMenu();
 }
 atualizaPainel();
@@ -179,6 +180,9 @@ let menu = { tipo: 'exploracao', sel: 0, fera: 0, especie: null, ativo: false };
 // sair pela porta sul desempilha — andar por andar
 let retornoPorta = [];
 let hitstop = 0, tempo = 0;
+// CERIMÔNIA DE EVOLUÇÃO (estilo Pokémon): roda sozinha após a batalha
+let evolucaoPendente = null; // fera que cruzou o nível da cadeia
+let cerimonia = null;        // { fera, t, trocou, de }
 // trava curta do "falar": o Z que fecha uma batalha não pode, no mesmo
 // sopro, puxar conversa com quem estiver por perto (ex.: o Mestre da Arena)
 let falarTrava = 0;
@@ -400,20 +404,9 @@ function premiaXp() {
         : `${nomeAntes} aprendeu ${nomeG}!`;
       setTimeout(() => { sfx.capturado(); hud.toast(`✨ ${msg}`, 2100); }, atraso);
     }
-    // EVOLUÇÃO: cruzou o nível da cadeia? A fera se transforma (pode
-    // encadear se um salto de XP cruzar dois limiares de uma vez)
-    let ev;
-    while ((ev = evoluiFera(fera, especies, golpesCat))) {
-      marcaVista(ev.para); // a forma nova se revela na Feradex
-      const nomeNovo = especies[ev.para].nome;
-      const nomeVelho = especies[ev.de].nome;
-      atraso += 2400;
-      setTimeout(() => {
-        sfx.vitoria();
-        hud.toast(`🌟 ${nomeVelho} evoluiu para ${nomeNovo.toUpperCase()}!`, 3200);
-        atualizaPainel();
-      }, atraso);
-    }
+    // EVOLUÇÃO: cruzou o nível da cadeia? Fica PENDENTE — a cerimônia
+    // acontece depois que a batalha fechar (estilo Pokémon)
+    if (verificaEvolucao(especies, fera)) evolucaoPendente = fera;
   }
   atualizaPainel();
   return `+${ganho} XP`;
@@ -576,7 +569,7 @@ function itensDoMenu() {
   }
   if (t === 'itens') return [
     { txt: `Cristal de Captura × ${itens.cristal}`, acao: () =>
-      hud.toast('Arremesse com F durante a luta — a enfermeira reabastece.', 2200) },
+      hud.toast('Arremesse com F durante a luta — ache mais em baús e no mercado.', 2200) },
     { txt: '(caixas misteriosas e mercados: em breve)', acao: nada },
     { txt: 'Voltar', acao: () => abreMenu('exploracao') },
   ];
@@ -1116,6 +1109,58 @@ function encerraBatalha() {
   }
   atualizaPainel();
   salvaJogo(); // toda batalha real muda a jornada: XP, HP, capturas, cristais
+  // fera esperando para evoluir? A cerimônia começa assim que o pé
+  // toca o chão do mundo
+  if (evolucaoPendente) setTimeout(() => iniciaCerimonia(), 900);
+}
+// CERIMÔNIA DE EVOLUÇÃO: a fera antiga é projetada girando, a luz pulsa
+// cada vez mais rápido, e no clarão final a forma NOVA se revela
+function iniciaCerimonia() {
+  if (!evolucaoPendente || modo !== 'explorar') return;
+  const fera = evolucaoPendente;
+  evolucaoPendente = null;
+  if (!verificaEvolucao(especies, fera)) return;
+  modo = 'evolucao';
+  fechaMenu(); hud.menu(false);
+  hud.exploracaoVisivel(false);
+  musica('batalha');
+  cerimonia = { fera, t: 0, trocou: false, de: fera.especie, flashes: 0 };
+  mostraHoloEspecie(fera.especie);
+  hud.toast(`✨ O quê?! ${nomeDe(fera)} está envolto em luz...`, 3000);
+}
+function passoCerimonia(dt) {
+  const c = cerimonia;
+  c.t += dt;
+  // pulsos de luz acelerando até o clarão da troca
+  const ritmo = c.t < 1.2 ? 0.6 : c.t < 2.4 ? 0.3 : 0.15;
+  if (!c.trocou && c.t > 0.8 && c.t - (c.ultimoFlash || 0) > ritmo) {
+    c.ultimoFlash = c.t;
+    hud.flash(); sfx.swing();
+  }
+  if (!c.trocou && c.t >= 3.2) {
+    c.trocou = true;
+    const ev = evoluiFera(c.fera, especies, golpesCat);
+    if (ev) {
+      marcaVista(ev.para);
+      hud.flash();
+      sfx.vitoria();
+      poof(cena, { ...mundo.domador.pos, y: 1.2 }, 0xffd23f, 22, 5);
+      mostraHoloEspecie(c.fera.especie); // a forma NOVA assume a projeção
+      hud.toast(`🌟 Parabéns! ${especies[ev.de].nome} evoluiu para ${especies[ev.para].nome.toUpperCase()}!`, 3600);
+    }
+  }
+  if (c.t >= 6.2) {
+    escondeHolo();
+    MD.mostra(domador, true);
+    cerimonia = null;
+    modo = 'explorar';
+    musica('explorar');
+    hud.exploracaoVisivel(true);
+    atualizaPainel();
+    salvaJogo();
+    // cadeia dupla (salto de nível cruzou dois limiares): emenda outra
+    if (verificaEvolucao(especies, c.fera)) { evolucaoPendente = c.fera; setTimeout(() => iniciaCerimonia(), 700); }
+  }
 }
 // passagem entre mapas: recria a sim no destino e remonta o cenário
 function trocaMapa(destino, entrada) {
@@ -1327,6 +1372,8 @@ function loop(agora) {
       }
     }
   } else if (modo === 'explorar') {
+    // evolução esperando e nada no caminho? A cerimônia começa
+    if (evolucaoPendente && !cerimonia && !menu.ativo) iniciaCerimonia();
     if (menu.ativo) {
       navegaMenu();
       if (holoM) { // holograma gira e flutua
@@ -1406,12 +1453,13 @@ function loop(agora) {
         else hud.fala(ROSTO_PAPEL[evt.papel] || '💬', 'MORADOR', evt.texto);
       }
       else if (evt === 'cura') {
+        // a cura NÃO repõe EsFeras (regra do Domador): elas vêm de baús e
+        // do mercado — a enfermeira cuida só das feras
         sfx.capturado(); hud.flash();
         for (const f of equipe) curaTotal(f, especies, golpesCat);
-        itens.cristal = CRISTAIS_MAX;
         atualizaPainel();
         salvaJogo();
-        hud.toast(`❤ Enfermeira: feras restauradas e ${CRISTAIS_MAX} Cristais de Captura na mochila!`, 3000);
+        hud.toast('❤ Enfermeira: suas feras foram restauradas!', 2600);
       }
       else if (evt && evt.tipo === 'porta') {
         if (evt.destino === 'retorno' && retornoPorta.length) {
@@ -1421,14 +1469,14 @@ function loop(agora) {
           retornoPorta.push({ mapa: chaveMapa, pos: evt.retorno });
           trocaMapa(evt.destino);
           // CENTRO DE CURA: entrar já cura — piscada e pronto, sem conversa
+          // (EsFeras NÃO: elas vêm de baús e do mercado)
           if (evt.destino === 'interior_centro' && equipe.length) {
             setTimeout(() => {
               hud.flash(); sfx.capturado();
               for (const f of equipe) curaTotal(f, especies, golpesCat);
-              itens.cristal = CRISTAIS_MAX;
               atualizaPainel();
               salvaJogo();
-              hud.toast(`❤ As feras descansaram e ${CRISTAIS_MAX} Cristais voltaram à mochila!`, 2800);
+              hud.toast('❤ Suas feras descansaram e estão renovadas!', 2600);
             }, 600);
           }
         }
@@ -1448,6 +1496,10 @@ function loop(agora) {
       hud.interacao(menu.ativo ? null : interacaoPerto(mundo));
     }
     hud.miniMapa(mundo);
+  } else if (modo === 'evolucao' && cerimonia) {
+    // a cerimônia toca sozinha; a projeção gira solene no centro
+    if (holoM) holoM.g.rotation.y += dt * 2.2;
+    passoCerimonia(dt);
   } else if (modo === 'encontro') {
     if (cimaE || baixoE) { escolha = 1 - escolha; hud.escolha(true, escolha); sfx.swing(); }
     if (jE) confirmaEscolha();
@@ -1461,7 +1513,7 @@ function loop(agora) {
       const golpeIdx = press;
       const forte = press != null && shiftSegurado();
       if (fE && itens.cristal <= 0)
-        hud.toast('Sem Cristais de Captura! A enfermeira do Centro reabastece.', 2000);
+        hud.toast('Sem EsFeras! Procure baús pelo mundo ou o mercado.', 2000);
       const inpP = {
         mov: { x: eixo(['ArrowLeft'], ['ArrowRight']),
                z: eixo(['ArrowUp'], ['ArrowDown']) },
@@ -1503,6 +1555,7 @@ window.DEV = {
                    treino: treino ? { ...treino } : null, batalha: !!batalha }),
   enche: () => { if (batalha) batalha.p.energia = 100; },
   sofre: () => { if (batalha) batalha.p.hp = 1; }, // teste de permadeath
+  vence: () => { if (batalha) batalha.e.hp = 1; }, // teste de vitória/evolução
   luta: () => batalha && {
     poseAtiva: !!(playerM && playerM.g.userData._poseAtiva),
     golpe: batalha.p.golpe ? batalha.p.golpe.nome : null,
