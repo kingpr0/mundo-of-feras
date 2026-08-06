@@ -62,7 +62,11 @@
   },
   "peso": 20,
   "agilidade": 50,
-  "forca": 50
+  "forca": 50,
+  "poses": {
+   "fisico": "folhito-rolar",
+   "poder": "folhito-poder"
+  }
  },
  "folhardo": {
   "nome": "Folhardo",

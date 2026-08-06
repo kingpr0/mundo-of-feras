@@ -1504,6 +1504,7 @@ window.DEV = {
   enche: () => { if (batalha) batalha.p.energia = 100; },
   sofre: () => { if (batalha) batalha.p.hp = 1; }, // teste de permadeath
   luta: () => batalha && {
+    poseAtiva: !!(playerM && playerM.g.userData._poseAtiva),
     golpe: batalha.p.golpe ? batalha.p.golpe.nome : null,
     estado: batalha.p.estado, t: +batalha.p.t.toFixed(2),
     comboQ: !!batalha.p.comboQ, catalogo: !!batalha.catalogo,

@@ -774,10 +774,44 @@ export function passoMixer(M, dt) { if (M && M.mixer) M.mixer.update(dt); }
 
 // espécies com "modelo3d" nos dados usam glTF; as demais, as fábricas.
 // Sempre devolve uma Promise (o chamador usa await).
+// POSES de golpe (quadros congelados, estilo anime): modelos estáticos que
+// substituem o corpo por um instante durante o golpe. Dados da espécie:
+// "poses": { fisico: slug, poder: slug } -> assets/poses/<slug>.glb
+function carregaPoses(M, esp) {
+  if (!esp.poses) return;
+  M.poses = {};
+  for (const [cat, slug] of Object.entries(esp.poses)) {
+    new GLTFLoader().load(`./assets/poses/${slug}.glb`, (g) => {
+      g.scene.traverse((o) => {
+        if (!o.isMesh) return;
+        if (!o.geometry.attributes.normal) o.geometry.computeVertexNormals();
+        const troca = (mt) => {
+          if (mt.map) mt.map.encoding = THREE.LinearEncoding;
+          return new THREE.MeshLambertMaterial({ color: 0xffffff, map: mt.map || null });
+        };
+        o.material = Array.isArray(o.material) ? o.material.map(troca) : troca(o.material);
+        o.castShadow = true;
+      });
+      const caixa = new THREE.Box3().setFromObject(g.scene);
+      const alvo = esp.altura3d || 1.1;
+      const esc = alvo / Math.max(0.01, caixa.max.y - caixa.min.y);
+      const grupo = new THREE.Group();
+      g.scene.scale.setScalar(esc);
+      g.scene.position.set(
+        -(caixa.min.x + caixa.max.x) / 2 * esc,
+        -caixa.min.y * esc,
+        -(caixa.min.z + caixa.max.z) / 2 * esc);
+      grupo.add(g.scene);
+      grupo.visible = false;
+      M.g.add(grupo);
+      M.poses[cat] = grupo;
+    }, undefined, () => {});
+  }
+}
 export function criarFera(scene, chave, esp) {
   if (esp && esp.modelo3d)
     return criarFeraGltf(scene, esp.modelo3d, esp.altura3d || 1.1, esp.giro3d || 0)
-      .then((M) => { M.clipes = esp.clipes || {}; return M; })
+      .then((M) => { M.clipes = esp.clipes || {}; carregaPoses(M, esp); return M; })
       .catch((e) => {
         // arquivo ausente/corrompido não derruba o jogo: cai no procedural
         console.warn(`modelo3d de "${chave}" falhou; usando modelo procedural`, e);
@@ -970,6 +1004,37 @@ const COR_BOLA = { fogo: 0xff8a50, agua: 0x5fb2e8, planta: 0x6fc45f,
                    eletrico: 0xf2d84a, gelo: 0xa8dcef, pedra: 0xb0a284,
                    terra: 0xc2a26a, comum: 0xd8cdb8 };
 export function animaLuta(M, f) {
+  // POSE DE GOLPE (quadro congelado): durante o ataque, feras COM pose
+  // para a categoria trocam o corpo pelo modelo posado — físico gira
+  // (investida rolando), poder fica cravado apontando o alvo
+  const emAtk = f.estado === 'atk' && f.golpe;
+  const catPose = emAtk
+    ? (f.golpe.fisico ? 'fisico'
+      : (f.golpe.projetil || f.golpe.rajada || f.golpe.feixe) ? 'poder' : null)
+    : null;
+  const pose = catPose && M.poses && M.poses[catPose];
+  const ud0 = M.g.userData;
+  if (pose) {
+    if (ud0._poseAtiva !== pose) {
+      if (ud0._poseAtiva) ud0._poseAtiva.visible = false;
+      if (!ud0._corpoPose) {
+        ud0._corpoPose = M.g.children.filter((c) =>
+          c !== pose && !Object.values(M.poses).includes(c) && c.visible);
+      }
+      for (const c of ud0._corpoPose) c.visible = false;
+      pose.visible = true;
+      ud0._poseAtiva = pose;
+    }
+    // o físico RODA como um pião de casco; o poder fica firme
+    pose.rotation.y = catPose === 'fisico' ? f.t * 16 : 0;
+    return;
+  }
+  if (ud0._poseAtiva) {
+    ud0._poseAtiva.visible = false;
+    for (const c of ud0._corpoPose || []) c.visible = true;
+    ud0._poseAtiva = null;
+    ud0._corpoPose = null;
+  }
   // BOLA-ESQUIVA estilo Sonic: na cambalhota lateral o corpo VIRA uma
   // esfera girando do tamanho da fera; ao sair do dash, volta ao normal
   if (f.estado === 'dash') {
