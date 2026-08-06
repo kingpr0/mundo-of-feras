@@ -1848,7 +1848,10 @@ export function renderiza(cena, semCor) {
     });
     _pb = { rt: new THREE.WebGLRenderTarget(2, 2), mat,
             cenaQuad: new THREE.Scene(),
-            camQuad: new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1) };
+            camQuad: new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1),
+            // material fantasma: pinta SÓ a profundidade do mundo, para o
+            // herói ficar atrás/dentro das coisas (grama alta, árvores)
+            soProfundidade: new THREE.MeshBasicMaterial({ colorWrite: false }) };
     const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), mat);
     quad.frustumCulled = false; // o shader ignora a câmera: nunca cortar
     _pb.cenaQuad.add(quad);
@@ -1863,12 +1866,17 @@ export function renderiza(cena, semCor) {
   // 2) a textura em CINZA na tela
   _pb.mat.uniforms.tela.value = _pb.rt.texture;
   r.render(_pb.cenaQuad, _pb.camQuad);
-  // 3) o herói colorido por cima — SEM o fundo da cena, senão o céu
-  // azul repinta a tela inteira e cobre o mundo cinza
+  // 3) profundidade do MUNDO na tela (sem cor): o herói respeita o que
+  // está na frente dele — some dentro da grama alta, atrás das árvores
   const fundo = cena.scene.background;
   cena.scene.background = null;
   r.autoClear = false;
   r.clearDepth();
+  cena.camera.layers.set(0);
+  cena.scene.overrideMaterial = _pb.soProfundidade;
+  r.render(cena.scene, cena.camera);
+  cena.scene.overrideMaterial = null;
+  // 4) o herói colorido, agora com oclusão correta
   cena.camera.layers.set(CAMADA_HEROI);
   r.render(cena.scene, cena.camera);
   r.autoClear = true;
