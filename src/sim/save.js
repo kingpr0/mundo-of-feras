@@ -4,10 +4,11 @@
 export const VERSAO_SAVE = 1;
 
 // estado vivo -> pacote serializável (só o que importa, nada de objetos 3D)
-export function empacotaSave({ equipe, ativa, itens, jaEscolheu, chaveMapa, pos, vencidos, vistas }) {
+export function empacotaSave({ equipe, ativa, itens, jaEscolheu, chaveMapa, pos, vencidos, vistas, box }) {
   return {
     v: VERSAO_SAVE,
     equipe,
+    box: box || [], // capturas além do squad de 5 descansam aqui
     ativa,
     itens: { cristal: itens.cristal },
     jaEscolheu: !!jaEscolheu,
@@ -23,7 +24,7 @@ export function empacotaSave({ equipe, ativa, itens, jaEscolheu, chaveMapa, pos,
 // ao inicial; campos ausentes ganham padrões seguros.
 export function validaSave(s, especies, mapas, mapaInicial) {
   if (!s || s.v !== VERSAO_SAVE || !Array.isArray(s.equipe)) return null;
-  const equipe = s.equipe
+  const limpaFeras = (lista) => (Array.isArray(lista) ? lista : [])
     .filter((f) => f && especies[f.especie])
     .map((f) => ({
       especie: f.especie,
@@ -35,8 +36,10 @@ export function validaSave(s, especies, mapas, mapaInicial) {
       usos: f.usos && typeof f.usos === 'object' ? f.usos : {},
       hpAtual: Math.max(0, f.hpAtual | 0),
     }));
+  const equipe = limpaFeras(s.equipe);
   return {
     equipe,
+    box: limpaFeras(s.box),
     ativa: Math.min(Math.max(0, s.ativa | 0), Math.max(0, equipe.length - 1)),
     itens: { cristal: Math.max(0, (s.itens && s.itens.cristal) | 0) },
     jaEscolheu: !!s.jaEscolheu,

@@ -99,6 +99,10 @@ let equipe = [];
 const CRISTAIS_MAX = 15;
 const itens = { cristal: CRISTAIS_MAX };
 let ativa = 0;
+// SQUAD de até 5 feras; o excedente capturado vai para o BOX (regra do
+// Domador — no online o squad será de 3, variável no futuro)
+const SQUAD_MAX = 5;
+let box = [];
 // FERADEX: espécies já avistadas — só elas aparecem reveladas na tabela
 const vistas = new Set();
 const marcaVista = (k) => { if (k && especies[k]) vistas.add(k); };
@@ -110,7 +114,8 @@ if (saveCarregado) {
   jaEscolheu = saveCarregado.jaEscolheu;
   for (const v of saveCarregado.vencidos) vencidosGlobais.add(v);
   for (const v of saveCarregado.vistas || []) vistas.add(v);
-  for (const f of equipe) marcaVista(f.especie); // quem é seu, você já viu
+  box = saveCarregado.box || [];
+  for (const f of [...equipe, ...box]) marcaVista(f.especie); // quem é seu, você já viu
   if (saveCarregado.pos) {
     mundo.domador.pos.x = saveCarregado.pos.x;
     mundo.domador.pos.z = saveCarregado.pos.z;
@@ -121,7 +126,7 @@ function salvaJogo() {
   try {
     localStorage.setItem(CHAVE_SAVE, JSON.stringify(empacotaSave({
       equipe, ativa, itens, jaEscolheu, chaveMapa,
-      pos: mundo.domador.pos, vencidos: [...vencidosGlobais], vistas: [...vistas],
+      pos: mundo.domador.pos, vencidos: [...vencidosGlobais], vistas: [...vistas], box,
     })));
   } catch { /* navegador sem armazenamento (anônimo): joga sem salvar */ }
 }
@@ -419,7 +424,7 @@ function tituloMenu() {
   if (t === 'exploracao' && !menu.ativo) return 'MENU · aperte Q';
   return { exploracao: 'MENU', batalha: 'BATALHA', equipeExp: 'EQUIPE',
            equipeBat: 'TROCAR FERA', statusLista: 'STATUS', catalogo: 'CATÁLOGO DE GOLPES',
-           compendio: 'FERADEX', itens: 'ITENS',
+           compendio: 'FERADEX', itens: 'ITENS', box: 'BOX DE FERAS',
            treinoP: 'TREINO · SUA FERA', treinoE: 'TREINO · OPONENTE',
            posRound: 'A PRÓXIMA VEM AÍ — TROCAR?' }[t]
     || (t === 'treinoG' ? `TREINO · PODERES ${treino ? treino.golpes.length : 0}/3 (o físico do Z é o da fera)` : 'MENU');
@@ -455,6 +460,7 @@ function itensDoMenu() {
     }));
   if (t === 'exploracao') return [
     { txt: 'Equipe', acao: () => abreMenu('equipeExp') },
+    { txt: `Box (${box.length})`, acao: () => abreMenu('box') },
     { txt: 'Status', acao: () => abreMenu('statusLista') },
     { txt: 'Feradex', acao: () => abreMenu('compendio') },
     { txt: 'Catálogo', acao: () => abreMenu('catalogo') },
@@ -509,6 +515,24 @@ function itensDoMenu() {
     })),
     { txt: 'Voltar', acao: () => abreMenu('exploracao') },
   ];
+  // BOX: capturas guardadas — escolher uma puxa para o squad (se couber)
+  if (t === 'box') return [
+    ...box.map((f, i) => ({
+      txt: `${nomeDe(f)} Lv.${f.nivel}`,
+      acao: () => {
+        if (equipe.length >= SQUAD_MAX) {
+          hud.toast(`Squad cheio (${SQUAD_MAX})! Mande alguém para o Box primeiro.`, 2400);
+          return;
+        }
+        equipe.push(box.splice(i, 1)[0]);
+        sfx.capturado();
+        hud.toast(`${nomeDe(equipe[equipe.length - 1])} entrou no squad!`, 2200);
+        atualizaPainel(); salvaJogo(); abreMenu('box');
+      },
+    })),
+    ...(box.length ? [] : [{ txt: '(vazio)', acao: () => {} }]),
+    { txt: 'Voltar', acao: () => abreMenu('exploracao') },
+  ];
   if (t === 'statusFera') {
     // os dados da fera vivem na FICHA grande ao lado do holograma;
     // aqui ficam só as ações
@@ -519,6 +543,13 @@ function itensDoMenu() {
         if (n && n.trim()) { f.apelido = n.trim().slice(0, 12); atualizaPainel(); abreMenu('statusFera'); }
       } },
       { txt: 'Lembrar golpe', acao: () => abreMenu('lembrar') },
+      ...(equipe.length > 1 ? [{ txt: 'Mandar para o Box', acao: () => {
+        const [saiu] = equipe.splice(menu.fera, 1);
+        box.push(saiu);
+        if (ativa >= equipe.length) ativa = 0;
+        hud.toast(`📦 ${nomeDe(saiu)} foi descansar no Box.`, 2200);
+        atualizaPainel(); salvaJogo(); abreMenu('statusLista');
+      } }] : []),
       { txt: 'Voltar', acao: () => abreMenu('statusLista') },
     ];
   }
@@ -723,7 +754,7 @@ function voltaMenu() {
   const t = menu.tipo;
   if (t === 'inicial' && !equipe.length) return; // o Ritual não se recusa
 
-  if (t === 'equipeExp' || t === 'statusLista' || t === 'catalogo' || t === 'compendio' || t === 'itens') abreMenu('exploracao');
+  if (t === 'equipeExp' || t === 'statusLista' || t === 'catalogo' || t === 'compendio' || t === 'itens' || t === 'box') abreMenu('exploracao');
   else if (t === 'equipeBat' || t === 'batalha') fechaMenu();
   else if (t === 'statusFera') abreMenu('statusLista');
   else if (t === 'lembrar') abreMenu('statusFera');
@@ -1046,7 +1077,11 @@ function encerraBatalha() {
   if (resultado === 'captura') {
     const nova = criarFera(especies, golpesCat, batalha.e.chave, batalha.e.nivel);
     nova.hpAtual = Math.max(1, batalha.e.hp);
-    equipe.push(nova);
+    // squad cheio (5): a captura vai direto para o BOX
+    if (equipe.length >= SQUAD_MAX) {
+      box.push(nova);
+      setTimeout(() => hud.toast(`📦 ${nomeDe(nova)} foi para o Box — squad cheio (${SQUAD_MAX}).`, 2800), 1200);
+    } else equipe.push(nova);
   }
   if (resultado === 'fuga') hud.toast('Você recuou da batalha!');
   // fecha o duelo de treinador: vitória sobre a última fera dele = troféu
