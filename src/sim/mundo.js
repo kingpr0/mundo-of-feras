@@ -197,6 +197,8 @@ export function interacaoPerto(m) {
     if (dc[0] === 'placa' && dc[3] && perto(dc[1], dc[2], 1.7)) return 'ler a placa';
     if (dc[0] === 'fogueira' && perto(dc[1], dc[2], 2.4)) return 'a Fogueira Eterna';
   }
+  const pd = m.mapa.portalDev;
+  if (pd && perto(pd.x, pd.z, 2.0)) return 'PORTAL DEV (mundo de testes)';
   return null;
 }
 
@@ -328,6 +330,11 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
       if (!(m.bausAbertos && m.bausAbertos.has(bi)) && perto(b2[1], b2[2], 1.7))
         return { tipo: 'bau', idx: bi, bau: b2 };
     }
+    // PORTAL DEV: passagem temporária para a "versão de desenvolvedor"
+    // (os mapas antigos, guardados como galeria de testes) — sai no lançamento
+    const pd = m.mapa.portalDev;
+    if (pd && perto(pd.x, pd.z, 2.0))
+      return { tipo: 'portalDev', destino: pd.destino };
     for (const dc of m.mapa.decor || []) {
       if (dc[0] === 'placa' && dc[3] && perto(dc[1], dc[2], 1.7))
         return { tipo: 'fala', texto: dc[3], placa: true };

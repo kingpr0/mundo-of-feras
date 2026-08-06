@@ -1381,6 +1381,11 @@ function loop(agora) {
           atualizaPainel(); salvaJogo();
         }
       }
+      else if (evt && evt.tipo === 'portalDev') {
+        sfx.cristalVoa(); hud.flash();
+        hud.toast('🛠 Portal do Desenvolvedor — atravessando para o mundo de testes...', 2400);
+        trocaMapa(evt.destino);
+      }
       else if (evt && evt.tipo === 'arenaTreino') {
         sfx.swing();
         hud.toast('🥊 Mestre da Arena: "Escolha os dois lados do duelo — aqui é só treino, nada se perde."', 3000);
