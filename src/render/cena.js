@@ -1357,6 +1357,71 @@ function descarta(obj) {
 /* ---------- travessias épicas: desfiladeiro, ponte pênsil, cenário ---- */
 // rio no fundo do cânion + espuma nas margens (o cânion em si é o próprio
 // chão deslocado — ver fundoDesfiladeiro na sim)
+/* ---------- painéis 2.5D das travessias: o que se VÊ mas não se pisa.
+   Silhuetas pintadas em canvas viram planos no fundo do cânion — com a
+   câmera 3D o paralaxe é de graça e a profundidade dobra ---------- */
+function texturaSilhueta(cor, semente) {
+  const c = document.createElement('canvas'); c.width = 512; c.height = 128;
+  const x = c.getContext('2d');
+  let sem = semente;
+  const rnd = () => (sem = (sem * 1103515245 + 12345) % 2147483648) / 2147483648;
+  x.fillStyle = cor;
+  x.beginPath();
+  x.moveTo(0, 128);
+  // linha de topo serrilhada (torres de rocha), fechando sem costura
+  let px = 0;
+  const alturas = [];
+  while (px < 512) {
+    const h = 30 + rnd() * 70;
+    alturas.push([px, h]);
+    px += 22 + rnd() * 40;
+  }
+  alturas[alturas.length - 1][0] = 512; alturas[alturas.length - 1][1] = alturas[0][1];
+  for (const [ax, ah] of alturas) { x.lineTo(ax - 8 - rnd() * 8, 128 - ah); x.lineTo(ax, 128 - ah + 10 + rnd() * 14); }
+  x.lineTo(512, 128);
+  x.closePath(); x.fill();
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = THREE.RepeatWrapping;
+  return t;
+}
+function texturaVinhas() {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 128;
+  const x = c.getContext('2d');
+  let sem = 23;
+  const rnd = () => (sem = (sem * 1103515245 + 12345) % 2147483648) / 2147483648;
+  x.strokeStyle = '#2c4a2a'; x.lineCap = 'round';
+  for (let i = 0; i < 14; i++) {
+    const px = rnd() * 256, comp = 34 + rnd() * 80;
+    x.lineWidth = 2 + rnd() * 2.5;
+    x.beginPath(); x.moveTo(px, 0);
+    x.quadraticCurveTo(px + (rnd() - 0.5) * 16, comp * 0.6, px + (rnd() - 0.5) * 10, comp);
+    x.stroke();
+    // folhinhas na ponta
+    x.fillStyle = '#3d6b38';
+    x.beginPath(); x.ellipse(px + (rnd() - 0.5) * 10, comp, 3.5, 5.5, rnd(), 0, 6.284); x.fill();
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = THREE.RepeatWrapping;
+  return t;
+}
+function texturaBruma() {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 64;
+  const x = c.getContext('2d');
+  let sem = 51;
+  const rnd = () => (sem = (sem * 1103515245 + 12345) % 2147483648) / 2147483648;
+  for (let i = 0; i < 9; i++) {
+    const px = rnd() * 256, py = 14 + rnd() * 36, r = 26 + rnd() * 34;
+    const gr = x.createRadialGradient(px, py, 0, px, py, r);
+    gr.addColorStop(0, 'rgba(235,240,250,0.5)');
+    gr.addColorStop(1, 'rgba(235,240,250,0)');
+    x.fillStyle = gr;
+    for (const off of [0, -256, 256]) { x.beginPath(); x.arc(px + off, py, r, 0, 6.284); x.fill(); }
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = THREE.RepeatWrapping;
+  return t;
+}
+
 function montaDesfiladeiro(g, df, mapa, anims) {
   const rim = alturaDegraus(mapa, { x: 0, z: df.z1 + 0.5 });
   const yRio = rim - df.prof + 0.35;
@@ -1403,6 +1468,41 @@ function montaDesfiladeiro(g, df, mapa, anims) {
     pedra.position.set(px, yRio + 0.1, zMeio + (i % 2 ? wRio / 2 + 0.5 : -wRio / 2 - 0.5));
     g.add(pedra);
   }
+  // ---- PROFUNDIDADE 2.5D (o que se vê e não se pisa) ----
+  // duas fileiras de SILHUETAS de rocha na base da parede norte: com a
+  // câmera 3D elas deslizam entre si e o cânion parece muito mais fundo
+  const silhueta = (cor, semente, z, alt, y) => {
+    const tx = texturaSilhueta(cor, semente);
+    tx.repeat.set(larg / 26, 1);
+    const p = new THREE.Mesh(new THREE.PlaneGeometry(larg, alt),
+      new THREE.MeshBasicMaterial({ map: tx, transparent: true, alphaTest: 0.4 }));
+    p.position.set(0, y + alt / 2, z);
+    g.add(p);
+  };
+  // (na banda z0..z0+2.6 a encosta ainda está alta e taparia os painéis —
+  // as fileiras vivem no LEITO, onde o chão já desceu de verdade)
+  silhueta('#231a22', 7, df.z0 + 2.7, 2.4, yRio + 0.05);   // fileira funda, quase negra
+  silhueta('#37282e', 41, df.z0 + 3.5, 1.5, yRio + 0.02);  // fileira à frente, um tom acima
+  // vinhas penduradas no rim norte, caindo para dentro do cânion
+  const txV = texturaVinhas();
+  txV.repeat.set(larg / 15, 1);
+  const vinhas = new THREE.Mesh(new THREE.PlaneGeometry(larg, 2.3),
+    new THREE.MeshBasicMaterial({ map: txV, transparent: true, alphaTest: 0.35 }));
+  vinhas.position.set(0, alturaDegraus(mapa, { x: 0, z: df.z0 }) - 1.15 + 0.05, df.z0 + 0.55);
+  g.add(vinhas);
+  // BRUMA viva flutuando sobre o rio, em duas alturas e velocidades
+  const brumas = [];
+  for (const [alt, op, vel] of [[0.8, 0.16, 0.014], [1.5, 0.10, 0.026]]) {
+    const tb = texturaBruma();
+    tb.repeat.set(larg / 30, 1);
+    const b = new THREE.Mesh(new THREE.PlaneGeometry(larg, 1.6),
+      new THREE.MeshBasicMaterial({ map: tb, transparent: true, opacity: op, depthWrite: false }));
+    b.rotation.x = -Math.PI / 2;
+    b.position.set(0, yRio + alt, zMeio);
+    g.add(b);
+    brumas.push([tb, vel]);
+  }
+  if (anims) anims.push((t) => { for (const [tb, vel] of brumas) tb.offset.x = t * vel; });
 }
 
 // CACHOEIRA: afluente que despenca da parede NORTE do cânion (de frente
