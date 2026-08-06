@@ -1240,7 +1240,7 @@ function loop(agora) {
         if (!equipe.length) {
           // só a fogueira da vila NATAL acende (ou reacende) o elo
           if (chaveMapa === dadosMapas.inicial) iniciaRitual(jaEscolheu);
-          else hud.toast('Esta fogueira não reconhece você. A SUA chama arde na Vila Clareira.', 3000);
+          else hud.toast('Esta fogueira não reconhece você. A SUA chama arde na Vila Primordial.', 3000);
         }
         else hud.toast('🔥 A Fogueira Eterna crepita. O elo com suas feras se aquece.', 2800);
       }

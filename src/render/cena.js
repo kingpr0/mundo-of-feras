@@ -1539,6 +1539,10 @@ export function montaMapa(cena, mapa) {
     (mapa.npcs || []).forEach(([x, z, tipo, rot], i) => {
       poePersonagem(g, MODELO_NPC[tipo] || (2 + (i % 8)), x, z, 0, rot || 0, tipo);
     });
+    // ...e DUELISTAS (salões de ginásio): mesmos dados dos treinadores de rua
+    (mapa.treinadores || []).forEach((t, i) => {
+      poePersonagem(g, t.modelo || (2 + (i % 8)), t.x, t.z, 0, t.rot || 0, t.tipo);
+    });
     (mapa.decor || []).forEach(([tipo, x, z]) => {
       if (DECOR[tipo]) DECOR[tipo](g, x, z, 0);
     });

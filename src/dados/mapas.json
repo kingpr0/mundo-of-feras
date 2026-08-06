@@ -3055,8 +3055,313 @@
           "de": -2,
           "ate": 2,
           "destino": "vila_primordial"
+        },
+        {
+          "borda": "leste",
+          "de": -2,
+          "ate": 2,
+          "destino": "cidade_primaluz"
         }
       ]
+    },
+    "cidade_primaluz": {
+      "nome": "Cidade Primaluz",
+      "regiao": {
+        "x": 2,
+        "y": 10
+      },
+      "limite": {
+        "x": 26,
+        "z": 16
+      },
+      "chao": "vila",
+      "spawn": {
+        "x": -23,
+        "z": 0
+      },
+      "platos": [
+        {
+          "x0": -15,
+          "z0": -9,
+          "x1": 15,
+          "z1": 7,
+          "h": 1.8
+        }
+      ],
+      "morros": [
+        {
+          "x": 10,
+          "z": -2,
+          "r": 4.2,
+          "h": 1.1
+        }
+      ],
+      "decor": [
+        [
+          "fogueira",
+          10,
+          -2
+        ],
+        [
+          "placa",
+          -21.5,
+          2.5,
+          "CIDADE PRIMALUZ — lar do Ginásio da Centelha. Prove seu valor e leve o primeiro TROFÉU."
+        ]
+      ],
+      "cenario": [
+        [
+          "cidadela-raio",
+          -2,
+          -4,
+          9,
+          0,
+          4.6
+        ],
+        [
+          "mercado-madeira",
+          -20,
+          -11,
+          6,
+          0.6,
+          3.4
+        ],
+        [
+          "centro-cura",
+          -19,
+          11,
+          8,
+          0.8,
+          3.9
+        ],
+        [
+          "casinha-aconchego",
+          8,
+          12,
+          6.5,
+          -0.3,
+          3.2
+        ],
+        [
+          "casa-adobe",
+          14.5,
+          12.5,
+          6.2,
+          0.2,
+          3.2
+        ],
+        [
+          "cabana-tronco",
+          21,
+          11.5,
+          6.8,
+          -0.6,
+          3.4
+        ],
+        [
+          "arvore-verdejante",
+          -10,
+          3,
+          4.6,
+          0.7,
+          1.1
+        ],
+        [
+          "arvore-nuvem",
+          6,
+          5,
+          4.4,
+          1.8,
+          1.1
+        ],
+        [
+          "arvore-petala",
+          -23,
+          -4,
+          4.2,
+          2.4,
+          1.1
+        ],
+        [
+          "arvore-bolha",
+          23,
+          -8,
+          4,
+          0.2,
+          1
+        ],
+        [
+          "pedra-medieval",
+          14,
+          2,
+          1.3,
+          1,
+          0.9
+        ],
+        [
+          "pedra-estilizada",
+          -6,
+          -8.5,
+          1.1,
+          0.4,
+          0.8
+        ],
+        [
+          "arbusto-redondo",
+          2,
+          6.5,
+          1.4,
+          1.2,
+          0
+        ],
+        [
+          "arbusto-oval",
+          -13,
+          -6,
+          1.3,
+          2.1,
+          0
+        ]
+      ],
+      "pedras": [
+        [
+          24,
+          4,
+          0.7
+        ],
+        [
+          -24,
+          -9,
+          0.6
+        ]
+      ],
+      "npcs": [
+        [
+          -16.2,
+          9.6,
+          "enfermeira",
+          0.9,
+          "O Centro de Primaluz está sempre aberto. Duelou no Ginásio? Passe aqui antes E depois!"
+        ],
+        [
+          4.2,
+          -1.2,
+          "aldeao",
+          -0.6,
+          "O Líder Raika é veloz como um raio. Dizem que nem os TROFÉUS param quietos na sala dele."
+        ],
+        [
+          10.5,
+          11.2,
+          "aldea",
+          2.8,
+          "Morar ao pé do muro tem dessas: todo dia passa um domador sonhando com o Ginásio."
+        ],
+        [
+          -19.5,
+          -8.2,
+          "mercador",
+          1.3,
+          "O mercado ainda está montando as bancas. Logo, logo teremos EsFeras e poções!"
+        ]
+      ],
+      "cura": {
+        "x": -15.6,
+        "z": 10.2
+      },
+      "portas": [
+        {
+          "x": -2,
+          "z": 1.4,
+          "destino": "interior_ginasio1",
+          "retorno": {
+            "x": -2,
+            "z": 2.6
+          }
+        }
+      ],
+      "saidas": [
+        {
+          "borda": "oeste",
+          "de": -2,
+          "ate": 2,
+          "destino": "acesso1"
+        }
+      ]
+    },
+    "interior_ginasio1": {
+      "nome": "Ginásio da Centelha",
+      "tipo": "interior",
+      "estilo": "castelo",
+      "limite": {
+        "x": 7,
+        "z": 9
+      },
+      "spawn": {
+        "x": 0,
+        "z": 7.6
+      },
+      "npcs": [],
+      "treinadores": [
+        {
+          "nome": "Discípulo Teo",
+          "tipo": "aldeao",
+          "modelo": 12,
+          "x": -3.4,
+          "z": 2.5,
+          "rot": 1.2,
+          "fala": "Ninguém fala com o Líder sem faiscar comigo primeiro!",
+          "equipe": [
+            {
+              "especie": "raiozim",
+              "nivel": 9
+            },
+            {
+              "especie": "furim",
+              "nivel": 10
+            }
+          ]
+        },
+        {
+          "nome": "Discípula Mel",
+          "tipo": "aldea",
+          "modelo": 17,
+          "x": 3.4,
+          "z": -1.5,
+          "rot": -1.4,
+          "fala": "O segredo da Centelha? Nunca ficar parada. Vamos dançar!",
+          "equipe": [
+            {
+              "especie": "espinhim",
+              "nivel": 10
+            },
+            {
+              "especie": "raiozim",
+              "nivel": 11
+            }
+          ]
+        },
+        {
+          "nome": "Líder Raika",
+          "tipo": "senhor",
+          "modelo": 14,
+          "x": 0,
+          "z": -7.2,
+          "rot": 0,
+          "fala": "Então chegou até mim... Sou RAIKA, a Centelha de Primaluz. Mostre-me um duelo à altura do primeiro TROFÉU!",
+          "equipe": [
+            {
+              "especie": "raiozim",
+              "nivel": 12
+            },
+            {
+              "especie": "voltouro",
+              "nivel": 14
+            }
+          ]
+        }
+      ],
+      "saidas": []
     }
   }
 }
