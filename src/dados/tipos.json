@@ -1,9 +1,35 @@
 {
   "vantagens": {
-    "fogo": ["planta"],
-    "agua": ["fogo"],
-    "planta": ["agua"],
-    "eletrico": ["agua"]
+    "fogo": [
+      "planta",
+      "gelo"
+    ],
+    "agua": [
+      "fogo",
+      "pedra",
+      "terra"
+    ],
+    "planta": [
+      "agua",
+      "pedra",
+      "terra"
+    ],
+    "eletrico": [
+      "agua"
+    ],
+    "gelo": [
+      "planta",
+      "terra"
+    ],
+    "pedra": [
+      "fogo",
+      "gelo"
+    ],
+    "terra": [
+      "eletrico",
+      "fogo",
+      "pedra"
+    ]
   },
   "bonus": 1.5,
   "penalidade": 0.75

@@ -948,7 +948,7 @@ function texturaBola() {
 }
 const COR_BOLA = { fogo: 0xff8a50, agua: 0x5fb2e8, planta: 0x6fc45f,
                    eletrico: 0xf2d84a, gelo: 0xa8dcef, pedra: 0xb0a284,
-                   metal: 0xb8c2cc, normal: 0xd8cdb8 };
+                   terra: 0xc2a26a, comum: 0xd8cdb8 };
 export function animaLuta(M, f) {
   // BOLA-ESQUIVA estilo Sonic: na cambalhota lateral o corpo VIRA uma
   // esfera girando do tamanho da fera; ao sair do dash, volta ao normal

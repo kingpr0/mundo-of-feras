@@ -43,7 +43,8 @@ const RINGUE = { dom: { x: -5, y: 0, z: 0 }, fera: { x: 3.5, y: 0, z: 0 } };
 const ARENA_Y = 0.12;
 const sobreTablado = (pos) => ({ x: pos.x, y: pos.y + ARENA_Y, z: pos.z });
 const DICA_EXPLORAR = 'Setas: andar (2 toques = correr) · M abre o menu';
-const CORES_TIPO = { fogo: 0xff8a3d, eletrico: 0xffe94d, agua: 0x4da3ff, planta: 0x5fd35a, comum: 0xcbd0d8 };
+const CORES_TIPO = { fogo: 0xff8a3d, eletrico: 0xffe94d, agua: 0x4da3ff, planta: 0x5fd35a,
+                     gelo: 0xa8e2f5, pedra: 0xb59a6a, terra: 0xd8a45b, dragao: 0xb06ae8, comum: 0xcbd0d8 };
 const SIMBOLO = { baixo: '↓', frente: '→' };
 const TECLAS_GOLPE = ['Z', 'X', 'C', 'V'];
 const projMeshes = new Map();
@@ -118,6 +119,9 @@ addEventListener('beforeunload', salvaJogo);
 setInterval(salvaJogo, 15000); // rede de segurança além dos eventos-chave
 let confirmaReset = 0; // duplo toque do "Recomeçar jornada"
 const nomeDe = (f) => f.apelido || especies[f.especie].nome;
+// raridade da planilha (1-4) em palavra para as fichas; aceita os textos antigos
+const raridadeTxt = (r) => ({ 1: 'comum', 2: 'incomum', 3: 'rara', 4: 'muito rara' })[r]
+  || String(r || 'comum').replace('_', ' ');
 function atualizaPainel() {
   if (!equipe.length) { // elo apagado: o Caminho da Cinza
     hud.nomeJogador('sem elo', 0);
@@ -440,7 +444,7 @@ function itensDoMenu() {
     { txt: 'Catálogo', acao: () => abreMenu('catalogo') },
     { txt: 'Itens', acao: () => abreMenu('itens') },
     { txt: 'Carteira', acao: () => hud.toast('Carteira: 0 moedas (economia em breve)') },
-    { txt: 'Insígnias', acao: () => hud.toast('Insígnias: nenhuma ainda') },
+    { txt: 'Troféus', acao: () => hud.toast('Troféus: nenhum ainda — vença um ginásio!') },
     { txt: 'Recomeçar jornada', acao: () => {
       // apagar o save é para sempre: exige DOIS toques em 3 segundos
       if (tempo < confirmaReset) {
@@ -540,7 +544,7 @@ function fichaFera(f) {
       golpes.push(`forte: ${golpesCat[id].nome} <span>${usosTxt(id)}</span>`);
   return {
     nome: nomeDe(f), sub: `${esp.nome} · Nível ${f.nivel}`,
-    tipo: esp.tipo, raridade: esp.raridade.replace('_', ' '), corTipo: corCss(esp.tipo),
+    tipo: esp.tipo, raridade: raridadeTxt(esp.raridade), corTipo: corCss(esp.tipo),
     linhas: [`<b>HP</b> ${f.hpAtual}/${max}`, `<b>XP</b> ${f.xp}/${xpParaSubir(f.nivel)}`],
     golpes,
   };
@@ -556,7 +560,7 @@ function fichaEspecie(k) {
   const stat = (v) => Math.round((v || 1) * 100);
   return {
     nome: `#${String(numero).padStart(2, '0')} ${e2.nome}`, sub: 'Compêndio de Feras',
-    tipo: e2.tipo, raridade: e2.raridade.replace('_', ' '), corTipo: corCss(e2.tipo),
+    tipo: e2.tipo, raridade: raridadeTxt(e2.raridade), corTipo: corCss(e2.tipo),
     linhas: [
       `<b>Tamanho</b> ${tamanho}${e2.voa ? ' · voadora' : ''}`,
       `<b>Vida</b> ${e2.vida} · <b>Força</b> ${stat(e2.ataque)} · <b>Defesa</b> ${stat(e2.defesa)}`,

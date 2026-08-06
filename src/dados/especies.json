@@ -2,18 +2,18 @@
  "folhito": {
   "nome": "Folhito",
   "tipo": "planta",
-  "raridade": "rara",
+  "raridade": 3,
   "selvagem": true,
   "vida": 68,
-  "velocidade": 4.2,
-  "ataque": 1.05,
+  "velocidade": 4.4,
+  "ataque": 1.08,
   "impulso": 7,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/folhito.glb",
-  "altura3d": 0.95,
+  "altura3d": 0.45,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -59,14 +59,17 @@
   "evolui": {
    "para": "folhardo",
    "nivel": 20
-  }
+  },
+  "peso": 20,
+  "agilidade": 50,
+  "forca": 50
  },
  "folhardo": {
   "nome": "Folhardo",
   "tipo": "planta",
-  "raridade": "rara",
+  "raridade": 4,
   "vida": 86,
-  "velocidade": 4.3,
+  "velocidade": 4.96,
   "ataque": 1.15,
   "impulso": 7.5,
   "sequencia": [
@@ -74,7 +77,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/folhardo.glb",
-  "altura3d": 1.45,
+  "altura3d": 0.95,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -120,22 +123,25 @@
   "evolui": {
    "para": "florasto",
    "nivel": 40
-  }
+  },
+  "peso": 45,
+  "agilidade": 70,
+  "forca": 60
  },
  "florasto": {
-  "nome": "Florasto",
+  "nome": "Folhasto",
   "tipo": "planta",
-  "raridade": "rara",
+  "raridade": 4,
   "vida": 111,
-  "velocidade": 4,
-  "ataque": 1.28,
+  "velocidade": 5.52,
+  "ataque": 1.37,
   "impulso": 8,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/florasto.glb",
-  "altura3d": 2.05,
+  "altura3d": 1.85,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -181,15 +187,18 @@
     "golpe": "raio_esmeralda"
    }
   ],
-  "defesa": 1.25
+  "defesa": 1.25,
+  "peso": 85,
+  "agilidade": 90,
+  "forca": 90
  },
  "brasinha": {
-  "nome": "Brasinha",
+  "nome": "Brasa",
   "tipo": "fogo",
-  "raridade": "rara",
+  "raridade": 3,
   "vida": 70,
-  "velocidade": 4.6,
-  "ataque": 1.1,
+  "velocidade": 4.4,
+  "ataque": 1.08,
   "impulso": 7.5,
   "sequencia": [
    "baixo",
@@ -214,7 +223,7 @@
    }
   ],
   "modelo3d": "./assets/feras/brasinha.glb",
-  "altura3d": 0.95,
+  "altura3d": 0.5,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -238,22 +247,25 @@
   "evolui": {
    "para": "brasurio",
    "nivel": 20
-  }
+  },
+  "peso": 20,
+  "agilidade": 50,
+  "forca": 50
  },
  "brasurio": {
   "nome": "Brasúrio",
   "tipo": "fogo",
-  "raridade": "rara",
+  "raridade": 4,
   "vida": 88,
-  "velocidade": 4.4,
-  "ataque": 1.15,
+  "velocidade": 4.96,
+  "ataque": 1.22,
   "impulso": 7.5,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/brasurio.glb",
-  "altura3d": 1.45,
+  "altura3d": 1.2,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -299,23 +311,26 @@
   "evolui": {
    "para": "dragobrasa",
    "nivel": 40
-  }
+  },
+  "peso": 55,
+  "agilidade": 70,
+  "forca": 70
  },
  "dragobrasa": {
-  "nome": "Dragobrasa",
+  "nome": "Dragonbrasa",
   "tipo": "fogo",
-  "raridade": "rara",
+  "raridade": 4,
   "voa": true,
   "vida": 108,
-  "velocidade": 4,
-  "ataque": 1.28,
+  "velocidade": 4.68,
+  "ataque": 1.4,
   "impulso": 8,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/dragobrasa.glb",
-  "altura3d": 2.15,
+  "altura3d": 2.3,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -357,16 +372,20 @@
     "golpe": "pentachama"
    }
   ],
-  "defesa": 1.15
+  "defesa": 1.15,
+  "tipo2": "dragao",
+  "peso": 190,
+  "agilidade": 60,
+  "forca": 95
  },
  "gotim": {
-  "nome": "Gotim",
+  "nome": "Gotin",
   "tipo": "agua",
-  "raridade": "rara",
+  "raridade": 3,
   "selvagem": true,
   "vida": 65,
-  "velocidade": 4,
-  "ataque": 1,
+  "velocidade": 4.4,
+  "ataque": 1.08,
   "impulso": 7,
   "sequencia": [
    "baixo"
@@ -386,7 +405,7 @@
    }
   ],
   "modelo3d": "./assets/feras/gotim.glb",
-  "altura3d": 0.95,
+  "altura3d": 0.5,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -410,14 +429,17 @@
   "evolui": {
    "para": "gotao",
    "nivel": 20
-  }
+  },
+  "peso": 20,
+  "agilidade": 50,
+  "forca": 50
  },
  "gotao": {
-  "nome": "Gotão",
+  "nome": "Gotolo",
   "tipo": "agua",
-  "raridade": "rara",
+  "raridade": 4,
   "vida": 89,
-  "velocidade": 4.2,
+  "velocidade": 4.96,
   "ataque": 1.15,
   "impulso": 7.5,
   "sequencia": [
@@ -425,7 +447,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/gotao.glb",
-  "altura3d": 1.45,
+  "altura3d": 0.95,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -471,22 +493,25 @@
   "evolui": {
    "para": "gotorrente",
    "nivel": 40
-  }
+  },
+  "peso": 45,
+  "agilidade": 70,
+  "forca": 60
  },
  "gotorrente": {
-  "nome": "Gotorrente",
+  "nome": "Golhardo",
   "tipo": "agua",
-  "raridade": "rara",
+  "raridade": 4,
   "vida": 104,
-  "velocidade": 4.3,
-  "ataque": 1.28,
+  "velocidade": 4.68,
+  "ataque": 1.4,
   "impulso": 8,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/gotorrente.glb",
-  "altura3d": 2.05,
+  "altura3d": 2.1,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -528,16 +553,19 @@
     "golpe": "hidrobomba"
    }
   ],
-  "defesa": 1.2
+  "defesa": 1.2,
+  "peso": 120,
+  "agilidade": 60,
+  "forca": 95
  },
  "raiozim": {
-  "nome": "Raiozim",
+  "nome": "Railin",
   "tipo": "eletrico",
-  "raridade": "rara",
+  "raridade": 1,
   "selvagem": true,
   "vida": 58,
-  "velocidade": 5.4,
-  "ataque": 1,
+  "velocidade": 4.12,
+  "ataque": 0.94,
   "impulso": 8.2,
   "sequencia": [
    "frente"
@@ -565,7 +593,7 @@
    }
   ],
   "modelo3d": "./assets/feras/raiozim.glb",
-  "altura3d": 0.95,
+  "altura3d": 0.4,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -589,22 +617,25 @@
   "evolui": {
    "para": "raiotron",
    "nivel": 25
-  }
+  },
+  "peso": 20,
+  "agilidade": 40,
+  "forca": 30
  },
  "raiotron": {
   "nome": "Raiotron",
   "tipo": "eletrico",
-  "raridade": "rara",
+  "raridade": 3,
   "vida": 88,
-  "velocidade": 4.6,
-  "ataque": 1.15,
+  "velocidade": 4.96,
+  "ataque": 1.26,
   "impulso": 7.5,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/raiotron.glb",
-  "altura3d": 1.5,
+  "altura3d": 1.85,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -650,22 +681,25 @@
     "golpe": "trovao"
    }
   ],
-  "defesa": 1.05
+  "defesa": 1.05,
+  "peso": 90,
+  "agilidade": 70,
+  "forca": 75
  },
  "espinhim": {
-  "nome": "Espinhim",
+  "nome": "Espino",
   "tipo": "planta",
-  "raridade": "rara",
+  "raridade": 1,
   "selvagem": true,
   "vida": 66,
-  "velocidade": 4,
-  "ataque": 1.1,
+  "velocidade": 4.12,
+  "ataque": 0.94,
   "impulso": 7,
   "sequencia": [
    "frente"
   ],
   "modelo3d": "./assets/feras/espinhim.glb",
-  "altura3d": 0.95,
+  "altura3d": 0.4,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -711,22 +745,25 @@
   "evolui": {
    "para": "espinharal",
    "nivel": 25
-  }
+  },
+  "peso": 20,
+  "agilidade": 40,
+  "forca": 30
  },
  "espinharal": {
   "nome": "Espinharal",
   "tipo": "planta",
-  "raridade": "rara",
+  "raridade": 3,
   "vida": 88,
-  "velocidade": 4.8,
-  "ataque": 1.15,
+  "velocidade": 5.1,
+  "ataque": 1.26,
   "impulso": 7.5,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/espinharal.glb",
-  "altura3d": 1.5,
+  "altura3d": 1.6,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -772,23 +809,26 @@
     "golpe": "raio_esmeralda"
    }
   ],
-  "defesa": 1.1
+  "defesa": 1.1,
+  "peso": 70,
+  "agilidade": 75,
+  "forca": 75
  },
  "cogumim": {
-  "nome": "Cogumim",
+  "nome": "Cogum",
   "tipo": "planta",
-  "raridade": "rara",
+  "raridade": 1,
   "selvagem": true,
   "vida": 67,
-  "velocidade": 4.6,
-  "ataque": 1.05,
+  "velocidade": 4.12,
+  "ataque": 0.94,
   "impulso": 7,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/cogumim.glb",
-  "altura3d": 0.95,
+  "altura3d": 0.6,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -830,22 +870,25 @@
   "evolui": {
    "para": "cogumal",
    "nivel": 25
-  }
+  },
+  "peso": 25,
+  "agilidade": 40,
+  "forca": 30
  },
  "cogumal": {
   "nome": "Cogumal",
   "tipo": "planta",
-  "raridade": "rara",
+  "raridade": 1,
   "vida": 87,
-  "velocidade": 4.2,
-  "ataque": 1.15,
+  "velocidade": 4.4,
+  "ataque": 1.08,
   "impulso": 7.5,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/cogumal.glb",
-  "altura3d": 1.45,
+  "altura3d": 1.1,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -891,23 +934,26 @@
     "golpe": "raio_esmeralda"
    }
   ],
-  "defesa": 1
+  "defesa": 1,
+  "peso": 50,
+  "agilidade": 50,
+  "forca": 50
  },
  "nevim": {
   "nome": "Nevim",
-  "tipo": "comum",
-  "raridade": "rara",
+  "tipo": "gelo",
+  "raridade": 1,
   "selvagem": true,
   "vida": 63,
   "velocidade": 4.4,
-  "ataque": 1.05,
+  "ataque": 1.04,
   "impulso": 7,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/nevim.glb",
-  "altura3d": 0.95,
+  "altura3d": 0.5,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -941,22 +987,25 @@
   "evolui": {
    "para": "nevurso",
    "nivel": 25
-  }
+  },
+  "peso": 20,
+  "agilidade": 50,
+  "forca": 45
  },
  "nevurso": {
   "nome": "Nevurso",
-  "tipo": "comum",
-  "raridade": "rara",
+  "tipo": "gelo",
+  "raridade": 3,
   "vida": 88,
-  "velocidade": 4.7,
-  "ataque": 1.15,
+  "velocidade": 4.68,
+  "ataque": 1.37,
   "impulso": 7.5,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/nevurso.glb",
-  "altura3d": 1.55,
+  "altura3d": 2.2,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -986,24 +1035,27 @@
     "golpe": "garras_furiosas"
    }
   ],
-  "defesa": 1.25
+  "defesa": 1.25,
+  "peso": 130,
+  "agilidade": 60,
+  "forca": 90
  },
  "gelavim": {
   "nome": "Gelavim",
-  "tipo": "agua",
-  "raridade": "rara",
+  "tipo": "gelo",
+  "raridade": 1,
   "selvagem": true,
   "voa": true,
   "vida": 71,
-  "velocidade": 4.3,
-  "ataque": 1.05,
+  "velocidade": 4.68,
+  "ataque": 0.94,
   "impulso": 7,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/gelavim.glb",
-  "altura3d": 0.9,
+  "altura3d": 0.5,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1045,23 +1097,26 @@
   "evolui": {
    "para": "gelavor",
    "nivel": 25
-  }
+  },
+  "peso": 15,
+  "agilidade": 60,
+  "forca": 30
  },
  "gelavor": {
   "nome": "Gelavor",
-  "tipo": "agua",
-  "raridade": "rara",
+  "tipo": "gelo",
+  "raridade": 3,
   "voa": true,
   "vida": 86,
-  "velocidade": 4.4,
-  "ataque": 1.15,
+  "velocidade": 5.52,
+  "ataque": 1.08,
   "impulso": 7.5,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/gelavor.glb",
-  "altura3d": 1.45,
+  "altura3d": 1.3,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1103,23 +1158,26 @@
     "golpe": "hidrobomba"
    }
   ],
-  "defesa": 0.95
+  "defesa": 0.95,
+  "peso": 45,
+  "agilidade": 90,
+  "forca": 50
  },
  "pratim": {
   "nome": "Pratim",
-  "tipo": "comum",
-  "raridade": "rara",
+  "tipo": "gelo",
+  "raridade": 1,
   "selvagem": true,
   "vida": 63,
-  "velocidade": 4.4,
-  "ataque": 1.05,
+  "velocidade": 4.12,
+  "ataque": 0.97,
   "impulso": 7,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/pratim.glb",
-  "altura3d": 0.9,
+  "altura3d": 0.45,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1153,23 +1211,26 @@
   "evolui": {
    "para": "pratagor",
    "nivel": 25
-  }
+  },
+  "peso": 20,
+  "agilidade": 40,
+  "forca": 35
  },
  "pratagor": {
   "nome": "Pratagor",
-  "tipo": "comum",
-  "raridade": "rara",
+  "tipo": "gelo",
+  "raridade": 3,
   "voa": true,
   "vida": 85,
-  "velocidade": 4.3,
-  "ataque": 1.15,
+  "velocidade": 5.24,
+  "ataque": 1.26,
   "impulso": 7.5,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/pratagor.glb",
-  "altura3d": 1.5,
+  "altura3d": 1.6,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1199,23 +1260,26 @@
     "golpe": "investida_feroz"
    }
   ],
-  "defesa": 1.1
+  "defesa": 1.1,
+  "peso": 95,
+  "agilidade": 80,
+  "forca": 75
  },
  "vulpim": {
   "nome": "Vulpim",
   "tipo": "fogo",
-  "raridade": "rara",
+  "raridade": 2,
   "selvagem": true,
   "vida": 68,
-  "velocidade": 4.3,
-  "ataque": 1.05,
+  "velocidade": 4.4,
+  "ataque": 1.08,
   "impulso": 7,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/vulpim.glb",
-  "altura3d": 1,
+  "altura3d": 0.6,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1257,22 +1321,25 @@
   "evolui": {
    "para": "vulpiro",
    "nivel": 25
-  }
+  },
+  "peso": 30,
+  "agilidade": 50,
+  "forca": 50
  },
  "vulpiro": {
-  "nome": "Vulpiro",
+  "nome": "Vulpirodo",
   "tipo": "fogo",
-  "raridade": "rara",
+  "raridade": 2,
   "vida": 90,
-  "velocidade": 4.2,
-  "ataque": 1.15,
+  "velocidade": 5.52,
+  "ataque": 1.26,
   "impulso": 7.5,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/vulpiro.glb",
-  "altura3d": 1.5,
+  "altura3d": 1.6,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1314,23 +1381,26 @@
     "golpe": "pentachama"
    }
   ],
-  "defesa": 1
+  "defesa": 1,
+  "peso": 70,
+  "agilidade": 90,
+  "forca": 75
  },
  "rochim": {
   "nome": "Rochim",
-  "tipo": "comum",
-  "raridade": "rara",
+  "tipo": "pedra",
+  "raridade": 1,
   "selvagem": true,
   "vida": 71,
-  "velocidade": 4.1,
-  "ataque": 1.05,
+  "velocidade": 4.12,
+  "ataque": 1.01,
   "impulso": 7,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/rochim.glb",
-  "altura3d": 1,
+  "altura3d": 0.5,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1364,22 +1434,25 @@
   "evolui": {
    "para": "rochedo",
    "nivel": 25
-  }
+  },
+  "peso": 25,
+  "agilidade": 40,
+  "forca": 40
  },
  "rochedo": {
   "nome": "Rochedo",
-  "tipo": "comum",
-  "raridade": "rara",
+  "tipo": "pedra",
+  "raridade": 2,
   "vida": 85,
-  "velocidade": 4.6,
-  "ataque": 1.15,
+  "velocidade": 4.68,
+  "ataque": 1.33,
   "impulso": 7.5,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/rochedo.glb",
-  "altura3d": 1.55,
+  "altura3d": 1.9,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1409,23 +1482,26 @@
     "golpe": "garras_furiosas"
    }
   ],
-  "defesa": 1.25
+  "defesa": 1.25,
+  "peso": 160,
+  "agilidade": 60,
+  "forca": 85
  },
  "dunim": {
   "nome": "Dunim",
-  "tipo": "comum",
-  "raridade": "comum",
+  "tipo": "terra",
+  "raridade": 1,
   "selvagem": true,
   "vida": 66,
-  "velocidade": 4.3,
-  "ataque": 1.05,
+  "velocidade": 4.68,
+  "ataque": 1.12,
   "impulso": 7,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/dunim.glb",
-  "altura3d": 0.95,
+  "altura3d": 0.8,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1455,23 +1531,26 @@
     "golpe": "garras_furiosas"
    }
   ],
-  "defesa": 1
+  "defesa": 1,
+  "peso": 50,
+  "agilidade": 60,
+  "forca": 55
  },
  "furim": {
   "nome": "Furim",
-  "tipo": "comum",
-  "raridade": "comum",
+  "tipo": "terra",
+  "raridade": 1,
   "selvagem": true,
   "vida": 71,
-  "velocidade": 4.3,
-  "ataque": 1.05,
+  "velocidade": 4.68,
+  "ataque": 1.12,
   "impulso": 7,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/furim.glb",
-  "altura3d": 0.9,
+  "altura3d": 0.8,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1501,23 +1580,26 @@
     "golpe": "investida_feroz"
    }
   ],
-  "defesa": 0.85
+  "defesa": 0.85,
+  "peso": 50,
+  "agilidade": 60,
+  "forca": 55
  },
  "gravetim": {
-  "nome": "Gravetim",
+  "nome": "Graveto",
   "tipo": "planta",
-  "raridade": "comum",
+  "raridade": 1,
   "selvagem": true,
   "vida": 69,
   "velocidade": 4.4,
-  "ataque": 1.05,
+  "ataque": 1.08,
   "impulso": 7,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/gravetim.glb",
-  "altura3d": 1,
+  "altura3d": 0.6,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1563,23 +1645,26 @@
     "golpe": "raio_esmeralda"
    }
   ],
-  "defesa": 1.05
+  "defesa": 1.05,
+  "peso": 30,
+  "agilidade": 50,
+  "forca": 50
  },
  "pedrusco": {
   "nome": "Pedrusco",
-  "tipo": "comum",
-  "raridade": "comum",
+  "tipo": "pedra",
+  "raridade": 1,
   "selvagem": true,
   "vida": 67,
-  "velocidade": 4.1,
-  "ataque": 1.05,
+  "velocidade": 4.4,
+  "ataque": 1.12,
   "impulso": 7,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/pedrusco.glb",
-  "altura3d": 1.25,
+  "altura3d": 0.8,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1609,22 +1694,25 @@
     "golpe": "garras_furiosas"
    }
   ],
-  "defesa": 1.2
+  "defesa": 1.2,
+  "peso": 65,
+  "agilidade": 50,
+  "forca": 55
  },
  "cascorao": {
-  "nome": "Cascorão",
-  "tipo": "comum",
-  "raridade": "comum",
+  "nome": "Besolo",
+  "tipo": "planta",
+  "raridade": 1,
   "vida": 87,
-  "velocidade": 4.2,
-  "ataque": 1.15,
+  "velocidade": 4.68,
+  "ataque": 1.04,
   "impulso": 7.5,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/cascorao.glb",
-  "altura3d": 1.45,
+  "altura3d": 0.6,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1654,22 +1742,25 @@
     "golpe": "garras_furiosas"
    }
   ],
-  "defesa": 1.25
+  "defesa": 1.25,
+  "peso": 30,
+  "agilidade": 60,
+  "forca": 45
  },
  "voltouro": {
-  "nome": "Voltouro",
+  "nome": "Tourovolt",
   "tipo": "eletrico",
-  "raridade": "comum",
+  "raridade": 2,
   "vida": 88,
-  "velocidade": 4.7,
-  "ataque": 1.15,
+  "velocidade": 4.96,
+  "ataque": 1.3,
   "impulso": 7.5,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/voltouro.glb",
-  "altura3d": 1.5,
+  "altura3d": 1.8,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1715,22 +1806,25 @@
     "golpe": "trovao"
    }
   ],
-  "defesa": 1.15
+  "defesa": 1.15,
+  "peso": 140,
+  "agilidade": 70,
+  "forca": 80
  },
  "brasouro": {
-  "nome": "Brasouro",
+  "nome": "Tourobrasa",
   "tipo": "fogo",
-  "raridade": "comum",
+  "raridade": 2,
   "vida": 87,
-  "velocidade": 4.7,
-  "ataque": 1.15,
+  "velocidade": 4.96,
+  "ataque": 1.3,
   "impulso": 7.5,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/brasouro.glb",
-  "altura3d": 1.45,
+  "altura3d": 1.8,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1772,23 +1866,26 @@
     "golpe": "pentachama"
    }
   ],
-  "defesa": 1.2
+  "defesa": 1.2,
+  "peso": 140,
+  "agilidade": 70,
+  "forca": 80
  },
  "draguim": {
-  "nome": "Draguim",
+  "nome": "Draguin",
   "tipo": "fogo",
-  "raridade": "comum",
+  "raridade": 2,
   "selvagem": true,
   "vida": 80,
-  "velocidade": 4.4,
-  "ataque": 1.2,
+  "velocidade": 5.1,
+  "ataque": 1.08,
   "impulso": 7.4,
   "sequencia": [
    "baixo",
    "frente"
   ],
   "modelo3d": "./assets/feras/draguim.glb",
-  "altura3d": 1.1,
+  "altura3d": 0.6,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1827,6 +1924,9 @@
    }
   ],
   "voa": true,
-  "defesa": 1
+  "defesa": 1,
+  "peso": 35,
+  "agilidade": 75,
+  "forca": 50
  }
 }

@@ -96,7 +96,10 @@ export function trocaFera(b, jogador, especies) {
 // mas acima de metade da vida a chance é pequena. De 50% para baixo cresce
 // de 50% até 100% (a 25% de vida); a raridade corta o teto (muito rara
 // captura no máximo 25% das vezes).
-const FATOR_RARIDADE = { comum: 1, rara: 0.6, muito_rara: 0.25 };
+// raridade agora é a escala 1-4 da planilha do Domador (1 = mais comum);
+// nomes antigos seguem aceitos para não quebrar dados/testes velhos
+const FATOR_RARIDADE = { 1: 1, 2: 0.8, 3: 0.6, 4: 0.4,
+                         comum: 1, rara: 0.6, muito_rara: 0.25 };
 export function podeCapturar(b) {
   return !b.fim && !b.captura && !b.treinador && b.e.estado !== 'ko';
 }
@@ -394,13 +397,15 @@ function iaSelvagem(b, dt, rnd) {
     if (e.energia >= 60 || dist < 3.6) b.iaCarrega = false;
     else { inp.carregar = true; return inp; }
   }
-  // fúria: quanto mais machucada, mais rápida e agressiva a fera fica
-  const furia = 1 - e.hp / e.max;
+  // fúria (regra do Domador): abaixo de METADE da vida a fera troca de
+  // postura — dá mais golpes e avança mais rápido no adversário. Por ora
+  // é padrão para todas; a tabela de agressividade por espécie virá depois
+  const furia = e.hp / e.max < 0.5 ? 1 : 0;
   if (b.aiT <= 0) {
     if (e.energia < 15 && dist > 5 && rnd() < 0.6) { b.iaCarrega = true; return inp; }
     b.aiT = (0.55 + rnd() * 0.5) * (1 - 0.45 * furia);
     if (dist > 4.5) b.iaMov = rnd() < 0.55 + 0.3 * furia ? escala(dir, 0.65 + 0.3 * furia) : null;
-    else if (dist > 2.2) b.iaMov = rnd() < 0.75 ? escala(dir, 0.8) : null;
+    else if (dist > 2.2) b.iaMov = rnd() < 0.75 + 0.2 * furia ? escala(dir, 0.8 + 0.25 * furia) : null;
     else {
       // a IA gera os mesmos inputs abstratos que um jogador (GDD §9.6/§12)
       const r = rnd();
