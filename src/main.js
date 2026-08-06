@@ -474,7 +474,11 @@ function itensDoMenu() {
     { txt: 'Continuar', acao: fechaMenu },
     { txt: 'Trocar Fera', acao: () => abreMenu('equipeBat') },
     { txt: 'Itens', acao: () => hud.toast('Itens: em breve!') },
-    { txt: 'Fugir', acao: () => { fechaMenu(); fugirBatalha(batalha); } },
+    { txt: 'Fugir', acao: () => {
+      fechaMenu();
+      if (!fugirBatalha(batalha))
+        hud.toast('⏱ Tarde demais para fugir — a luta vai até o fim!', 2200);
+    } },
   ];
   if (t === 'equipeExp' || t === 'equipeBat') return equipe.map((f, i) => ({
     txt: `${nomeDe(f)} Lv.${f.nivel}${i === ativa ? ' ◆' : ''}${f.hpAtual <= 0 ? ' ✖' : ''}`,

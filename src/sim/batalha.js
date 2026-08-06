@@ -82,8 +82,16 @@ export function continuaComOutraFera(b, jogador, especies) {
 }
 
 // recuar da batalha (menu): encerra sem vitória nem derrota
+// FUGA (regra do Domador): uma ÚNICA tentativa, e só nos primeiros 5s de
+// luta — depois disso o duelo vai até o fim. Devolve se conseguiu.
+export const JANELA_FUGA = 5;
 export function fugirBatalha(b) {
-  if (!b.fim) { b.fim = true; b.fimT = 0.5; b.resultado = 'fuga'; }
+  if (b.fim) return false;
+  if (b.treinador) return false; // de treinador não se foge
+  if (b.fugaGasta || (b.tempo || 0) > JANELA_FUGA) { b.fugaGasta = true; return false; }
+  b.fugaGasta = true;
+  b.fim = true; b.fimT = 0.5; b.resultado = 'fuga';
+  return true;
 }
 
 // troca voluntária de fera no meio do duelo
