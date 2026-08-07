@@ -22,6 +22,13 @@ export function criarMundo(mapa, selvagens = ['cascorro'], rnd = Math.random) {
     imunidade: 0, // segundos sem novos encontros (após fugir/batalhar/trocar de mapa)
     cavernaT: 0,  // intervalo entre avisos da caverna
     vencidos: new Set(), // treinadores já derrotados neste mapa
+    // MORADORES vivos: posição muda com o passeio (vaivém); ao ar livre
+    // todo mundo caminha, em interiores ficam no posto
+    npcs: (mapa.npcs || []).map(([x, z, papel, rot, fala], i) => ({
+      x, z, x0: x, z0: z, papel, rot: rot || 0, fala,
+      fase: (i * 1.9) % (Math.PI * 2), t: 0, dir: 1, andando: false,
+      passeia: mapa.tipo !== 'interior',
+    })),
   };
 }
 
@@ -152,11 +159,6 @@ function colideDecor(mapa, pos) {
     const dx = pos.x - d[1], dz = pos.z - d[2];
     if (dx * dx + dz * dz < r * r) return true;
   }
-  for (const n of mapa.npcs || []) {
-    // raio folgado: o domador no máximo ENCOSTA no morador, nunca o invade
-    const dx = pos.x - n[0], dz = pos.z - n[1];
-    if (dx * dx + dz * dz < 0.72 * 0.72) return true;
-  }
   if (mapa.arenaTreino) { // o Mestre da arena (fica 1.4 ao sul do centro dela)
     const dx = pos.x - mapa.arenaTreino.x, dz = pos.z - (mapa.arenaTreino.z - 1.4);
     if (dx * dx + dz * dz < 0.8 * 0.8) return true;
@@ -185,8 +187,8 @@ export function interacaoPerto(m) {
   if (at && perto(at.x, at.z, 2.4)) return 'Arena de Treino';
   const bal = m.mapa.balsa;
   if (bal && perto(bal.x, bal.z, 2.6)) return 'pegar a balsa';
-  for (const n of m.mapa.npcs || [])
-    if (n[4] && perto(n[0], n[1], 1.7)) return 'conversar';
+  for (const n of m.npcs || [])
+    if (n.fala && perto(n.x, n.z, 1.7)) return 'conversar';
   // baús fechados chamam de longe (os abertos o main risca da lista)
   for (let bi = 0; bi < (m.mapa.baus || []).length; bi++) {
     const b2 = m.mapa.baus[bi];
@@ -227,7 +229,14 @@ function colideCastelo(c, pos) {
   return false;
 }
 
-function colide(mapa, pos) {
+// npcs (opcional): a lista VIVA de moradores — o passeio muda as posições,
+// então a colisão não pode ler as de origem do mapa
+function colide(mapa, pos, npcs) {
+  for (const n of npcs || []) {
+    // raio folgado: o domador no máximo ENCOSTA no morador, nunca o invade
+    const dx = pos.x - n.x, dz = pos.z - n.z;
+    if (dx * dx + dz * dz < 0.72 * 0.72) return true;
+  }
   if (mapa.castelo && colideCastelo(mapa.castelo, pos)) return true;
   // modelos de cenário glTF: [slug, x, z, altura, rot, raio] — raio > 0 bloqueia
   for (const c of mapa.cenario || []) {
@@ -305,6 +314,22 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
   if (m.cavernaT > 0) m.cavernaT -= dt;
   const d = m.domador;
 
+  // MORADORES passeiam: vaivém suave (senoide) em torno de casa. Se o
+  // caminho está tomado (cenário ou o próprio domador), esperam parados
+  for (const n of m.npcs || []) {
+    if (!n.passeia) continue;
+    const proxT = n.t + dt;
+    const alvoX = n.x0 + Math.sin(proxT * 0.5 + n.fase) * 1.3;
+    const dxD = alvoX - d.pos.x, dzD = n.z - d.pos.z;
+    if (dxD * dxD + dzD * dzD > 1.1 * 1.1 &&
+        !colide(m.mapa, { x: alvoX, z: n.z })) {
+      n.dir = alvoX >= n.x ? 1 : -1;
+      // perto das pontas da senoide o passo é minúsculo: fica "parado"
+      n.andando = Math.abs(Math.cos(proxT * 0.5 + n.fase)) > 0.3;
+      n.x = alvoX; n.t = proxT;
+    } else n.andando = false;
+  }
+
   // FALAR (Z): treinadores desafiam, a enfermeira cura, moradores e placas
   // conversam — tudo por interação, nada dispara sozinho
   if (inp.falar) {
@@ -322,8 +347,8 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
     // a balsa cruza o Mar do Meio (falar com o barco embarca)
     const bal = m.mapa.balsa;
     if (bal && perto(bal.x, bal.z, 2.6)) return { tipo: 'balsa', destino: bal.destino };
-    for (const n of m.mapa.npcs || [])
-      if (n[4] && perto(n[0], n[1], 1.7)) return { tipo: 'fala', texto: n[4], papel: n[2] };
+    for (const n of m.npcs || [])
+      if (n.fala && perto(n.x, n.z, 1.7)) return { tipo: 'fala', texto: n.fala, papel: n.papel };
     // abrir baú: [modelo, x, z, item, qtd] — o main controla os já abertos
     for (let bi = 0; bi < (m.mapa.baus || []).length; bi++) {
       const b2 = m.mapa.baus[bi];
@@ -348,7 +373,7 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
   if (d.andando) {
     const mov = normXZ(vec(inp.mov.x, 0, inp.mov.z));
     const novo = soma(d.pos, escala(mov, (d.correndo ? 4.2 * 1.5 : 4.2) * dt));
-    if (!colide(m.mapa, novo)) {
+    if (!colide(m.mapa, novo, m.npcs)) {
       // paredões não se escalam: só passa se o desnível for de degrau.
       // A sonda avança a BORDA do corpo (0.3), não o centro — o domador
       // encosta no paredão sem afundar nele
@@ -383,10 +408,12 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
       return { tipo: 'porta', destino: 'retorno' };
 
     // PORTAS genéricas (ginásio, salas do castelo...): só entra quem está
-    // NA porta e ANDANDO para dentro (norte) — passar por perto não conta
+    // NA porta e ANDANDO para dentro (norte) — passar por perto não conta.
+    // dx/dz opcionais alargam o gatilho (fachadas grandes, ex.: a cidadela,
+    // onde o jogador encosta desalinhado e não há deslize de parede)
     for (const pt of m.mapa.portas || [])
-      if (mov.z < 0 && Math.abs(d.pos.x - pt.x) < 0.7 &&
-          Math.abs(d.pos.z - pt.z) < 0.55)
+      if (mov.z < 0 && Math.abs(d.pos.x - pt.x) < (pt.dx || 0.7) &&
+          Math.abs(d.pos.z - pt.z) < (pt.dz || 0.55))
         return { tipo: 'porta', destino: pt.destino, retorno: pt.retorno };
 
     // boca da caverna: entrar leva ao interior dela

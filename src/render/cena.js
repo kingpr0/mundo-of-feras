@@ -1650,7 +1650,7 @@ function montaFundoNorte(g, mapa) {
 const MODELO_NPC = { maga: 3, aldeao: 4, mercador: 13, aldea: 6, enfermeira: 10, senhor: 2 };
 // põe um humano glTF (treinador N) no mapa, com idle vivo; se o arquivo
 // falhar, o NPC procedural clássico entra no lugar
-function poePersonagem(g, modeloN, x, z, y, rot, tipoFallback) {
+function poePersonagem(g, modeloN, x, z, y, rot, tipoFallback, aoPronto) {
   criarPersonagem(g, `./assets/treinadores/t${modeloN}.glb`, 1.72)
     .then((M) => {
       if (!g.parent) return; // o jogador já trocou de mapa
@@ -1662,12 +1662,29 @@ function poePersonagem(g, modeloN, x, z, y, rot, tipoFallback) {
         if (M.mixer) M.mixer.update(tAnt === null ? 0 : Math.max(0, t - tAnt));
         tAnt = t;
       });
+      if (aoPronto) aoPronto(M);
     })
     .catch(() => {
       const npc = criarNPC(g, tipoFallback || 'aldeao');
       npc.g.position.set(x, y, z);
       npc.g.rotation.y = rot;
     });
+}
+
+// o PASSEIO dos moradores: a sim manda as posições vivas (m.npcs) e aqui
+// o modelo anda até lá, vira para o lado do passo e troca parado<->andar
+export function passoNpcs(cena, npcsVivos, mapa) {
+  if (!cena.npcsM) return;
+  (npcsVivos || []).forEach((n, i) => {
+    const M = cena.npcsM[i];
+    if (!M) return;
+    M.g.position.x = n.x;
+    M.g.position.z = n.z;
+    if (mapa) M.g.position.y = alturaTerreno(mapa, { x: n.x, z: n.z });
+    const alvo = n.andando ? (n.dir > 0 ? Math.PI / 2 : -Math.PI / 2) : (n.rot || 0);
+    M.g.rotation.y += (alvo - M.g.rotation.y) * 0.14;
+    tocaClip(M, n.andando ? 'andar' : 'parado', 0.25);
+  });
 }
 
 export function montaMapa(cena, mapa) {
@@ -1679,6 +1696,7 @@ export function montaMapa(cena, mapa) {
   cena.mundoG = g;
   // as peças do cenário registram aqui suas animações (fogueira, água...)
   cena.anims = [];
+  cena.npcsM = []; // modelos dos moradores, alinhados com mapa.npcs
   // névoa de distância (mapas de travessia épica): o horizonte esmaece
   cena.scene.fog = mapa.nevoa
     ? new THREE.Fog(mapa.nevoa.cor, mapa.nevoa.perto, mapa.nevoa.longe)
@@ -1728,7 +1746,8 @@ export function montaMapa(cena, mapa) {
   });
   (mapa.npcs || []).forEach(([x, z, tipo, rot], i) => {
     poePersonagem(g, MODELO_NPC[tipo] || (2 + (i % 8)), x, z,
-      alturaTerreno(mapa, { x, z }), rot || 0, tipo);
+      alturaTerreno(mapa, { x, z }), rot || 0, tipo,
+      (M) => { cena.npcsM[i] = M; }); // registro p/ o passeio dos moradores
   });
   // treinadores desafiantes (dados do mapa: x, z, "modelo" glTF, equipe);
   // o modelo carrega assíncrono — se falhar, o boneco procedural assume

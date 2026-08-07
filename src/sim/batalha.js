@@ -310,8 +310,11 @@ function passoLutador(b, f, inp, outro, dt, emitir) {
     }
     // COMBO: apertar golpe de novo durante um físico ENCAIXA o próximo da
     // cadeia (golpe.proximo), cancelando parte da recuperação — o aperto
-    // vale em QUALQUER momento do golpe (buffer, como em jogo de luta)
-    if (inp.golpe != null && g.fisico && g.proximo) f.comboQ = true;
+    // vale em QUALQUER momento do golpe (buffer, como em jogo de luta).
+    // SÓ o botão do golpe FÍSICO encadeia (pedido do Domador: X/C/V não valem)
+    const slotSeg = inp.golpe != null ? f.slots[inp.golpe] : null;
+    if (slotSeg && slotSeg.def && slotSeg.def.fisico && g.fisico && g.proximo)
+      f.comboQ = true;
     const encaixa = f.comboQ && g.proximo && b.catalogo && b.catalogo[g.proximo];
     if (encaixa && f.t >= g.prep + g.ativo + g.recup * 0.15) {
       f.golpe = b.catalogo[g.proximo];

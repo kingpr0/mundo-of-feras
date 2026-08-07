@@ -13,7 +13,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/folhito.glb",
-  "altura3d": 0.6,
+  "altura3d": 0.8,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -82,7 +82,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/folhardo.glb",
-  "altura3d": 0.7,
+  "altura3d": 0.95,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -146,7 +146,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/florasto.glb",
-  "altura3d": 1,
+  "altura3d": 1.05,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -270,7 +270,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/brasurio.glb",
-  "altura3d": 0.7,
+  "altura3d": 0.95,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -322,7 +322,7 @@
   "forca": 70
  },
  "dragobrasa": {
-  "nome": "Dragonbrasa",
+  "nome": "Dragonbras",
   "tipo": "fogo",
   "raridade": 4,
   "voa": true,
@@ -335,7 +335,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/dragobrasa.glb",
-  "altura3d": 1.1,
+  "altura3d": 1.2,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -410,7 +410,7 @@
    }
   ],
   "modelo3d": "./assets/feras/gotim.glb",
-  "altura3d": 0.6,
+  "altura3d": 0.8,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -452,7 +452,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/gotao.glb",
-  "altura3d": 0.7,
+  "altura3d": 0.9,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -516,7 +516,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/gotorrente.glb",
-  "altura3d": 1.1,
+  "altura3d": 1.2,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -566,7 +566,7 @@
  "raiozim": {
   "nome": "Railin",
   "tipo": "eletrico",
-  "raridade": 1,
+  "raridade": 2,
   "selvagem": true,
   "vida": 58,
   "velocidade": 4.12,
@@ -598,7 +598,7 @@
    }
   ],
   "modelo3d": "./assets/feras/raiozim.glb",
-  "altura3d": 0.6,
+  "altura3d": 0.7,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -704,7 +704,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/espinhim.glb",
-  "altura3d": 0.5,
+  "altura3d": 0.7,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -769,7 +769,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/espinharal.glb",
-  "altura3d": 0.8,
+  "altura3d": 1,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -834,7 +834,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/cogumim.glb",
-  "altura3d": 0.6,
+  "altura3d": 0.7,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -895,7 +895,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/cogumal.glb",
-  "altura3d": 0.7,
+  "altura3d": 0.85,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -960,7 +960,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/nevim.glb",
-  "altura3d": 0.6,
+  "altura3d": 0.75,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1013,7 +1013,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/nevurso.glb",
-  "altura3d": 1.1,
+  "altura3d": 1.2,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1063,7 +1063,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/gelavim.glb",
-  "altura3d": 0.5,
+  "altura3d": 0.7,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1124,7 +1124,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/gelavor.glb",
-  "altura3d": 0.7,
+  "altura3d": 0.9,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1185,7 +1185,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/pratim.glb",
-  "altura3d": 0.6,
+  "altura3d": 0.7,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1238,7 +1238,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/pratagor.glb",
-  "altura3d": 0.75,
+  "altura3d": 1,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1287,7 +1287,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/vulpim.glb",
-  "altura3d": 0.6,
+  "altura3d": 0.85,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1347,7 +1347,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/vulpiro.glb",
-  "altura3d": 0.8,
+  "altura3d": 0.95,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1408,7 +1408,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/rochim.glb",
-  "altura3d": 0.6,
+  "altura3d": 0.8,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1460,7 +1460,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/rochedo.glb",
-  "altura3d": 0.95,
+  "altura3d": 1.1,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1509,7 +1509,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/dunim.glb",
-  "altura3d": 0.5,
+  "altura3d": 0.8,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1558,7 +1558,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/furim.glb",
-  "altura3d": 0.65,
+  "altura3d": 0.8,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1607,7 +1607,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/gravetim.glb",
-  "altura3d": 0.6,
+  "altura3d": 0.8,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1672,7 +1672,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/pedrusco.glb",
-  "altura3d": 0.65,
+  "altura3d": 0.85,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1720,7 +1720,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/cascorao.glb",
-  "altura3d": 0.6,
+  "altura3d": 0.75,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1768,7 +1768,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/voltouro.glb",
-  "altura3d": 0.95,
+  "altura3d": 1,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1832,7 +1832,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/brasouro.glb",
-  "altura3d": 0.95,
+  "altura3d": 1,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",
@@ -1893,7 +1893,7 @@
    "frente"
   ],
   "modelo3d": "./assets/feras/draguim.glb",
-  "altura3d": 0.6,
+  "altura3d": 0.7,
   "giro3d": 0,
   "clipes": {
    "parado": "parado",

@@ -7,7 +7,7 @@ import { criarBatalha, passoBatalha, podeCapturar, fugirBatalha, trocaFera, cont
 import { ganhaXp, xpParaSubir, xpPorVitoria, nivelSelvagem, vidaMaxima, NIVEL_INICIAL } from './sim/progressao.js';
 import { criarFera, aprendeGolpe, lembraGolpe, montaSlots, aprendizadosDoNivel, curaTotal, bonusNivel, paraBatalha, evoluiFera, verificaEvolucao } from './sim/equipe.js';
 import { empacotaSave, validaSave } from './sim/save.js';
-import { criarCena, poof, jato, passoParticulas, passoAmbiente, passoCamera, mostraArena, temaArena, montaMapa, passoOclusores, renderiza, marcaHeroi } from './render/cena.js';
+import { criarCena, poof, jato, passoParticulas, passoAmbiente, passoCamera, mostraArena, temaArena, montaMapa, passoNpcs, passoOclusores, renderiza, marcaHeroi } from './render/cena.js';
 import { criarEfeitos } from './render/efeitos.js';
 import * as MD from './render/modelos.js';
 import { criarHUD } from './render/hud.js';
@@ -142,6 +142,7 @@ function salvaJogo() {
 addEventListener('beforeunload', salvaJogo);
 setInterval(salvaJogo, 15000); // rede de segurança além dos eventos-chave
 let confirmaReset = 0; // duplo toque do "Recomeçar jornada"
+let presoT = 0, presoAviso = 0; // detector de "empurrando parede sem sair do lugar"
 const nomeDe = (f) => f.apelido || especies[f.especie].nome;
 // raridade da planilha (1-4) em palavra para as fichas; aceita os textos antigos
 const raridadeTxt = (r) => ({ 1: 'comum', 2: 'incomum', 3: 'rara', 4: 'muito rara' })[r]
@@ -188,7 +189,8 @@ let retornoPorta = [];
 let hitstop = 0, tempo = 0;
 // CERIMÔNIA DE EVOLUÇÃO (estilo Pokémon): roda sozinha após a batalha
 let evolucaoPendente = null; // fera que cruzou o nível da cadeia
-let cerimonia = null;        // { fera, t, trocou, de }
+let cerimonia = null;        // { fera, t, trocou, de, naArena?, pos? }
+let retomandoPosCerimonia = false; // volta ao encerraBatalha após a cerimônia
 // trava curta do "falar": o Z que fecha uma batalha não pode, no mesmo
 // sopro, puxar conversa com quem estiver por perto (ex.: o Mestre da Arena)
 let falarTrava = 0;
@@ -652,7 +654,7 @@ let holoAltoExtra = 0; // no compêndio a fera sobe: ficha embaixo, fera em cima
 const MAT_SILHUETA = new THREE.MeshLambertMaterial({ color: 0x394050 });
 const MAT_SILHUETA_SKIN = new THREE.MeshLambertMaterial({ color: 0x394050 });
 MAT_SILHUETA_SKIN.skinning = true;
-function mostraHoloEspecie(chave, compacto = false, silhueta = false) {
+function mostraHoloEspecie(chave, compacto = false, silhueta = false, posBase = null) {
   escondeHolo();
   holoM = modelosIni[chave];
   // o domador dá lugar à projeção — o holograma fica no centro da tela
@@ -664,7 +666,9 @@ function mostraHoloEspecie(chave, compacto = false, silhueta = false) {
     }
   });
   holoAltoExtra = compacto ? 1.7 : 0;
-  const base = { x: mundo.domador.pos.x, y: mundo.domador.pos.y + 0.1 + holoAltoExtra, z: mundo.domador.pos.z };
+  // posBase: a cerimônia na ARENA projeta sobre o ringue, não no domador
+  const p0 = posBase || mundo.domador.pos;
+  const base = { x: p0.x, y: p0.y + 0.1 + holoAltoExtra, z: p0.z };
   MD.setPos(holoM, base);
   MD.setEscala(holoM, compacto ? 2.6 / (especies[chave].altura3d || 1.1) : 4.5);
   // sólido e com tinta azulada BEM sutil: as cores reais da fera aparecem
@@ -1041,7 +1045,10 @@ function encerraBatalha() {
   }
   const resultado = batalha.resultado;
   const fera = equipe[ativa];
-  if (fera && resultado !== 'derrota') fera.hpAtual = Math.max(1, batalha.p.hp);
+  // (na volta pós-cerimônia o HP já foi fechado — e reescalado pela
+  // evolução — então não se escreve de novo)
+  if (fera && resultado !== 'derrota' && !retomandoPosCerimonia)
+    fera.hpAtual = Math.max(1, batalha.p.hp);
 
   // PERMADEATH (regra do Domador): fera que desmaia é PERDIDA — para
   // sempre. Vale contra selvagens e treinadores locais; GINÁSIOS são
@@ -1070,6 +1077,15 @@ function encerraBatalha() {
       hud.toast('💀 Todas as suas feras se foram... e o mundo perdeu a cor.', 3600);
     ativa = 0;
   }
+
+  // CERIMÔNIA NA ARENA (pedido do Domador): quem cruzou o nível evolui
+  // ali mesmo, no ringue, ANTES da volta ao mundo. A derrota não celebra.
+  if (evolucaoPendente && resultado !== 'derrota' && !retomandoPosCerimonia
+      && equipe.includes(evolucaoPendente)) {
+    iniciaCerimoniaArena();
+    return; // o desmonte da batalha espera a cerimônia acabar
+  }
+  retomandoPosCerimonia = false;
 
   hud.flash();
   musica('explorar');
@@ -1132,6 +1148,27 @@ function iniciaCerimonia() {
   musica('batalha');
   cerimonia = { fera, t: 0, trocou: false, de: fera.especie, flashes: 0 };
   mostraHoloEspecie(fera.especie);
+  MD.mostra(discoHolo, false); // sem o círculo azul na cerimônia
+  hud.toast(`✨ O quê?! ${nomeDe(fera)} está envolto em luz...`, 3000);
+}
+// a versão da ARENA: a cerimônia roda sobre o ringue, logo após a luta,
+// e só quando ela acaba o encerraBatalha desmonta tudo e devolve o mundo
+function iniciaCerimoniaArena() {
+  const fera = evolucaoPendente;
+  evolucaoPendente = null;
+  if (!verificaEvolucao(especies, fera)) { retomandoPosCerimonia = true; encerraBatalha(); return; }
+  modo = 'evolucao';
+  fechaMenu(); hud.menu(false);
+  hud.batalhaVisivel(false);
+  // os lutadores saem de cena; a projeção assume o centro do ringue
+  if (playerM) MD.mostra(playerM, false);
+  if (feraAtual) MD.mostra(feraAtual, false);
+  MD.mostra(cristal, false);
+  limpaProjeteis();
+  cerimonia = { fera, t: 0, trocou: false, de: fera.especie, flashes: 0,
+                naArena: true, pos: { x: batalha.p.pos.x, y: 0, z: batalha.p.pos.z } };
+  mostraHoloEspecie(fera.especie, false, false, cerimonia.pos);
+  MD.mostra(discoHolo, false); // sem o círculo azul na cerimônia
   hud.toast(`✨ O quê?! ${nomeDe(fera)} está envolto em luz...`, 3000);
 }
 function passoCerimonia(dt) {
@@ -1150,15 +1187,31 @@ function passoCerimonia(dt) {
       marcaVista(ev.para);
       hud.flash();
       sfx.vitoria();
-      poof(cena, { ...mundo.domador.pos, y: 1.2 }, 0xffd23f, 22, 5);
-      mostraHoloEspecie(c.fera.especie); // a forma NOVA assume a projeção
+      poof(cena, { ...(c.pos || mundo.domador.pos), y: 1.2 }, 0xffd23f, 22, 5);
+      // a forma NOVA assume a projeção (no mesmo palco: ringue ou mundo)
+      mostraHoloEspecie(c.fera.especie, false, false, c.pos || null);
+      MD.mostra(discoHolo, false); // sem o círculo azul na cerimônia
       hud.toast(`🌟 Parabéns! ${especies[ev.de].nome} evoluiu para ${especies[ev.para].nome.toUpperCase()}!`, 3600);
     }
   }
   if (c.t >= 6.2) {
+    // cadeia dupla no RINGUE: emenda outra cerimônia sem devolver o mundo
+    if (c.naArena && verificaEvolucao(especies, c.fera)) {
+      cerimonia = { fera: c.fera, t: 0, trocou: false, de: c.fera.especie,
+                    flashes: 0, naArena: true, pos: c.pos };
+      mostraHoloEspecie(c.fera.especie, false, false, c.pos);
+      MD.mostra(discoHolo, false);
+      return;
+    }
     escondeHolo();
-    MD.mostra(domador, true);
     cerimonia = null;
+    if (c.naArena) {
+      // agora sim: desmonta o ringue e devolve o mundo ao domador
+      retomandoPosCerimonia = true;
+      encerraBatalha();
+      return;
+    }
+    MD.mostra(domador, true);
     modo = 'explorar';
     musica('explorar');
     hud.exploracaoVisivel(true);
@@ -1396,7 +1449,22 @@ function loop(agora) {
                            z: eixo(['ArrowUp'], ['ArrowDown']) },
                     correr: correndo, falar: jE && tempo > falarTrava };
       MD.giraDirecao(domador, inp.mov.x, inp.mov.z);
+      const antesPreso = { x: mundo.domador.pos.x, z: mundo.domador.pos.z };
       const evt = passoMundo(mundo, inp, dt);
+      passoNpcs(cena, mundo.npcs, mundo.mapa); // moradores passeando
+      // BLOQUEADO? Andando sem sair do lugar por um tempo = o jogador não
+      // sabe por onde ir: a dica diz o que fazer (pedido do Domador)
+      if (mundo.domador.andando && Math.hypot(
+            mundo.domador.pos.x - antesPreso.x,
+            mundo.domador.pos.z - antesPreso.z) < dt * 0.4) {
+        presoT += dt;
+        if (presoT > 1.4 && tempo > presoAviso) {
+          presoAviso = tempo + 9; // não insiste toda hora
+          hud.toast(!equipe.length && chaveMapa === dadosMapas.inicial
+            ? '🔥 Seu caminho começa aqui na vila: fale com o ANCIÃO BRAMO e suba a colina até a CHAMA PRIMORDIAL.'
+            : '🧭 Por aqui não passa — procure as ABERTURAS nas bordas do mapa, portas ou escadas.', 3400);
+        }
+      } else presoT = 0;
       if (mundo.domador.correndo && Math.random() < 0.25)
         poof(cena, { ...mundo.domador.pos, y: mundo.domador.pos.y + 0.15 }, 0xcbb28a, 1, 1.2);
       if (evt === 'encontro') iniciaEncontro();
@@ -1572,6 +1640,15 @@ window.DEV = {
                    equipe: equipe.length, menu: menu.tipo, menuAtivo: menu.ativo,
                    treino: treino ? { ...treino } : null, batalha: !!batalha }),
   enche: () => { if (batalha) batalha.p.energia = 100; },
+  blinda: () => { if (batalha) batalha.p.invuln = 999; }, // escudo p/ testes
+  // nocaute de teste: encerra a luta em vitória pelo MESMO caminho da sim
+  nocauteia: () => {
+    if (!batalha || batalha.fim) return;
+    batalha.e.hp = 0; batalha.e.estado = 'ko'; batalha.e.t = 0;
+    batalha.fim = true; batalha.fimT = 1.4; batalha.resultado = 'vitoria';
+    aoEvento({ tipo: 'vitoria' });
+  },
+
   sofre: () => { if (batalha) batalha.p.hp = 1; }, // teste de permadeath
   vence: () => { if (batalha) batalha.e.hp = 1; }, // teste de vitória/evolução
   luta: () => batalha && {
