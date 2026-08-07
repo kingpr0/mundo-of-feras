@@ -918,7 +918,7 @@ function iniciaBatalha() {
   trocaModeloJogador(fera);
   hud.batalhaVisivel(true); hud.atualizaHP(batalha);
   hud.golpesPainel(linhasGolpes());
-  hud.dica('Z/X/C/V golpe · SHIFT+botão = forte · segure A = carregar ki · 2 toques = cambalhota · ESPAÇO pula · F captura · ESC menu');
+  hud.dica('Z/X/C/V golpe · SHIFT+botão = forte · segure A = carregar ki · 2 toques = cambalhota · ESPAÇO pula · F captura · Q PAUSA');
   hud.toast(`${nomeDe(fera)}, eu escolho você!`);
 }
 // ARENA DE TREINO: pula a fase de "encontro" e cai direto na luta, com
@@ -1430,8 +1430,9 @@ function loop(agora) {
       }
       else if (evt && evt.tipo === 'portalDev') {
         sfx.cristalVoa(); hud.flash();
-        hud.toast('🛠 Portal do Desenvolvedor — atravessando para o mundo de testes...', 2400);
-        trocaMapa(evt.destino);
+        hud.toast('🛠 Portal do Desenvolvedor — atravessando...', 2400);
+        // desembarca AO LADO do portal de volta do outro mundo
+        trocaMapa(evt.destino, evt.chegada ? { x: evt.chegada.x, y: 0, z: evt.chegada.z } : undefined);
       }
       else if (evt && evt.tipo === 'arenaTreino') {
         sfx.swing();

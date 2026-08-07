@@ -668,7 +668,7 @@ function caixaReal(obj) {
   return cx;
 }
 
-export function criarFeraGltf(scene, url, alturaAlvo = 1.1, giroGraus = 0) {
+export function criarFeraGltf(scene, url, alturaAlvo = 1.1, giroGraus = 0, usaCabeca = true) {
   if (!_loader) _loader = new GLTFLoader();
   return new Promise((resolve, reject) => {
     _loader.load(url, (gltf) => {
@@ -684,9 +684,11 @@ export function criarFeraGltf(scene, url, alturaAlvo = 1.1, giroGraus = 0) {
       let alt = box.max.y - box.min.y || 1;
       // asas e galhadas NÃO contam como altura: se o rig tem osso 'Head',
       // o altura3d vale até o topo do crânio (dragões de asas altas ficam
-      // do tamanho imponente que merecem)
+      // do tamanho imponente que merecem). Feras com CORPO acima da cabeça
+      // (chapéu do Cogum, espinhos do Espino) desligam via "cabeca3d": false
       let cabeca = null;
-      gltf.scene.traverse((o) => { if (!cabeca && o.isBone && o.name === 'Head') cabeca = o; });
+      if (usaCabeca)
+        gltf.scene.traverse((o) => { if (!cabeca && o.isBone && o.name === 'Head') cabeca = o; });
       if (cabeca) {
         const topoCranio = (new THREE.Vector3().setFromMatrixPosition(cabeca.matrixWorld).y
           - box.min.y) * 1.22;
@@ -810,7 +812,7 @@ function carregaPoses(M, esp) {
 }
 export function criarFera(scene, chave, esp) {
   if (esp && esp.modelo3d)
-    return criarFeraGltf(scene, esp.modelo3d, esp.altura3d || 1.1, esp.giro3d || 0)
+    return criarFeraGltf(scene, esp.modelo3d, esp.altura3d || 1.1, esp.giro3d || 0, esp.cabeca3d !== false)
       .then((M) => { M.clipes = esp.clipes || {}; carregaPoses(M, esp); return M; })
       .catch((e) => {
         // arquivo ausente/corrompido não derruba o jogo: cai no procedural

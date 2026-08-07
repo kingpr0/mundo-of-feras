@@ -29,6 +29,12 @@
           "banca",
           -4,
           15
+        ],
+        [
+          "placa",
+          -18.5,
+          -18.5,
+          "PORTAL DEV — o monolito ao lado volta para a Cidade Primaluz (mundo novo)."
         ]
       ],
       "npcs": [
@@ -298,7 +304,11 @@
       "portalDev": {
         "x": -21,
         "z": -20,
-        "destino": "cidade_primaluz"
+        "destino": "cidade_primaluz",
+        "chegada": {
+          "x": 31.5,
+          "z": 20
+        }
       },
       "cenario": [
         [
@@ -3448,7 +3458,11 @@
       "portalDev": {
         "x": 34,
         "z": 20,
-        "destino": "clareira"
+        "destino": "clareira",
+        "chegada": {
+          "x": -19,
+          "z": -18
+        }
       }
     },
     "interior_ginasio1": {

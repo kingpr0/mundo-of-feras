@@ -48,6 +48,10 @@ export function criarHUD() {
     exploracaoVisivel(v) {
       $('painel').style.display = v ? 'block' : 'none';
       $('miniWrap').style.display = v ? 'block' : 'none';
+      if (v) { // volta da batalha: desfaz o modo "só menu" da pausa
+        delete $('miniWrap').dataset.soMenu;
+        for (const id of ['mini', 'regiao', 'miniNome']) $(id).style.display = '';
+      }
       if (!v) $('interagir').style.display = 'none';
     },
     // dica flutuante de interação: "Z — falar com ..." (null esconde)
@@ -172,6 +176,19 @@ export function criarHUD() {
     // o item selecionado fica sempre CENTRALIZADO na janela de rolagem
     menu(v, titulo = '', itens = [], sel = 0) {
       const m = $('menu');
+      // o menu mora na coluna do minimapa, que a BATALHA esconde: para o
+      // menu de pausa aparecer, ergue a coluna só com o menu (sem mapas)
+      const wrap = $('miniWrap');
+      if (v && wrap.style.display === 'none') {
+        wrap.style.display = 'block';
+        wrap.dataset.soMenu = '1';
+        for (const id of ['mini', 'regiao', 'miniNome']) $(id).style.display = 'none';
+      }
+      if (!v && wrap.dataset.soMenu) {
+        delete wrap.dataset.soMenu;
+        wrap.style.display = 'none';
+        for (const id of ['mini', 'regiao', 'miniNome']) $(id).style.display = '';
+      }
       m.style.display = v ? 'block' : 'none';
       if (!v) return;
       $('menuTit').textContent = titulo;

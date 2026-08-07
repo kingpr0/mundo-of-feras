@@ -753,7 +753,8 @@
   },
   "peso": 20,
   "agilidade": 40,
-  "forca": 30
+  "forca": 30,
+  "cabeca3d": false
  },
  "espinharal": {
   "nome": "Espinharal",
@@ -878,7 +879,8 @@
   },
   "peso": 25,
   "agilidade": 40,
-  "forca": 30
+  "forca": 30,
+  "cabeca3d": false
  },
  "cogumal": {
   "nome": "Cogumal",
@@ -995,7 +997,8 @@
   },
   "peso": 20,
   "agilidade": 50,
-  "forca": 45
+  "forca": 45,
+  "cabeca3d": false
  },
  "nevurso": {
   "nome": "Nevurso",

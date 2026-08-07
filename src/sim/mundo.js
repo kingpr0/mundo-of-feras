@@ -334,7 +334,7 @@ export function passoMundo(m, inp, dt, rnd = Math.random) {
     // (os mapas antigos, guardados como galeria de testes) — sai no lançamento
     const pd = m.mapa.portalDev;
     if (pd && perto(pd.x, pd.z, 2.0))
-      return { tipo: 'portalDev', destino: pd.destino };
+      return { tipo: 'portalDev', destino: pd.destino, chegada: pd.chegada };
     for (const dc of m.mapa.decor || []) {
       if (dc[0] === 'placa' && dc[3] && perto(dc[1], dc[2], 1.7))
         return { tipo: 'fala', texto: dc[3], placa: true };
