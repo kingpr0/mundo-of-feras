@@ -862,7 +862,8 @@ export function criarCristal(scene) {
   M.materiais.push(aroMat); M.g.add(aro);
   // a EsFera de VERDADE (modelo do Domador): quando o arquivo chega, troca
   // a esfera provisória — centralizada no pivô para girar/voar redondinha
-  new GLTFLoader().load('./assets/cenario/esfera-captura.glb', (g) => {
+  // a AZUL por enquanto (pedido do Domador) — a Split Sphere escura guarda
+  new GLTFLoader().load('./assets/cenario/esfera-azul.glb', (g) => {
     g.scene.traverse((o) => {
       if (!o.isMesh) return;
       if (!o.geometry.attributes.normal) o.geometry.computeVertexNormals();

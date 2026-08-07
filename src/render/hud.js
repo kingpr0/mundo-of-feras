@@ -228,15 +228,17 @@ export function criarHUD() {
         $('optFugir').className = 'opt' + (sel === 1 ? ' sel' : '');
       }
     },
-    // SQUAD no painel: a cabecinha de cada fera (ativa em destaque,
-    // desmaiada apagada); sem retrato (ex.: Draguin) vira a inicial
+    // SQUAD no painel: LISTA vertical — cabecinha e, ao lado, nome, nível
+    // e HP de cada fera (ativa em destaque, desmaiada apagada)
     equipe(lista) {
       const box = $('squad');
       if (!box) return;
       box.innerHTML = '';
       for (const f of lista || []) {
+        const linha = document.createElement('div');
+        linha.className = 'sqLinha' + (f.viva ? '' : ' sqFora');
         const d = document.createElement('div');
-        d.className = 'sqCabeca' + (f.ativa ? ' sqAtiva' : '') + (f.viva ? '' : ' sqFora');
+        d.className = 'sqCabeca' + (f.ativa ? ' sqAtiva' : '');
         d.title = f.nome;
         const img = new Image();
         img.src = `./assets/retratos/${f.especie}.png`;
@@ -249,7 +251,13 @@ export function criarHUD() {
           } else { img.remove(); d.textContent = (f.nome || '?')[0]; }
         };
         d.appendChild(img);
-        box.appendChild(d);
+        const info = document.createElement('div');
+        info.className = 'sqInfo';
+        info.innerHTML = `<div class="sqNome">${f.nome} · Lv.${f.nivel}</div>` +
+          `<div class="sqHp">HP ${f.hp}/${f.max}</div>`;
+        linha.appendChild(d);
+        linha.appendChild(info);
+        box.appendChild(linha);
       }
     },
     // CONVERSA: retrato (emoji ou imagem) + nome + texto DIGITANDO ao lado

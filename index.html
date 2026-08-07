@@ -48,15 +48,18 @@
     color:#fff6df; padding:12px 22px; font-size:17px; display:none; max-width:78%;
     text-align:center; background:rgba(22,16,32,.88); border:2px solid #4a4066;
     border-radius:14px; }
-  /* squad: as cabecinhas das feras no painel */
-  #squad { margin-top:6px; min-height:38px; }
-  .sqCabeca { width:36px; height:36px; border-radius:50%; display:inline-flex;
-    align-items:center; justify-content:center; margin:2px 4px 0 0;
+  /* squad: LISTA vertical — cabecinha + nome/nível/HP ao lado */
+  #squad { margin-top:6px; }
+  .sqLinha { display:flex; align-items:center; gap:8px; margin:4px 0; }
+  .sqCabeca { width:34px; height:34px; border-radius:50%; display:flex; flex:0 0 34px;
+    align-items:center; justify-content:center;
     border:2px solid #8a7cc0; background:#241d38; color:#ffd23f; font-weight:bold;
-    overflow:hidden; vertical-align:middle; }
+    overflow:hidden; }
   .sqCabeca img { width:100%; height:100%; object-fit:cover; }
   .sqAtiva { border-color:#ffd23f; box-shadow:0 0 8px rgba(255,210,63,.7); }
   .sqFora { filter:grayscale(1); opacity:.45; }
+  .sqNome { color:#fff6df; font-size:12px; font-weight:bold; }
+  .sqHp { color:#9ad4e8; font-size:11px; }
   /* caixa de CONVERSA: retrato + nome + texto digitando */
   #fala { position:fixed; bottom:60px; left:50%; transform:translateX(-50%);
     display:none; align-items:center; gap:14px; max-width:72%; min-width:340px;

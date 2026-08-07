@@ -578,7 +578,14 @@ function montaCenario(g, mapa) {
       inst.traverse((o) => {
         if (o.isMesh) {
           o.castShadow = true; o.receiveShadow = true;
-          if (altura > 2.2) o.userData.oclusor = true; // altos tapam o herói
+          if (altura > 2.2) {
+            o.userData.oclusor = true; // altos tapam o herói
+            // o efeito "vidro" mexe na opacidade do MATERIAL: cada
+            // instância precisa do seu, senão uma casa apaga as irmãs
+            o.material = Array.isArray(o.material)
+              ? o.material.map((mt) => mt.clone())
+              : o.material.clone();
+          }
         }
       });
       g.add(inst);

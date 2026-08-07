@@ -102,8 +102,9 @@ const INICIAIS = ['folhito', 'brasinha', 'gotim'];
 let equipe = [];
 // ITENS: cristais são consumíveis — cada arremesso gasta um; a enfermeira
 // reabastece (caixas misteriosas e mercados virão depois)
-const CRISTAIS_MAX = 15;
-const itens = { cristal: CRISTAIS_MAX };
+// a jornada começa de mãos VAZIAS: o Ancião entrega as 5 primeiras
+// EsFeras na conversa, e o resto vem de baús e do mercado (sem teto)
+const itens = { cristal: 0 };
 let ativa = 0;
 // SQUAD de até 5 feras; o excedente capturado vai para o BOX (regra do
 // Domador — no online o squad será de 3, variável no futuro)
@@ -146,6 +147,8 @@ const nomeDe = (f) => f.apelido || especies[f.especie].nome;
 const raridadeTxt = (r) => ({ 1: 'comum', 2: 'incomum', 3: 'rara', 4: 'muito rara' })[r]
   || String(r || 'comum').replace('_', ' ');
 function atualizaPainel() {
+  // o contador de EsFeras vale mesmo SEM fera (o Ancião dá 5 antes da 1ª)
+  hud.esferas(itens.cristal);
   if (!equipe.length) { // elo apagado: o Caminho da Cinza
     hud.nomeJogador('sem elo', 0);
     hud.painelVida(0, 0);
@@ -156,9 +159,12 @@ function atualizaPainel() {
   const f = equipe[ativa];
   hud.nomeJogador(nomeDe(f), f.nivel);
   hud.painelVida(f.hpAtual, vidaMaxima(especies[f.especie].vida, f.nivel));
-  // as cabecinhas do squad: ativa em destaque, desmaiada apagada
+  // a lista do squad: ativa em destaque, desmaiada apagada; nome/nível/HP
+  // aparecem AO LADO de cada cabecinha (pedido do Domador)
   hud.equipe(equipe.map((fe, i) => ({
     especie: fe.especie, nome: nomeDe(fe), ativa: i === ativa, viva: fe.hpAtual > 0,
+    nivel: fe.nivel, hp: Math.max(0, Math.round(fe.hpAtual)),
+    max: vidaMaxima(especies[fe.especie].vida, fe.nivel),
   })));
   hud.esferas(itens.cristal);
   if (modo === 'explorar') renderMenu();
@@ -1418,8 +1424,7 @@ function loop(agora) {
         if (!bausAbertos.has(chaveBau)) {
           bausAbertos.add(chaveBau);
           const [, bx, bz, item, qtd = 1] = evt.bau;
-          if (item === 'cristal')
-            itens.cristal = Math.min(CRISTAIS_MAX, itens.cristal + qtd);
+          if (item === 'cristal') itens.cristal += qtd; // soma SEM teto
           sfx.capturado(); hud.flash();
           poof(cena, { x: bx, y: 1, z: bz }, 0xffd23f, 14, 4);
           hud.toast(`🎁 Baú aberto! +${qtd} EsFera${qtd > 1 ? 's' : ''} de Captura`, 2600);
@@ -1451,7 +1456,18 @@ function loop(agora) {
       else if (evt && evt.tipo === 'fala') {
         sfx.swing();
         if (evt.placa) hud.fala('🪧', 'PLACA', evt.texto);
-        else hud.fala(ROSTO_PAPEL[evt.papel] || '💬', 'MORADOR', evt.texto);
+        else {
+          hud.fala(ROSTO_PAPEL[evt.papel] || '💬', 'MORADOR', evt.texto);
+          // o ANCIÃO entrega as 5 primeiras EsFeras (uma vez, fica no save)
+          if (evt.papel === 'senhor' && chaveMapa === dadosMapas.inicial &&
+              !bausAbertos.has('presente:anciao')) {
+            bausAbertos.add('presente:anciao');
+            itens.cristal += 5;
+            sfx.capturado();
+            setTimeout(() => hud.toast('🎁 O Ancião Bramo lhe entrega 5 EsFeras de Captura!', 3000), 1200);
+            atualizaPainel(); salvaJogo();
+          }
+        }
       }
       else if (evt === 'cura') {
         // a cura NÃO repõe EsFeras (regra do Domador): elas vêm de baús e
@@ -1551,6 +1567,7 @@ window.DEV = {
     location.reload();
   },
   salva: () => { salvaJogo(); return localStorage.getItem(CHAVE_SAVE); },
+  cena3d: () => cena, // sonda da cena Three.js (inspeção de materiais/oclusores)
   estado: () => ({ modo, mapa: chaveMapa, pos: { ...mundo.domador.pos },
                    equipe: equipe.length, menu: menu.tipo, menuAtivo: menu.ativo,
                    treino: treino ? { ...treino } : null, batalha: !!batalha }),
