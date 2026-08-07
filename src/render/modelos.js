@@ -1025,8 +1025,24 @@ export function animaLuta(M, f) {
       pose.visible = true;
       ud0._poseAtiva = pose;
     }
-    // o físico RODA como um pião de casco; o poder fica firme
-    pose.rotation.y = catPose === 'fisico' ? f.t * 16 : 0;
+    // FÍSICO: nada de girar — a pose ATACA. Cada estágio do combo tem a
+    // sua cara: 1º golpe reto, 2º espelhado, Final maior e inclinado.
+    // E o corpo AVANÇA no tempo ativo (investida do soco)
+    if (catPose === 'fisico') {
+      const nome = f.golpe.nome || '';
+      const estagio = /Final/.test(nome) ? 3 : /x2/.test(nome) ? 2 : 1;
+      const escBase = estagio === 3 ? 1.18 : 1;
+      pose.scale.set(estagio === 2 ? -escBase : escBase, escBase, escBase);
+      pose.rotation.set(0, 0, estagio === 3 ? -0.18 : 0);
+      // arco de avanço: cresce na preparação, crava no ativo, recua depois
+      const g2 = f.golpe;
+      const fase = Math.min(1, f.t / (g2.prep + g2.ativo));
+      pose.position.z = Math.sin(fase * Math.PI) * (estagio === 3 ? 0.7 : 0.45);
+    } else {
+      pose.scale.set(1, 1, 1);
+      pose.rotation.set(0, 0, 0);
+      pose.position.z = 0;
+    }
     return;
   }
   const vaiRolar = f.estado === 'dash' && M.poses && M.poses.rolar;

@@ -2665,6 +2665,78 @@
           4.2,
           1.6,
           1.1
+        ],
+        [
+          "casinha-aconchego",
+          -14,
+          -14,
+          5.6,
+          0,
+          2.9
+        ],
+        [
+          "casinha-aconchego",
+          13,
+          -15,
+          5.6,
+          0,
+          2.9
+        ],
+        [
+          "casinha-aconchego",
+          17,
+          7,
+          5.6,
+          0,
+          2.9
+        ],
+        [
+          "centro-cura",
+          -17,
+          0,
+          6.4,
+          0,
+          3.1
+        ],
+        [
+          "arvore-nuvem",
+          -9,
+          -18,
+          4.3,
+          0.9,
+          1.1
+        ],
+        [
+          "arvore-verdejante",
+          -3,
+          -19.5,
+          4.5,
+          1.7,
+          1.1
+        ],
+        [
+          "arvore-nuvem-2",
+          3,
+          -20,
+          4.2,
+          0.2,
+          1.1
+        ],
+        [
+          "arvore-verdejante",
+          -14,
+          -17,
+          4.4,
+          2.5,
+          1.1
+        ],
+        [
+          "arvore-nuvem",
+          -18,
+          -15,
+          4.1,
+          1.2,
+          1.1
         ]
       ],
       "pedras": [
@@ -2725,27 +2797,44 @@
           3
         ]
       ],
-      "casas": [
-        [
-          -14,
-          -14,
-          "vermelho"
-        ],
-        [
-          13,
-          -15,
-          "verde"
-        ],
-        [
-          17,
-          7,
-          "vermelho"
-        ]
-      ],
-      "centro": {
-        "x": -17,
-        "z": 1
-      }
+      "portas": [
+        {
+          "x": -14,
+          "z": -10.6,
+          "destino": "interior_casa",
+          "retorno": {
+            "x": -14,
+            "z": -9.6
+          }
+        },
+        {
+          "x": 13,
+          "z": -11.6,
+          "destino": "interior_casa",
+          "retorno": {
+            "x": 13,
+            "z": -10.6
+          }
+        },
+        {
+          "x": 17,
+          "z": 10.4,
+          "destino": "interior_casa",
+          "retorno": {
+            "x": 17,
+            "z": 11.4
+          }
+        },
+        {
+          "x": -17,
+          "z": 3.6,
+          "destino": "interior_centro",
+          "retorno": {
+            "x": -17,
+            "z": 4.6
+          }
+        }
+      ]
     },
     "acesso1": {
       "nome": "Acesso 1",
@@ -3284,6 +3373,38 @@
           3.2,
           0.5,
           0
+        ],
+        [
+          "casinha-aconchego",
+          14,
+          18,
+          5.6,
+          0,
+          2.9
+        ],
+        [
+          "casinha-aconchego",
+          22,
+          19,
+          5.6,
+          0,
+          2.9
+        ],
+        [
+          "casinha-aconchego",
+          30,
+          17,
+          5.6,
+          0,
+          2.9
+        ],
+        [
+          "centro-cura",
+          -29,
+          16,
+          6.4,
+          0,
+          3.1
         ]
       ],
       "pedras": [
@@ -3342,6 +3463,42 @@
             "x": 0,
             "z": 1
           }
+        },
+        {
+          "x": 14,
+          "z": 21.4,
+          "destino": "interior_casa",
+          "retorno": {
+            "x": 14,
+            "z": 22.4
+          }
+        },
+        {
+          "x": 22,
+          "z": 22.4,
+          "destino": "interior_casa",
+          "retorno": {
+            "x": 22,
+            "z": 23.2
+          }
+        },
+        {
+          "x": 30,
+          "z": 20.4,
+          "destino": "interior_casa",
+          "retorno": {
+            "x": 30,
+            "z": 21.4
+          }
+        },
+        {
+          "x": -29,
+          "z": 19.6,
+          "destino": "interior_centro",
+          "retorno": {
+            "x": -29,
+            "z": 20.6
+          }
         }
       ],
       "saidas": [
@@ -3372,27 +3529,6 @@
         "x": 34,
         "z": 20,
         "destino": "clareira"
-      },
-      "casas": [
-        [
-          14,
-          18,
-          "vermelho"
-        ],
-        [
-          22,
-          19,
-          "azul"
-        ],
-        [
-          30,
-          17,
-          "verde"
-        ]
-      ],
-      "centro": {
-        "x": -29,
-        "z": 16
       }
     },
     "interior_ginasio1": {

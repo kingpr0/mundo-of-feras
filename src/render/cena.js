@@ -715,12 +715,43 @@ function arvore(scene, x, z, pinheiro) {
 /* grama alta: um mar CONTÍNUO de arbustos arredondados lado a lado (grade
    com leve variação) — quem entra some da cintura para baixo, estilo
    Pokémon/ClaudeCraft */
+// cor das moitas por BIOMA: a textura verde é RE-MATIZADA de verdade
+// (hue-rotate em canvas) — palha no deserto, terrosa no penhasco, gelada
+// nos fiordes. Multiplicar cor não basta: verde × palha dá oliva.
+const FILTRO_GRAMA = {
+  deserto: 'hue-rotate(-65deg) saturate(0.9) brightness(1.15)',
+  penhasco: 'hue-rotate(-85deg) saturate(0.7) brightness(0.95)',
+  terra: 'hue-rotate(-50deg) saturate(0.75) brightness(1.05)',
+  gelo: 'hue-rotate(85deg) saturate(0.45) brightness(1.3)',
+};
 function montaGrama(scene, G, mapa) {
   // o mar de moitas usa o MODELO do Domador (Verdant Mound): montinhos
   // folhudos lado a lado — quem entra some da cintura para baixo. Clones
   // compartilham geometria/textura; só a transformação muda
   carregaCenario('arbusto-verdejante').then(({ cena: modelo, caixa }) => {
     if (!scene.parent) return; // o mapa já foi trocado
+    // UM conjunto de materiais re-matizados por chamada (clones compartilham)
+    const filtro = FILTRO_GRAMA[(mapa && mapa.chao) || 'grama'];
+    const tintados = new Map();
+    const tintaMat = (mt) => {
+      if (!filtro || !mt.map || !mt.map.image) return mt;
+      if (!tintados.has(mt)) {
+        const img = mt.map.image;
+        const cv = document.createElement('canvas');
+        cv.width = img.width; cv.height = img.height;
+        const ctx = cv.getContext('2d');
+        ctx.filter = filtro;
+        ctx.drawImage(img, 0, 0);
+        const tex = new THREE.CanvasTexture(cv);
+        tex.encoding = mt.map.encoding;
+        tex.wrapS = mt.map.wrapS; tex.wrapT = mt.map.wrapT;
+        tex.flipY = mt.map.flipY;
+        const novo = mt.clone();
+        novo.map = tex;
+        tintados.set(mt, novo);
+      }
+      return tintados.get(mt);
+    };
     const altBase = Math.max(0.01, caixa.max.y - caixa.min.y);
     const passo = 1.35;
     let i = 0;
@@ -735,7 +766,12 @@ function montaGrama(scene, G, mapa) {
         const solo = mapa ? alturaTerreno(mapa, { x: x2, z: z2 }) : 0;
         inst.position.set(x2, solo - caixa.min.y * esc, z2);
         inst.rotation.y = (i * 2.39996) % 6.283; // giro áureo: nada repete
-        inst.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+        inst.traverse((o) => {
+          if (o.isMesh) {
+            o.castShadow = true; o.receiveShadow = true;
+            o.material = Array.isArray(o.material) ? o.material.map(tintaMat) : tintaMat(o.material);
+          }
+        });
         scene.add(inst);
       }
     }

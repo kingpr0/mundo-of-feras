@@ -59,7 +59,7 @@ let modo = 'titulo'; // titulo | intro | explorar | encontro | batalha
 // abertura: o jogador lê a história antes de ganhar o controle
 const INTRO_FALAS = [
   'Ferândia desperta. Ao sul, o vulcão fumega sem erupção; no Mar do Meio, as ondas andam inquietas sem tempestade...',
-  'Na Vila Clareira, porém, hoje é um dia de festa: o dia do SEU Ritual da Escolha.',
+  'Na Vila Primordial, porém, hoje é um dia de festa: o dia do SEU Ritual da Escolha.',
   'Guardiã: "Sinto cheiro de cinza e sal no vento. Os tempos pedem novos domadores..."',
   'Guardiã: "Venha até a FOGUEIRA ETERNA, no coração da vila. Três companheiras esperam por você."',
   'Ande com as SETAS até a fogueira e aperte Z para falar com ela. Boa jornada, domador!',
