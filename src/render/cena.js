@@ -644,6 +644,16 @@ function montaBorda(g, mapa) {
     planta(x + 1.6, -L.z - 9, i + 3, 2.15); planta(x + 1.6, L.z + 9, i + 3, 2.15);
     planta(x + 0.4, -L.z - 11.7, i + 4, 2.6); planta(x + 0.4, L.z + 11.7, i + 4, 2.6);
   }
+  // CANTOS externos: as varreduras por eixo deixavam um triângulo pelado
+  // na diagonal de fora — um bloco de árvores crescendo para longe fecha
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+    let j = 0;
+    for (let dx = 2.4; dx <= 11.5; dx += 2.7) for (let dz = 2.4; dz <= 11.5; dz += 2.7, j++) {
+      const esc = 1 + Math.max(dx, dz) / 7.5;
+      planta(sx * (L.x + dx) + ((j % 3) - 1) * 0.6,
+             sz * (L.z + dz) + ((j * 2 % 3) - 1) * 0.6, j, esc);
+    }
+  }
   for (let z = -L.z - 2.4; z <= L.z + 12; z += passo, i++) {
     planta(-L.x - 2.4, z, i); planta(L.x + 2.4, z, i);
     planta(-L.x - 4.3, z + 1.2, i + 1, 1.35); planta(L.x + 4.3, z + 1.2, i + 1, 1.35);
